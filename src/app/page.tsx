@@ -13,13 +13,20 @@ export default function Home() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
+  // This is a good place for a loading indicator while checking auth state.
   if (isUserLoading) {
-    return <div>Loading...</div>; // Or a proper loading spinner
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>Loading...</div>
+      </div>
+    );
   }
 
+  // If the user is already logged in, we can redirect them to their dashboard.
+  // This is a common pattern for landing pages.
   if (user) {
     router.push('/dashboard');
-    return null;
+    return null; // Render nothing while redirecting
   }
   
   return (
