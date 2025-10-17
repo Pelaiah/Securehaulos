@@ -32,6 +32,7 @@ const addLoadSchema = z.object({
     required_error: 'Please select an equipment type.',
   }),
   payout: z.coerce.number().positive('Payout must be a positive number'),
+  cargoWeight: z.coerce.number().positive('Cargo weight must be a positive number'),
   requirements: z.string().optional(),
 });
 
@@ -46,6 +47,7 @@ export function AddLoadForm({ onFormSubmit }: { onFormSubmit: () => void }) {
             destination: '',
             cargo: '',
             payout: 0,
+            cargoWeight: 0,
             requirements: '',
         },
     });
@@ -112,7 +114,7 @@ export function AddLoadForm({ onFormSubmit }: { onFormSubmit: () => void }) {
                 </FormItem>
             )}
             />
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FormField
                 control={form.control}
                 name="equipment"
@@ -131,6 +133,19 @@ export function AddLoadForm({ onFormSubmit }: { onFormSubmit: () => void }) {
                         <SelectItem value="Flatbed">Flatbed</SelectItem>
                         </SelectContent>
                     </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+                <FormField
+                control={form.control}
+                name="cargoWeight"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Cargo Weight (kg)</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="e.g., 18000" {...field} />
+                    </FormControl>
                     <FormMessage />
                     </FormItem>
                 )}
