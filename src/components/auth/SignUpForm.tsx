@@ -28,6 +28,7 @@ import { useState } from 'react';
 import { Loader2, User, Building, Truck } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const shipperSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -77,7 +78,7 @@ export function SignUpForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const userCredential = await auth.createUserWithEmailAndPassword(values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
       const nameParts = values.fullName.trim().split(' ');
@@ -105,7 +106,7 @@ export function SignUpForm() {
           );
           // Re-throw to be caught by the outer catch block
           throw error;
-        });
+      });
 
       if (values.userType === 'Shipper') {
         const shipperData = {
@@ -334,5 +335,3 @@ export function SignUpForm() {
     </Form>
   );
 }
-
-    
