@@ -71,7 +71,6 @@ export function SignUpForm() {
       phone: '',
       companyReg: '',
       taxNumber: '',
-      fleetSize: undefined,
     },
   });
 
@@ -81,18 +80,21 @@ export function SignUpForm() {
       const userCredential = await auth.createUserWithEmailAndPassword(values.email, values.password);
       const user = userCredential.user;
 
+      const nameParts = values.fullName.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
       const userData: any = {
         id: user.uid,
-        firstName: values.fullName.split(' ')[0],
-        lastName: values.fullName.split(' ').slice(1).join(' '),
+        firstName: firstName,
+        lastName: lastName,
         email: values.email,
         userType: values.userType,
         phone: values.phone,
       };
 
       const userDocRef = doc(firestore, 'users', user.uid);
-      setDoc(userDocRef, userData)
-        .catch(error => {
+      await setDoc(userDocRef, userData).catch(error => {
           errorEmitter.emit(
             'permission-error',
             new FirestorePermissionError({
@@ -100,17 +102,18 @@ export function SignUpForm() {
               operation: 'create',
               requestResourceData: userData,
             })
-          )
+          );
+          // Re-throw to be caught by the outer catch block
+          throw error;
         });
 
       if (values.userType === 'Shipper') {
         const shipperData = {
           id: user.uid,
           companyName: values.companyName,
-          // You might want to store companyReg and taxNumber here
         };
         const shipperDocRef = doc(firestore, 'shippers', user.uid);
-        setDoc(shipperDocRef, shipperData).catch(error => {
+        await setDoc(shipperDocRef, shipperData).catch(error => {
           errorEmitter.emit(
             'permission-error',
             new FirestorePermissionError({
@@ -118,16 +121,18 @@ export function SignUpForm() {
               operation: 'create',
               requestResourceData: shipperData,
             })
-          )
+          );
+          throw error;
         });
       } else if (values.userType === 'Carrier') {
         const carrierData = {
           id: user.uid,
           companyName: values.companyName,
-          // You might want to store fleetSize here
+          equipment: values.fleetSize, 
+          premiumMembership: false,
         };
         const carrierDocRef = doc(firestore, 'carriers', user.uid);
-        setDoc(carrierDocRef, carrierData).catch(error => {
+        await setDoc(carrierDocRef, carrierData).catch(error => {
           errorEmitter.emit(
             'permission-error',
             new FirestorePermissionError({
@@ -135,21 +140,27 @@ export function SignUpForm() {
               operation: 'create',
               requestResourceData: carrierData,
             })
-          )
+          );
+          throw error;
         });
       }
 
       toast({
         title: 'Account Created',
-        description: "You've been successfully signed up. Please check your email to verify your account.",
+        description: "You've been successfully signed up. Redirecting to your dashboard...",
       });
       router.push('/dashboard');
+
     } catch (error) {
+      console.error("Sign up error:", error);
       const firebaseError = error as FirebaseError;
       let errorMessage = 'An unexpected error occurred. Please try again.';
       if (firebaseError.code === 'auth/email-already-in-use') {
         errorMessage = 'This email is already in use. Please use a different email.';
+      } else if (firebaseError.name === 'FirebaseError') { // Catch Firestore permission errors re-thrown
+        errorMessage = 'Could not save user information. Please contact support.'
       }
+
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
@@ -323,3 +334,5 @@ export function SignUpForm() {
     </Form>
   );
 }
+
+    
