@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AddLoadForm } from '@/components/dashboard/AddLoadForm';
+import { ShipperLoads } from '@/components/dashboard/ShipperLoads';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoadBoardPage() {
@@ -51,7 +51,7 @@ export default function LoadBoardPage() {
   }
 
   if (userType === 'Shipper') {
-    return <AddLoadForm />;
+    return <ShipperLoads />;
   }
 
   return (
