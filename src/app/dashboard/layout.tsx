@@ -59,22 +59,26 @@ export default function DashboardLayout({
   const navItems = useMemo(() => {
     const userType = userData?.userType;
 
-    let items = [
+    const baseItems = [
       { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
-      { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
       { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
       { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
     ];
 
     if (userType === 'Shipper') {
-      items = items.map(item => 
-        item.href === '/dashboard/load-board' 
-          ? { ...item, label: 'Add Loads', icon: PlusCircle }
-          : item
-      );
+      return [
+        { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
+        { href: '/dashboard/load-board', icon: PlusCircle, label: 'My Loads' },
+        ...baseItems.slice(1) // Add "My Documents" and "Subscription"
+      ];
     }
     
-    return items;
+    // Default for Carrier and other types
+    return [
+      { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
+      { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+      ...baseItems.slice(1) // Add "My Documents" and "Subscription"
+    ];
   }, [userData]);
 
 
