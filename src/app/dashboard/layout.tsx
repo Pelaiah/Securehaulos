@@ -36,6 +36,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useEffect, useState, useMemo } from 'react';
+import { documents } from '@/lib/data';
 
 export default function DashboardLayout({
   children,
@@ -83,9 +84,8 @@ export default function DashboardLayout({
 
 
   useEffect(() => {
-    // A simple check. In a real app, you'd have a 'verified' field on the user document.
-    const isVerified = false; 
-    if (!isUserLoading && user && !isVerified) {
+    const hasPendingDocuments = documents.some(doc => doc.status === 'Pending');
+    if (!isUserLoading && user && hasPendingDocuments) {
       // Using a timeout to prevent the dialog from appearing too abruptly on login
       const timer = setTimeout(() => {
         setShowVerificationPrompt(true);
@@ -127,7 +127,6 @@ export default function DashboardLayout({
                   </h2>
                 </div>
             </div>
-            <SidebarTrigger className='data-[state=open]:hidden' />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -158,15 +157,15 @@ export default function DashboardLayout({
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
                   <ShieldCheck className="w-6 h-6 text-primary" />
               </div>
-              <AlertDialogTitle className="text-center font-headline text-xl">Get Your Account Verified</AlertDialogTitle>
+              <AlertDialogTitle className="text-center font-headline text-xl">Complete Your Verification</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
-                To access all features and start hauling, you need to complete your profile verification. Upload the required documents to get your verification badge.
+                You have pending documents that require your attention. Please upload the required documents to get your account fully verified.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
               <AlertDialogCancel>Do It Later</AlertDialogCancel>
               <AlertDialogAction onClick={handleGoToVerification}>
-                Get Verified Now
+                Go to Documents
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
