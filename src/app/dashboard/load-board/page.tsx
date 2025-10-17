@@ -1,3 +1,10 @@
+'use client';
+
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { LoadCard } from '@/components/dashboard/LoadCard';
+import { loads } from '@/lib/data';
+import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,17 +14,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LoadCard } from '@/components/dashboard/LoadCard';
-import { loads } from '@/lib/data';
-import { Search, Filter } from 'lucide-react';
+import { AddLoadForm } from '@/components/dashboard/AddLoadForm';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoadBoardPage() {
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+
+  const isLoading = isUserLoading || isUserDataLoading;
+  const userType = userData?.userType;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <Skeleton className="h-10 flex-grow" />
+          <div className="flex gap-4">
+            <Skeleton className="h-10 w-[180px]" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
+
+  if (userType === 'Shipper') {
+    return <AddLoadForm />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Search by location or cargo..." className="pl-10" />
+          <Input
+            placeholder="Search by location or cargo..."
+            className="pl-10"
+          />
         </div>
         <div className="flex gap-4">
           <Select>
