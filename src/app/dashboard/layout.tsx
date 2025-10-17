@@ -19,7 +19,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
@@ -84,7 +83,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="none">
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="shrink-0" asChild>
@@ -98,7 +97,6 @@ export default function DashboardLayout({
               </h2>
             </div>
           </div>
-           <SidebarTrigger className="hidden md:flex" />
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -119,7 +117,7 @@ export default function DashboardLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className='bg-background'>
+      <SidebarInset className='bg-background md:ml-[--sidebar-width]'>
         <Header title={getTitle()} onLogout={handleLogout} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
