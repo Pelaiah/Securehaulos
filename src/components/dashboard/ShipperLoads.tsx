@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { loads } from '@/lib/data';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { loads, type Load } from '@/lib/data';
+import { MoreHorizontal, PlusCircle, X, MapPin, ArrowRight, Truck, DollarSign, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,9 +32,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { AddLoadForm } from './AddLoadForm';
 import { cn } from '@/lib/utils';
+import { Separator } from '../ui/separator';
 
 // Mock status, in a real app this would be part of the load data
 const getStatus = (id: string) => {
@@ -52,6 +54,13 @@ const statusColors = {
 
 export function ShipperLoads() {
   const [isAddLoadOpen, setAddLoadOpen] = useState(false);
+  const [isDetailsOpen, setDetailsOpen] = useState(false);
+  const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
+
+  const handleStatusClick = (load: Load) => {
+    setSelectedLoad(load);
+    setDetailsOpen(true);
+  }
 
   return (
     <>
@@ -90,9 +99,11 @@ export function ShipperLoads() {
                     </TableCell>
                      <TableCell className='text-green-500 font-semibold'>${load.payout.toLocaleString()}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn(statusColors[status])}>
-                        {status}
-                      </Badge>
+                      <Button variant="ghost" className="p-0 h-auto" onClick={() => handleStatusClick(load)}>
+                        <Badge variant="outline" className={cn(statusColors[status], "cursor-pointer")}>
+                          {status}
+                        </Badge>
+                      </Button>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -119,6 +130,8 @@ export function ShipperLoads() {
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Add Load Dialog */}
       <Dialog open={isAddLoadOpen} onOpenChange={setAddLoadOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -133,6 +146,63 @@ export function ShipperLoads() {
           <div className="pt-4">
             <AddLoadForm onFormSubmit={() => setAddLoadOpen(false)} />
           </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Load Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="sm:max-w-md">
+          {selectedLoad && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="font-headline flex items-center justify-between">
+                  <span>Load Details</span>
+                   <Badge variant="outline" className={cn(statusColors[getStatus(selectedLoad.id)])}>
+                      {getStatus(selectedLoad.id)}
+                    </Badge>
+                </DialogTitle>
+                <DialogDescription>
+                  ID: {selectedLoad.id}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                  <div className="flex items-center gap-3 text-lg">
+                    <MapPin className="w-5 h-5 text-muted-foreground" />
+                    <span>{selectedLoad.origin}</span>
+                    <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                    <span>{selectedLoad.destination}</span>
+                  </div>
+                <Separator />
+                <div className='space-y-3'>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Cargo:</span>
+                    <span className="font-semibold">{selectedLoad.cargo}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Equipment:</span>
+                    <span className="font-semibold">{selectedLoad.equipment}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Payout:</span>
+                    <span className="font-bold text-lg text-green-500">${selectedLoad.payout.toLocaleString()}</span>
+                  </div>
+                   <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Shipper:</span>
+                    <span className="font-semibold">{selectedLoad.shipper}</span>
+                  </div>
+                </div>
+                 {getStatus(selectedLoad.id) === 'Posted' && (
+                    <Alert className="bg-blue-500/10 border-blue-500/20 text-blue-400">
+                      <Info className="h-4 w-4 !text-blue-400" />
+                      <AlertTitle>Awaiting Bids</AlertTitle>
+                      <AlertDescription>
+                        This load is live on the board. You will be notified when carriers start placing bids.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </>
