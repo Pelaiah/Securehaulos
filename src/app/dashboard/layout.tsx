@@ -83,7 +83,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="none">
+      <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="shrink-0" asChild>
@@ -117,7 +117,7 @@ export default function DashboardLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className='bg-background md:ml-[--sidebar-width]'>
+      <SidebarInset className='bg-background'>
         <Header title={getTitle()} onLogout={handleLogout} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
