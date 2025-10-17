@@ -246,6 +246,10 @@
           "description": "Email address of the user.",
           "format": "email"
         },
+        "phone": {
+          "type": "string",
+          "description": "Phone number for the user."
+        },
         "userType": {
           "type": "string",
           "description": "The type of user (e.g., 'Driver', 'Shipper', 'FreightManager', 'Carrier')."
@@ -256,7 +260,8 @@
         "firstName",
         "lastName",
         "email",
-        "userType"
+        "userType",
+        "phone"
       ]
     },
     "Driver": {

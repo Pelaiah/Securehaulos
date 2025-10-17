@@ -1,14 +1,15 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Crown,
   FileText,
   Package,
   ShieldCheck,
   Truck,
+  Bell,
 } from 'lucide-react';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import {
   SidebarProvider,
   Sidebar,
@@ -21,6 +22,18 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useEffect, useState } from 'react';
+
 
 const navItems = [
   { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
@@ -36,6 +49,21 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+
+  useEffect(() => {
+    // A simple check. In a real app, you'd have a 'verified' field on the user document.
+    const isVerified = false; 
+    if (!isUserLoading && user && !isVerified) {
+      // Using a timeout to prevent the dialog from appearing too abruptly on login
+      const timer = setTimeout(() => {
+        setShowVerificationPrompt(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [user, isUserLoading]);
 
   const getTitle = () => {
     return (
@@ -46,6 +74,11 @@ export default function DashboardLayout({
   
   const handleLogout = () => {
     auth.signOut();
+  }
+
+  const handleGoToVerification = () => {
+    setShowVerificationPrompt(false);
+    router.push('/dashboard/documents');
   }
 
   return (
@@ -87,6 +120,25 @@ export default function DashboardLayout({
       <SidebarInset className='bg-background'>
         <Header title={getTitle()} onLogout={handleLogout} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+                  <ShieldCheck className="w-6 h-6 text-primary" />
+              </div>
+              <AlertDialogTitle className="text-center font-headline text-xl">Get Your Account Verified</AlertDialogTitle>
+              <AlertDialogDescription className="text-center">
+                To access all features and start hauling, you need to complete your profile verification. Upload the required documents to get your verification badge.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+              <AlertDialogCancel>Do It Later</AlertDialogCancel>
+              <AlertDialogAction onClick={handleGoToVerification}>
+                Get Verified Now
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarInset>
     </SidebarProvider>
   );

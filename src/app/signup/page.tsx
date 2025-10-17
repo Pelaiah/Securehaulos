@@ -19,7 +19,7 @@ export default function SignUpPage() {
           SecureHaul
         </h1>
       </div>
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>

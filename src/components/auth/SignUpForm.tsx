@@ -25,21 +25,32 @@ import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User, Building, Truck } from 'lucide-react';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-const formSchema = z.object({
-  firstName: z.string().min(1, { message: 'First name is required.' }),
-  lastName: z.string().min(1, { message: 'Last name is required.' }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  password: z.string().min(8, {
-    message: 'Password must be at least 8 characters.',
-  }),
-  userType: z.enum(['Driver', 'Shipper', 'FreightManager', 'Carrier'], {
-    required_error: 'You need to select a user type.',
-  }),
+const shipperSchema = z.object({
+  fullName: z.string().min(1, { message: 'Full name is required.' }),
+  companyName: z.string().min(1, { message: 'Company name is required.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  phone: z.string().min(1, { message: 'Phone number is required.' }),
+  companyReg: z.string().min(1, { message: 'Company registration number is required.' }),
+  taxNumber: z.string().min(1, { message: 'Tax/VAT number is required.' }),
+  userType: z.literal('Shipper'),
 });
+
+const carrierSchema = z.object({
+  fullName: z.string().min(1, { message: 'Full name is required.' }),
+  companyName: z.string().min(1, { message: 'Company name or "Owner-Operator" is required.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  phone: z.string().min(1, { message: 'Phone number is required.' }),
+  fleetSize: z.enum(['1', '2-5', '6-10', '11+'], { required_error: 'Fleet size is required.' }),
+  userType: z.literal('Carrier'),
+});
+
+const formSchema = z.union([shipperSchema, carrierSchema]);
 
 export function SignUpForm() {
   const { toast } = useToast();
@@ -47,12 +58,12 @@ export function SignUpForm() {
   const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<'role' | 'form'>('role');
+  const [userType, setUserType] = useState<'Shipper' | 'Carrier' | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
       email: '',
       password: '',
     },
@@ -64,17 +75,67 @@ export function SignUpForm() {
       const userCredential = await auth.createUserWithEmailAndPassword(values.email, values.password);
       const user = userCredential.user;
 
-      await setDoc(doc(firestore, 'users', user.uid), {
+      const userData: any = {
         id: user.uid,
-        firstName: values.firstName,
-        lastName: values.lastName,
+        firstName: values.fullName.split(' ')[0],
+        lastName: values.fullName.split(' ').slice(1).join(' '),
         email: values.email,
         userType: values.userType,
-      });
+        phone: values.phone,
+      };
+
+      const userDocRef = doc(firestore, 'users', user.uid);
+      setDoc(userDocRef, userData)
+        .catch(error => {
+          errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'create',
+              requestResourceData: userData,
+            })
+          )
+        });
+
+      if (values.userType === 'Shipper') {
+        const shipperData = {
+          id: user.uid,
+          companyName: values.companyName,
+          // You might want to store companyReg and taxNumber here
+        };
+        const shipperDocRef = doc(firestore, 'shippers', user.uid);
+        setDoc(shipperDocRef, shipperData).catch(error => {
+          errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+              path: shipperDocRef.path,
+              operation: 'create',
+              requestResourceData: shipperData,
+            })
+          )
+        });
+      } else if (values.userType === 'Carrier') {
+        const carrierData = {
+          id: user.uid,
+          companyName: values.companyName,
+          // You might want to store fleetSize here
+        };
+        const carrierDocRef = doc(firestore, 'carriers', user.uid);
+        setDoc(carrierDocRef, carrierData).catch(error => {
+          errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+              path: carrierDocRef.path,
+              operation: 'create',
+              requestResourceData: carrierData,
+            })
+          )
+        });
+      }
 
       toast({
         title: 'Account Created',
-        description: "You've been successfully signed up.",
+        description: "You've been successfully signed up. Please check your email to verify your account.",
       });
       router.push('/dashboard');
     } catch (error) {
@@ -92,38 +153,60 @@ export function SignUpForm() {
       setIsLoading(false);
     }
   }
+  
+  const handleRoleSelect = (role: 'Shipper' | 'Carrier') => {
+    setUserType(role);
+    form.setValue('userType', role);
+    setStep('form');
+  };
+
+  if (step === 'role') {
+    return (
+      <div className="space-y-4 pt-4">
+        <h3 className="text-center font-medium">Select your role to get started</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => handleRoleSelect('Shipper')}>
+            <Building className="w-8 h-8" />
+            <span>Company (Shipper)</span>
+          </Button>
+          <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => handleRoleSelect('Carrier')}>
+            <Truck className="w-8 h-8" />
+            <span>Carrier (Driver)</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="firstName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="companyName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Name</FormLabel>
+              <FormControl>
+                <Input placeholder={userType === 'Carrier' ? 'e.g. Smith Trucking or Owner-Operator' : 'e.g. National Foods'} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"
@@ -152,31 +235,84 @@ export function SignUpForm() {
         />
         <FormField
           control={form.control}
-          name="userType"
+          name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>I am a...</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Driver">Driver</SelectItem>
-                  <SelectItem value="Shipper">Shipper</SelectItem>
-                  <SelectItem value="FreightManager">Freight Manager</SelectItem>
-                  <SelectItem value="Carrier">Carrier</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input placeholder="+1 (555) 123-4567" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create Account
-        </Button>
+
+        {userType === 'Shipper' && (
+          <>
+            <FormField
+              control={form.control}
+              name="companyReg"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Registration Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter registration number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="taxNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tax/VAT Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter tax/vat number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
+
+        {userType === 'Carrier' && (
+          <FormField
+            control={form.control}
+            name="fleetSize"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Trucks in Fleet</FormLabel>
+                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select fleet size" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2-5">2-5</SelectItem>
+                    <SelectItem value="6-10">6-10</SelectItem>
+                    <SelectItem value="11+">11+</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => setStep('role')} type="button">
+            Back
+          </Button>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create Account
+          </Button>
+        </div>
       </form>
     </Form>
   );
