@@ -37,6 +37,7 @@ import {
 import { AddLoadForm } from './AddLoadForm';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Mock status, in a real app this would be part of the load data
 const getStatus = (id: string) => {
