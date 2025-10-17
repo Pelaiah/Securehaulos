@@ -1,3 +1,4 @@
+
 export type Truck = {
   id: string;
   name: string;
@@ -117,40 +118,41 @@ export const loads: Load[] = [
 export type Document = {
   id: string;
   name: string;
-  type: 'ID' | 'Insurance' | 'Registration';
+  type: 'Tax' | 'Registration' | 'Insurance';
   status: 'Approved' | 'Pending' | 'Rejected' | 'Expired';
   expiryDate?: string;
 };
 
 export const documents: Document[] = [
   {
-    id: 'DOC-01',
-    name: 'Commercial Driver License',
-    type: 'ID',
-    status: 'Approved',
-    expiryDate: '2026-10-15',
-  },
-  {
-    id: 'DOC-02',
-    name: 'Liability Insurance',
-    type: 'Insurance',
-    status: 'Approved',
-    expiryDate: '2025-01-20',
-  },
-  {
-    id: 'DOC-03',
-    name: 'Vehicle Registration - TR-001',
+    id: 'DOC-SH-01',
+    name: 'Company Registration',
     type: 'Registration',
+    status: 'Approved',
+    expiryDate: '2028-11-20',
+  },
+  {
+    id: 'DOC-SH-02',
+    name: 'Tax Clearance Certificate',
+    type: 'Tax',
     status: 'Pending',
   },
   {
-    id: 'DOC-04',
-    name: 'Cargo Insurance',
+    id: 'DOC-SH-03',
+    name: 'General Liability Insurance',
     type: 'Insurance',
+    status: 'Approved',
+    expiryDate: '2025-06-30',
+  },
+  {
+    id: 'DOC-SH-04',
+    name: 'Business License',
+    type: 'Registration',
     status: 'Expired',
-    expiryDate: '2024-05-30',
+    expiryDate: '2024-03-15',
   },
 ];
+
 
 export const subscriptionPlans = {
   free: {

@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DocumentsPage() {
   const statusColors = {
@@ -30,7 +30,10 @@ export default function DocumentsPage() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="font-headline">My Documents</CardTitle>
+        <div>
+          <CardTitle className="font-headline">Company Documents</CardTitle>
+          <CardDescription>Manage your company's verification documents.</CardDescription>
+        </div>
         <Button>
           <Upload className="mr-2 h-4 w-4" />
           Upload Document
