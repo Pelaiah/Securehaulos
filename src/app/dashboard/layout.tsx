@@ -38,7 +38,7 @@ import { useEffect, useState } from 'react';
 const navItems = [
   { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
   { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
-  { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
+  { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
   { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
 ];
 
