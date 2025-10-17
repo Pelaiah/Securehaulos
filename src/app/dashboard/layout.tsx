@@ -2,15 +2,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Bell,
   Crown,
   FileText,
   Package,
-  PanelLeft,
   ShieldCheck,
   Truck,
 } from 'lucide-react';
-
+import { useAuth } from '@/firebase';
 import {
   SidebarProvider,
   Sidebar,
@@ -23,7 +21,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
-import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
@@ -38,6 +35,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const auth = useAuth();
 
   const getTitle = () => {
     return (
@@ -45,6 +43,10 @@ export default function DashboardLayout({
       'Dashboard'
     );
   };
+  
+  const handleLogout = () => {
+    auth.signOut();
+  }
 
   return (
     <SidebarProvider>
@@ -83,7 +85,7 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset className='bg-background'>
-        <Header title={getTitle()} />
+        <Header title={getTitle()} onLogout={handleLogout} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
       </SidebarInset>
     </SidebarProvider>

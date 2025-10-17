@@ -1,12 +1,27 @@
+'use client'
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowRight, ShieldCheck, Truck, Package } from 'lucide-react';
+import { SignUpModal } from '@/components/auth/SignUpModal';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck');
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
+  if (isUserLoading) {
+    return <div>Loading...</div>; // Or a proper loading spinner
+  }
+
+  if (user) {
+    router.push('/dashboard');
+    return null;
+  }
+  
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -16,9 +31,14 @@ export default function Home() {
             SecureHaul
           </h1>
         </div>
-        <Button asChild>
-          <Link href="/dashboard">Go to Dashboard</Link>
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" asChild>
+            <Link href="/login">Log In</Link>
+          </Button>
+          <SignUpModal>
+            <Button>Sign Up</Button>
+          </SignUpModal>
+        </div>
       </header>
       <main className="flex-grow">
         <section className="relative py-20 md:py-32">
@@ -41,11 +61,11 @@ export default function Home() {
               Real-time tracking, a dynamic load marketplace, and ironclad
               security for your peace of mind.
             </p>
-            <Button size="lg" asChild>
-              <Link href="/dashboard">
+            <SignUpModal>
+              <Button size="lg">
                 Get Started <ArrowRight className="ml-2" />
-              </Link>
-            </Button>
+              </Button>
+            </SignUpModal>
           </div>
         </section>
 

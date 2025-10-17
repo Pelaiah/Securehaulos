@@ -14,9 +14,10 @@ import Link from 'next/link';
 
 type HeaderProps = {
   title: string;
+  onLogout: () => void;
 };
 
-export function Header({ title }: HeaderProps) {
+export function Header({ title, onLogout }: HeaderProps) {
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
       <SidebarTrigger className="md:hidden" />
@@ -41,11 +42,9 @@ export function Header({ title }: HeaderProps) {
             <span>Profile</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-           <DropdownMenuItem asChild>
-              <Link href="/">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </Link>
+           <DropdownMenuItem onClick={onLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
             </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
