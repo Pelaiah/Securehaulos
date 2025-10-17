@@ -8,8 +8,10 @@ import {
   ShieldCheck,
   Truck,
   Bell,
+  PlusCircle,
 } from 'lucide-react';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import {
   SidebarProvider,
   Sidebar,
@@ -19,6 +21,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
@@ -32,15 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useEffect, useState } from 'react';
-
-
-const navItems = [
-  { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
-  { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
-  { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
-  { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
-];
+import { useEffect, useState, useMemo } from 'react';
 
 export default function DashboardLayout({
   children,
@@ -50,8 +45,38 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
   const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userData } = useDoc(userDocRef);
+
+  const navItems = useMemo(() => {
+    const userType = userData?.userType;
+
+    let items = [
+      { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
+      { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+      { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
+      { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
+    ];
+
+    if (userType === 'Shipper') {
+      items = items.map(item => 
+        item.href === '/dashboard/load-board' 
+          ? { ...item, label: 'Add Loads', icon: PlusCircle }
+          : item
+      );
+    }
+    
+    return items;
+  }, [userData]);
+
 
   useEffect(() => {
     // A simple check. In a real app, you'd have a 'verified' field on the user document.
@@ -85,17 +110,20 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="shrink-0" asChild>
-                <Link href="/">
-                    <ShieldCheck className="w-6 h-6 text-primary" />
-                </Link>
-            </Button>
-            <div className="flex flex-col">
-              <h2 className="text-lg font-semibold font-headline text-sidebar-foreground">
-                SecureHaul
-              </h2>
+           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="shrink-0" asChild>
+                    <Link href="/">
+                        <ShieldCheck className="w-6 h-6 text-primary" />
+                    </Link>
+                </Button>
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-semibold font-headline text-sidebar-foreground">
+                    SecureHaul
+                  </h2>
+                </div>
             </div>
+            <SidebarTrigger className='data-[state=open]:hidden' />
           </div>
         </SidebarHeader>
         <SidebarContent>
