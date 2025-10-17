@@ -64,8 +64,14 @@ export function SignUpForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fullName: '',
+      companyName: '',
       email: '',
       password: '',
+      phone: '',
+      companyReg: '',
+      taxNumber: '',
+      fleetSize: undefined,
     },
   });
 
