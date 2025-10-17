@@ -1,0 +1,599 @@
+{
+  "entities": {
+    "Truck": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Truck",
+      "type": "object",
+      "description": "Represents a truck in the SecureHaul system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Truck entity."
+        },
+        "driverId": {
+          "type": "string",
+          "description": "Reference to Driver. (Relationship: Driver 1:N Truck)"
+        },
+        "currentLocationLatitude": {
+          "type": "number",
+          "description": "Current latitude of the truck's location."
+        },
+        "currentLocationLongitude": {
+          "type": "number",
+          "description": "Current longitude of the truck's location."
+        },
+        "idleTime": {
+          "type": "number",
+          "description": "Idle time of the truck in minutes."
+        },
+        "fuelLevel": {
+          "type": "number",
+          "description": "Current fuel level of the truck."
+        },
+        "loadWeight": {
+          "type": "number",
+          "description": "Current load weight of the truck."
+        },
+        "cargoIntegrity": {
+          "type": "string",
+          "description": "Status of the cargo's integrity. This can be a string that represents different integrity levels (e.g., 'Good', 'Compromised')."
+        }
+      },
+      "required": [
+        "id",
+        "driverId",
+        "currentLocationLatitude",
+        "currentLocationLongitude",
+        "idleTime",
+        "fuelLevel",
+        "loadWeight",
+        "cargoIntegrity"
+      ]
+    },
+    "Load": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Load",
+      "type": "object",
+      "description": "Represents a load posted by a shipper.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Load entity."
+        },
+        "shipperId": {
+          "type": "string",
+          "description": "Reference to Shipper. (Relationship: Shipper 1:N Load)"
+        },
+        "carrierId": {
+          "type": "string",
+          "description": "Reference to Carrier. (Relationship: Carrier 1:N Load). Nullable until a carrier is assigned."
+        },
+        "pickupLocation": {
+          "type": "string",
+          "description": "Pickup location for the load."
+        },
+        "deliveryLocation": {
+          "type": "string",
+          "description": "Delivery location for the load."
+        },
+        "requirements": {
+          "type": "string",
+          "description": "Detailed requirements for the load."
+        },
+        "tripPlan": {
+          "type": "string",
+          "description": "Trip plan for the load. This can be json."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the load (e.g., 'Posted', 'Assigned', 'In Transit', 'Delivered')."
+        }
+      },
+      "required": [
+        "id",
+        "shipperId",
+        "pickupLocation",
+        "deliveryLocation",
+        "requirements",
+        "status"
+      ]
+    },
+    "Bid": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Bid",
+      "type": "object",
+      "description": "Represents a bid made by a carrier on a load.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Bid entity."
+        },
+        "loadId": {
+          "type": "string",
+          "description": "Reference to Load. (Relationship: Load 1:N Bid)"
+        },
+        "carrierId": {
+          "type": "string",
+          "description": "Reference to Carrier. (Relationship: Carrier 1:N Bid)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the bid."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "Date when the bid was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "loadId",
+        "carrierId",
+        "amount",
+        "submissionDate"
+      ]
+    },
+    "VerificationDocument": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VerificationDocument",
+      "type": "object",
+      "description": "Represents a verification document uploaded by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the VerificationDocument entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N VerificationDocument)"
+        },
+        "documentType": {
+          "type": "string",
+          "description": "Type of document (e.g., 'ID', 'Insurance', 'Registration')."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Date when the document was uploaded.",
+          "format": "date-time"
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "Date when the document expires.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the document (e.g., 'Pending', 'Approved', 'Rejected')."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL of the uploaded document file.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "documentType",
+        "uploadDate",
+        "status",
+        "fileUrl"
+      ]
+    },
+    "Subscription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subscription",
+      "type": "object",
+      "description": "Represents a user's subscription to a premium tier.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Subscription entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 Subscription)"
+        },
+        "tier": {
+          "type": "string",
+          "description": "Subscription tier (e.g., 'Free', 'Premium')."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Date when the subscription started.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Date when the subscription ends.",
+          "format": "date-time"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the subscription."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "tier",
+        "startDate",
+        "endDate",
+        "paymentMethod"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the SecureHaul system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "userType": {
+          "type": "string",
+          "description": "The type of user (e.g., 'Driver', 'Shipper', 'FreightManager', 'Carrier')."
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "userType"
+      ]
+    },
+    "Driver": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a driver in the SecureHaul system. Inherits from User.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Driver entity. (Reference to User ID)"
+        },
+        "licenseNumber": {
+          "type": "string",
+          "description": "Driver's license number."
+        }
+      },
+      "required": [
+        "id",
+        "licenseNumber"
+      ]
+    },
+    "Shipper": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Shipper",
+      "type": "object",
+      "description": "Represents a shipper in the SecureHaul system. Inherits from User.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Shipper entity. (Reference to User ID)"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Name of the shipping company."
+        }
+      },
+      "required": [
+        "id",
+        "companyName"
+      ]
+    },
+    "Carrier": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Carrier",
+      "type": "object",
+      "description": "Represents a carrier in the SecureHaul system. Inherits from User.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Carrier entity. (Reference to User ID)"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Name of the carrier company."
+        },
+        "premiumMembership": {
+          "type": "boolean",
+          "description": "Indicates whether the carrier has a premium membership."
+        },
+        "equipment": {
+          "type": "string",
+          "description": "Description of the carrier's equipment."
+        }
+      },
+      "required": [
+        "id",
+        "companyName"
+      ]
+    },
+    "FreightManager": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FreightManager",
+      "type": "object",
+      "description": "Represents a freight manager in the SecureHaul system. Inherits from User.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FreightManager entity. (Reference to User ID)"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Name of the freight manager's company."
+        }
+      },
+      "required": [
+        "id",
+        "companyName"
+      ]
+    },
+    "EmergencyAlert": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmergencyAlert",
+      "type": "object",
+      "description": "Represents an emergency alert triggered by a truck.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the EmergencyAlert entity."
+        },
+        "truckId": {
+          "type": "string",
+          "description": "Reference to Truck. (Relationship: Truck 1:N EmergencyAlert)"
+        },
+        "alertTime": {
+          "type": "string",
+          "description": "Date and time when the alert was triggered.",
+          "format": "date-time"
+        },
+        "alertType": {
+          "type": "string",
+          "description": "Type of alert (e.g., 'Unauthorized Door Opening', 'Distress Signal')."
+        },
+        "locationLatitude": {
+          "type": "number",
+          "description": "Latitude of the truck's location when the alert was triggered."
+        },
+        "locationLongitude": {
+          "type": "number",
+          "description": "Longitude of the truck's location when the alert was triggered."
+        }
+      },
+      "required": [
+        "id",
+        "truckId",
+        "alertTime",
+        "alertType",
+        "locationLatitude",
+        "locationLongitude"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection to store user profiles. Each document is identified by the user's unique ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/verification_documents/{documentId}",
+        "definition": {
+          "entityName": "VerificationDocument",
+          "schema": {
+            "$ref": "#/backend/entities/VerificationDocument"
+          },
+          "description": "Subcollection to store verification documents for each user. Utilizes path-based ownership for security.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the verification document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subscriptions/{subscriptionId}",
+        "definition": {
+          "entityName": "Subscription",
+          "schema": {
+            "$ref": "#/backend/entities/Subscription"
+          },
+          "description": "Subcollection to store subscription information for each user. Uses path-based ownership for security.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "subscriptionId",
+              "description": "The unique identifier for the subscription."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "entityName": "Driver",
+          "schema": {
+            "$ref": "#/backend/entities/Driver"
+          },
+          "description": "Collection to store driver-specific information. Each document is identified by the driver's unique ID.",
+          "params": [
+            {
+              "name": "driverId",
+              "description": "The unique identifier for the driver."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/drivers/{driverId}/trucks/{truckId}",
+        "definition": {
+          "entityName": "Truck",
+          "schema": {
+            "$ref": "#/backend/entities/Truck"
+          },
+          "description": "Subcollection to store truck information associated with each driver. Uses path-based ownership. The truck document includes the `driverId`",
+          "params": [
+            {
+              "name": "driverId",
+              "description": "The unique identifier for the driver."
+            },
+            {
+              "name": "truckId",
+              "description": "The unique identifier for the truck."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/loads/{loadId}",
+        "definition": {
+          "entityName": "Load",
+          "schema": {
+            "$ref": "#/backend/entities/Load"
+          },
+          "description": "Collection to store load postings. Includes denormalized 'shipperId' for authorization independence.",
+          "params": [
+            {
+              "name": "loadId",
+              "description": "The unique identifier for the load."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/loads/{loadId}/bids/{bidId}",
+        "definition": {
+          "entityName": "Bid",
+          "schema": {
+            "$ref": "#/backend/entities/Bid"
+          },
+          "description": "Subcollection to store bids for each load. Includes denormalized 'carrierId' for authorization independence. The bid document includes the `loadId` and `carrierId`.",
+          "params": [
+            {
+              "name": "loadId",
+              "description": "The unique identifier for the load."
+            },
+            {
+              "name": "bidId",
+              "description": "The unique identifier for the bid."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/trucks/{truckId}/emergency_alerts/{alertId}",
+        "definition": {
+          "entityName": "EmergencyAlert",
+          "schema": {
+            "$ref": "#/backend/entities/EmergencyAlert"
+          },
+          "description": "Subcollection to store emergency alerts for each truck.",
+          "params": [
+            {
+              "name": "truckId",
+              "description": "The unique identifier for the truck."
+            },
+            {
+              "name": "alertId",
+              "description": "The unique identifier for the emergency alert."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shippers/{shipperId}",
+        "definition": {
+          "entityName": "Shipper",
+          "schema": {
+            "$ref": "#/backend/entities/Shipper"
+          },
+          "description": "Collection to store shipper-specific information.",
+          "params": [
+            {
+              "name": "shipperId",
+              "description": "The unique identifier for the shipper."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/carriers/{carrierId}",
+        "definition": {
+          "entityName": "Carrier",
+          "schema": {
+            "$ref": "#/backend/entities/Carrier"
+          },
+          "description": "Collection to store carrier-specific information.",
+          "params": [
+            {
+              "name": "carrierId",
+              "description": "The unique identifier for the carrier."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/freight_managers/{freightManagerId}",
+        "definition": {
+          "entityName": "FreightManager",
+          "schema": {
+            "$ref": "#/backend/entities/FreightManager"
+          },
+          "description": "Collection to store freight manager-specific information.",
+          "params": [
+            {
+              "name": "freightManagerId",
+              "description": "The unique identifier for the freight manager."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to provide a secure, scalable, and easily maintainable database for the SecureHaul application. It prioritizes authorization independence by denormalizing access control data, enabling efficient security rules and atomic operations. The structure segregates data based on access requirements, leading to simpler and more secure rules. Consistent access modeling using path-based ownership and membership maps further enhances security and maintainability.\n\nTo achieve Authorization Independence (CRITICAL), the `Load` collection includes the `shipperId` which comes from the User document. The `Bid` collection includes the `carrierId` and the `loadId` which comes from the Carrier and Load document respectively. This eliminates the need for `get()` calls in security rules to check ownership or membership, ensuring atomic operations.\n\nTo achieve QAPs (Rules are not Filters), the data is segregated into collections based on ownership and access patterns. User-owned data like VerificationDocuments and Subscriptions are stored under `/users/{userId}` paths. Loads are directly stored in `/loads` and can be queried based on `shipperId` or `carrierId`.\n\nAccess Modeling:\n- Path-Based Ownership: `/users/{userId}/verification_documents/{documentId}`\n- Membership Map: Not explicitly used, but can be applied to collaborative features in future iterations.\n- Global Roles: No global roles are used.\n\nDenormalization:\n- shipperId inside the Load document.\n- carrierId inside the Bid document.\n- loadId inside the Bid document."
+  }
+}
