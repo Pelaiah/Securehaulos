@@ -136,7 +136,7 @@ export default function DashboardLayout({
                     </Link>
                 </Button>
                 <div className="flex flex-col">
-                  <h2 className="text-lg font-semibold font-headline text-sidebar-foreground">
+                  <h2 className="text-lg font-semibold font-headline text-sidebar-foreground group-data-[collapsible=icon]:hidden">
                     Saboor loadboard
                   </h2>
                 </div>
