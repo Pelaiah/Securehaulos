@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Map } from '@/components/dashboard/Map';
-import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 import { trucks, type Truck } from '@/lib/data';
 import { TruckDetailsDialog } from '@/components/dashboard/TruckDetailsDialog';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
@@ -12,10 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Fuel, Weight } from 'lucide-react';
+import { Clock, Droplet, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSidebar } from '@/components/ui/sidebar';
-
+import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
+import { PaymentInfoCard } from '@/components/dashboard/PaymentInfoCard';
+import { DriverInfoCard } from '@/components/dashboard/DriverInfoCard';
 
 export default function TrackingPage() {
   const { user, isUserLoading } = useUser();
@@ -28,10 +27,8 @@ export default function TrackingPage() {
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   
-  // For shippers, we only show trucks carrying their loads. We'll simulate this.
   const shipperTrucks = trucks.filter(t => ['TR-001', 'TR-004'].includes(t.id));
 
-  const alertTruck = trucks.find((t) => t.unauthorizedDoorOpening);
   const [selectedTruck, setSelectedTruck] = useState<Truck | null>(shipperTrucks[0]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -48,15 +45,14 @@ export default function TrackingPage() {
   const userType = userData?.userType;
 
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : trucks;
-  const showAlert = userType === 'Shipper' ? alertTruck && shipperTrucks.some(t => t.id === alertTruck.id) : alertTruck;
   
   const StatCard = ({ icon: Icon, title, value, className }: { icon: React.ElementType, title: string, value: string | number, className?: string }) => (
-    <Card className={cn("bg-card/50 backdrop-blur-sm", className)}>
+    <Card className={cn("bg-card-alt", className)}>
       <CardContent className="p-4 flex items-center gap-4">
-        <Icon className="w-6 h-6 text-muted-foreground" />
+        <Icon className="w-5 h-5 text-muted-foreground" />
         <div>
-          <p className="text-muted-foreground text-sm">{title}</p>
-          <p className="font-bold text-lg">{value}</p>
+          <p className="font-bold text-sm">{value}</p>
+          <p className="text-muted-foreground text-xs">{title}</p>
         </div>
       </CardContent>
     </Card>
@@ -64,18 +60,23 @@ export default function TrackingPage() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Skeleton className="h-96" />
-          <div className="grid grid-cols-3 gap-6">
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-          </div>
-          <Skeleton className="h-64" />
+       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_1fr_1fr] gap-6">
+        <div className="space-y-6">
+            <Skeleton className="h-56" />
+            <div className="grid grid-cols-3 gap-6">
+                <Skeleton className="h-20" />
+                <Skeleton className="h-20" />
+                <Skeleton className="h-20" />
+            </div>
+            <Skeleton className="h-96" />
         </div>
         <div className="space-y-6">
-          <Skeleton className="h-full" />
+            <Skeleton className="h-48" />
+            <Skeleton className="h-40" />
+            <Skeleton className="h-64" />
+        </div>
+        <div className="hidden xl:block">
+            <Skeleton className="h-full" />
         </div>
       </div>
     )
@@ -83,49 +84,33 @@ export default function TrackingPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-        {/* Main Content Area */}
-        <div className="xl:col-span-2 space-y-6">
-          {showAlert && alertTruck && (
-            <>
-              <EmergencyAlert
-                truckId={alertTruck.id}
-                truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
-              />
-              <div className="relative aspect-video rounded-lg overflow-hidden">
-                <Image 
-                    src="https://i.imgur.com/7lNiwq1.png" 
-                    alt="Truck from alert" 
-                    fill
-                    className="object-cover"
-                    data-ai-hint="truck side"
-                />
-              </div>
-            </>
-          )}
-
-          {selectedTruck && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <StatCard icon={Clock} title="Idle Time" value={selectedTruck.idleTime} />
-              <StatCard icon={Fuel} title="Fuel" value={`${selectedTruck.fuelLevel}%`} />
-              <StatCard icon={Weight} title="Load Weight" value={`${selectedTruck.loadWeight.toLocaleString()} kg`} />
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_1fr_0.8fr] gap-6 items-start">
+        {/* Left Column */}
+        <div className="space-y-6">
+          <VehicleInfoCard />
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <StatCard icon={Clock} title="Trip Time" value="1h 10m" />
+              <StatCard icon={Droplet} title="Fuel consumption" value="12 liters" />
+              <StatCard icon={Users} title="Passenger number" value="4 persons" />
             </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
-              <TripInfoCard />
-          </div>
+          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
         </div>
 
-        {/* Right Column / Shipment List */}
-        <div className="xl:col-span-1">
+        {/* Middle Column */}
+        <div className="space-y-6">
+          <PaymentInfoCard />
+          <DriverInfoCard />
+          <TripInfoCard />
+        </div>
+
+        {/* Right Column */}
+        <div className="hidden xl:block">
           <ShipmentList 
-            trucks={displayTrucks} 
+            trucks={trucks} 
             selectedTruckId={selectedTruck?.id}
             onTruckSelect={handleTruckClick}
             onTruckDetails={handleOpenDetails}
-            title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
+            title="Trips"
           />
         </div>
       </div>

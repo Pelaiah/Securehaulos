@@ -1,6 +1,6 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2, Circle, MapPin, Truck } from 'lucide-react';
+import { CheckCircle2, Circle } from 'lucide-react';
 
 const tripPoints = [
     { type: 'Start Point', time: '9:01 AM', location: 'Bald Hill Street, Jackson Heights, Manhattan', status: 'completed' },
@@ -13,7 +13,7 @@ export function TripInfoCard() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Trip Details</CardTitle>
+                <CardTitle className="font-headline text-lg">Trip Details</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="relative pl-6">
@@ -25,18 +25,17 @@ export function TripInfoCard() {
                         const isActive = point.status === 'active';
 
                         return (
-                            <div key={index} className="flex items-start gap-6 relative pb-8">
+                            <div key={index} className="flex items-start gap-6 relative pb-6 last:pb-0">
                                 <div className="z-10 flex-shrink-0">
                                     {isCompleted ? (
-                                        <CheckCircle2 className="w-6 h-6 text-primary bg-background" />
+                                        <CheckCircle2 className="w-6 h-6 text-primary bg-card" />
                                     ) : (
-                                        <Circle className={`w-6 h-6 ${isActive ? 'text-primary animate-pulse' : 'text-muted-foreground'} bg-background`} />
+                                        <Circle className={`w-6 h-6 ${isActive ? 'text-primary animate-pulse' : 'text-muted-foreground'} bg-card`} />
                                     )}
                                 </div>
-                                <div className="flex-grow">
-                                    <p className="font-semibold text-sm">{point.time}</p>
-                                    <p className="text-muted-foreground text-sm">{point.type}</p>
-                                    <p className="font-medium">{point.location}</p>
+                                <div className="flex-grow -mt-1">
+                                    <p className="font-semibold text-sm">{point.time} <span className='text-xs text-muted-foreground'>{point.type}</span></p>
+                                    <p className="text-muted-foreground text-sm">{point.location}</p>
                                 </div>
                             </div>
                         );

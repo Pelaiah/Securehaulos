@@ -18,13 +18,13 @@ export function Map({ trucks, selectedTruckId }: MapProps) {
   ];
 
   return (
-    <div className="h-96 rounded-lg bg-muted border border-border relative overflow-hidden">
+    <div className="h-96 rounded-lg bg-card relative overflow-hidden border">
       <Image
-        src="https://picsum.photos/seed/map/1200/800"
+        src="https://i.imgur.com/7lNiwq1.png"
         alt="City map background"
         layout="fill"
         objectFit="cover"
-        className="opacity-30"
+        className="opacity-20"
         data-ai-hint="city map"
       />
       {trucks.map((truck, index) => {

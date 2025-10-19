@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User } from "lucide-react";
+import { ChevronDown, Cog, LogOut, User } from "lucide-react";
 import Link from 'next/link';
 
 type HeaderProps = {
@@ -18,34 +18,28 @@ type HeaderProps = {
 
 export function Header({ title, onLogout }: HeaderProps) {
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
+    <header className="flex h-16 items-center gap-4 bg-transparent px-4 lg:px-6">
       <div className="w-full flex-1">
-        <h1 className="text-lg font-semibold font-headline">{title}</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 text-lg font-semibold p-0 hover:bg-transparent focus-visible:ring-0">
+                    Alex Williams
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem>John Doe</DropdownMenuItem>
+              <DropdownMenuItem>Jane Smith</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="icon" className="rounded-full">
-            <Avatar>
-              <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <span className="sr-only">Toggle user menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>John Doe</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-           <DropdownMenuItem onClick={onLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+       <div className="flex items-center gap-4">
+        <span className="text-muted-foreground text-sm">Wed, 7 March 2023</span>
+        <Button variant="outline" className="text-green-400 border-green-400/50 hover:bg-green-400/10 hover:text-green-300">Completed</Button>
+        <Button variant="ghost" size="icon">
+            <Cog className="h-5 w-5 text-muted-foreground" />
+        </Button>
+      </div>
     </header>
   );
 }

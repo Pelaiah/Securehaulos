@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useEffect, useState, useMemo } from 'react';
 import { documents } from '@/lib/data';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -153,13 +154,7 @@ export default function DashboardLayout({
                         <ShieldCheck className="w-6 h-6 text-primary" />
                     </Link>
                 </Button>
-                <div className="flex flex-col">
-                  <h2 className="text-lg font-semibold font-headline text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-                    Saboor loadboard
-                  </h2>
-                </div>
             </div>
-             <SidebarToggleButton />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -173,20 +168,23 @@ export default function DashboardLayout({
                   tooltip={item.label}
                 >
                   <Link href={item.href}>
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    <item.icon className="h-5 w-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-            <SidebarFooterButton />
+        <SidebarFooter className="group-data-[collapsible=icon]:hidden flex items-center justify-center p-4">
+             <Avatar>
+              <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
+              <AvatarFallback>AD</AvatarFallback>
+            </Avatar>
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <SidebarInset className='bg-background'>
+      <SidebarInset className='bg-background p-0'>
         <Header title={getTitle()} onLogout={handleLogout} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>

@@ -21,10 +21,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function DocumentsPage() {
   const statusColors = {
-    Approved: 'text-green-500 bg-green-500/10',
-    Pending: 'text-yellow-500 bg-yellow-500/10',
-    Rejected: 'text-red-500 bg-red-500/10',
-    Expired: 'text-gray-500 bg-gray-500/10',
+    Approved: 'text-green-400 bg-green-500/10',
+    Pending: 'text-yellow-400 bg-yellow-500/10',
+    Rejected: 'text-red-400 bg-red-500/10',
+    Expired: 'text-gray-400 bg-gray-500/10',
   };
 
   return (
@@ -61,7 +61,7 @@ export default function DocumentsPage() {
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={cn(statusColors[doc.status])}
+                    className={cn('border-0', statusColors[doc.status])}
                   >
                     {doc.status}
                   </Badge>
