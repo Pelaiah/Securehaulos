@@ -94,10 +94,10 @@ export default function TrackingPage() {
               />
               <div className="relative aspect-video rounded-lg overflow-hidden">
                 <Image 
-                    src="https://picsum.photos/seed/truck-alert/800/450" 
+                    src="https://i.imgur.com/7lNiwq1.png" 
                     alt="Truck from alert" 
-                    layout="fill" 
-                    objectFit="cover"
+                    fill
+                    className="object-cover"
                     data-ai-hint="truck side"
                 />
               </div>
