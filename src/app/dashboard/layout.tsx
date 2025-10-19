@@ -154,6 +154,7 @@ export default function DashboardLayout({
                         <ShieldCheck className="w-6 h-6 text-primary" />
                     </Link>
                 </Button>
+                 <SidebarToggleButton />
             </div>
           </div>
         </SidebarHeader>
