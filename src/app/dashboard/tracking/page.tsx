@@ -31,7 +31,7 @@ export default function TrackingPage() {
   const shipperTrucks = trucks.filter(t => ['TR-001', 'TR-004'].includes(t.id));
 
   const alertTruck = trucks.find((t) => t.unauthorizedDoorOpening);
-  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(trucks[0]);
+  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(shipperTrucks[0]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const handleTruckClick = (truck: Truck) => {
@@ -82,48 +82,49 @@ export default function TrackingPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 space-y-6">
-           {showAlert && alertTruck && (
-            <>
-              <EmergencyAlert
-                truckId={alertTruck.id}
-                truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
+      <div className="space-y-6">
+        {showAlert && alertTruck && (
+          <>
+            <EmergencyAlert
+              truckId={alertTruck.id}
+              truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
+            />
+            <div className="relative aspect-video rounded-lg overflow-hidden">
+              <Image 
+                  src="https://picsum.photos/seed/truck-alert/800/450" 
+                  alt="Truck from alert" 
+                  layout="fill" 
+                  objectFit="cover"
+                  data-ai-hint="truck side"
               />
-              <div className="relative aspect-video rounded-lg overflow-hidden">
-                <Image 
-                    src="https://picsum.photos/seed/truck-alert/800/450" 
-                    alt="Truck from alert" 
-                    layout="fill" 
-                    objectFit="cover"
-                    data-ai-hint="truck side"
-                />
-              </div>
-            </>
-            )}
-          
-          {selectedTruck && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <StatCard icon={Clock} title="Idle Time" value={selectedTruck.idleTime} />
-              <StatCard icon={Fuel} title="Fuel" value={`${selectedTruck.fuelLevel}%`} />
-              <StatCard icon={Weight} title="Load Weight" value={`${selectedTruck.loadWeight.toLocaleString()} kg`} />
             </div>
-          )}
+          </>
+        )}
+        
+        {selectedTruck && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <StatCard icon={Clock} title="Idle Time" value={selectedTruck.idleTime} />
+            <StatCard icon={Fuel} title="Fuel" value={`${selectedTruck.fuelLevel}%`} />
+            <StatCard icon={Weight} title="Load Weight" value={`${selectedTruck.loadWeight.toLocaleString()} kg`} />
+          </div>
+        )}
 
-          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
-
-          <TripInfoCard />
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+             <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
+          </div>
+          <div className="xl:col-span-1">
+            <TripInfoCard />
+          </div>
         </div>
 
-        <div className="lg:col-span-1">
-          <ShipmentList 
-            trucks={displayTrucks} 
-            selectedTruckId={selectedTruck?.id}
-            onTruckSelect={handleTruckClick}
-            onTruckDetails={handleOpenDetails}
-            title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
-          />
-        </div>
+        <ShipmentList 
+          trucks={displayTrucks} 
+          selectedTruckId={selectedTruck?.id}
+          onTruckSelect={handleTruckClick}
+          onTruckDetails={handleOpenDetails}
+          title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
+        />
 
       </div>
       <TruckDetailsDialog 
