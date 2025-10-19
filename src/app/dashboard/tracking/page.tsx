@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
 import { PaymentInfoCard } from '@/components/dashboard/PaymentInfoCard';
 import { DriverInfoCard } from '@/components/dashboard/DriverInfoCard';
+import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 
 export default function TrackingPage() {
   const { user, isUserLoading } = useUser();
@@ -87,6 +88,12 @@ export default function TrackingPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_1fr_0.8fr] gap-6 items-start">
         {/* Left Column */}
         <div className="space-y-6">
+          {selectedTruck?.unauthorizedDoorOpening && (
+            <EmergencyAlert
+              truckId={selectedTruck.id}
+              truckLocation={`${selectedTruck.location.lat},${selectedTruck.location.lng}`}
+            />
+          )}
           <VehicleInfoCard />
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Clock} title="Trip Time" value="1h 10m" />
