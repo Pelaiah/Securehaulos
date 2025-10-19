@@ -23,6 +23,7 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarRail,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
@@ -125,7 +126,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar variant="floating" collapsible="icon">
         <SidebarHeader>
            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -150,6 +151,7 @@ export default function DashboardLayout({
                   asChild
                   isActive={pathname.startsWith(item.href)}
                   className="justify-start"
+                  tooltip={item.label}
                 >
                   <Link href={item.href}>
                     <item.icon className="h-4 w-4" />
@@ -160,6 +162,7 @@ export default function DashboardLayout({
             ))}
           </SidebarMenu>
         </SidebarContent>
+        <SidebarRail />
       </Sidebar>
       <SidebarInset className='bg-background'>
         <Header title={getTitle()} onLogout={handleLogout} />

@@ -37,8 +37,8 @@ body {
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 235 62% 70%;
     --sidebar-primary-foreground: 235 86% 15%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 0 0% 3.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 235 62% 70%;
   }
@@ -71,8 +71,8 @@ body {
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 235 62% 70%;
     --sidebar-primary-foreground: 235 86% 15%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 100%;
+    --sidebar-accent-foreground: 0 0% 3.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 235 62% 70%;
   }
