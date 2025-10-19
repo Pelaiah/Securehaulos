@@ -177,11 +177,14 @@ export default function DashboardLayout({
             ))}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter className="group-data-[collapsible=icon]:hidden flex items-center justify-center p-4">
-             <Avatar>
-              <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
-              <AvatarFallback>AD</AvatarFallback>
-            </Avatar>
+        <SidebarFooter>
+            <div className="group-data-[collapsible=icon]:hidden flex items-center justify-center p-4">
+                 <Avatar>
+                  <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
+                  <AvatarFallback>AD</AvatarFallback>
+                </Avatar>
+            </div>
+            <SidebarFooterButton />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
