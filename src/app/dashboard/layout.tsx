@@ -84,14 +84,26 @@ export default function DashboardLayout({
 
 
   useEffect(() => {
-    const hasPendingDocuments = documents.some(doc => doc.status === 'Pending');
-    if (!isUserLoading && user && hasPendingDocuments) {
-      // Using a timeout to prevent the dialog from appearing too abruptly on login
-      const timer = setTimeout(() => {
-        setShowVerificationPrompt(true);
-      }, 1500);
-      return () => clearTimeout(timer);
+    if (isUserLoading || !user) {
+      return;
     }
+
+    const checkPendingDocuments = () => {
+        const hasPendingDocuments = documents.some(doc => doc.status === 'Pending');
+        if (hasPendingDocuments) {
+            setShowVerificationPrompt(true);
+        }
+    };
+    
+    // Check immediately on load
+    checkPendingDocuments();
+
+    // Set up an interval to check every hour
+    const intervalId = setInterval(checkPendingDocuments, 60 * 60 * 1000); // 1 hour
+
+    // Cleanup the interval when the component unmounts
+    return () => clearInterval(intervalId);
+
   }, [user, isUserLoading]);
 
   const getTitle = () => {
