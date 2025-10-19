@@ -89,7 +89,6 @@ export default function TrackingPage() {
                 truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
               />
             )}
-          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
           
           {selectedTruck && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -98,6 +97,8 @@ export default function TrackingPage() {
               <StatCard icon={Weight} title="Load Weight" value={`${selectedTruck.loadWeight.toLocaleString()} kg`} />
             </div>
           )}
+
+          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
 
           <TripInfoCard />
         </div>
