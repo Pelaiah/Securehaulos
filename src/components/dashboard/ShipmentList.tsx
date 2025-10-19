@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type ShipmentListItemProps = {
+type TripListItemProps = {
   item: {
     id: string;
     name: string;
@@ -25,7 +25,7 @@ type ShipmentListItemProps = {
   }
 };
 
-function ShipmentListItem({ item }: ShipmentListItemProps) {
+function TripListItem({ item }: TripListItemProps) {
     const statusColors = {
         'Active': 'bg-yellow-400/20 text-yellow-400',
         'Completed': 'bg-green-400/20 text-green-400',
@@ -98,7 +98,7 @@ export function ShipmentList({ trucks, selectedTruckId, onTruckSelect, onTruckDe
         <CardContent className="flex-grow p-2 overflow-y-auto">
             <div className="space-y-2">
             {tripData.map((trip) => (
-                <ShipmentListItem 
+                <TripListItem 
                     key={trip.id}
                     item={trip}
                 />

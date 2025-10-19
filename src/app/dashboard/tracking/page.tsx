@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Map } from '@/components/dashboard/Map';
 import { trucks, type Truck } from '@/lib/data';
 import { TruckDetailsDialog } from '@/components/dashboard/TruckDetailsDialog';
@@ -48,7 +49,7 @@ export default function TrackingPage() {
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : trucks;
   
   const StatCard = ({ icon: Icon, title, value, className }: { icon: React.ElementType, title: string, value: string | number, className?: string }) => (
-    <Card className={cn("bg-card-alt", className)}>
+    <Card className="bg-card">
       <CardContent className="p-4 flex items-center gap-4">
         <Icon className="w-5 h-5 text-muted-foreground" />
         <div>
@@ -85,7 +86,7 @@ export default function TrackingPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_1fr_0.8fr] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_1fr_0.8fr] gap-6 items-start">
         {/* Left Column */}
         <div className="space-y-6">
           {selectedTruck?.unauthorizedDoorOpening && (
