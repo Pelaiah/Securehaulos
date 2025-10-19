@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Map } from '@/components/dashboard/Map';
 import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 import { trucks, type Truck } from '@/lib/data';
@@ -84,10 +85,21 @@ export default function TrackingPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-6">
            {showAlert && alertTruck && (
+            <>
               <EmergencyAlert
                 truckId={alertTruck.id}
                 truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
               />
+              <div className="relative aspect-video rounded-lg overflow-hidden">
+                <Image 
+                    src="https://picsum.photos/seed/truck-alert/800/450" 
+                    alt="Truck from alert" 
+                    layout="fill" 
+                    objectFit="cover"
+                    data-ai-hint="truck side"
+                />
+              </div>
+            </>
             )}
           
           {selectedTruck && (

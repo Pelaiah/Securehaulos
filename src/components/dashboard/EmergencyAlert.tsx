@@ -48,46 +48,33 @@ export function EmergencyAlert({
   return (
     <Alert
       variant="destructive"
-      className="mb-6 border-2 border-destructive/80 bg-destructive/10 animate-pulse p-0 overflow-hidden"
+      className="mb-6 border-2 border-destructive/80 bg-destructive/10 animate-pulse p-4"
     >
-      <div className="flex items-center">
-         <div className="relative h-28 w-32 hidden md:block">
-            <Image 
-                src="https://picsum.photos/seed/truck-alert/200/200" 
-                alt="Truck" 
-                layout="fill" 
-                objectFit="cover"
-                data-ai-hint="truck side"
-            />
-        </div>
-        <div className="p-4 flex-grow">
-          <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2'>
             <Siren className="h-5 w-5" />
             <AlertTitle className="font-headline text-lg font-bold">
-              RED ALERT: Unauthorized Access!
+                RED ALERT: Unauthorized Access!
             </AlertTitle>
-          </div>
-          <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">
+        </div>
+        <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">
             <p className="mb-2 sm:mb-0">
-              Unauthorized door opening detected on truck{' '}
-              <span className="font-semibold">{truckId}</span>.
+                Unauthorized door opening detected on truck{' '}
+                <span className="font-semibold">{truckId}</span>.
             </p>
             <Button
-              onClick={handleFindPolice}
-              disabled={isLoading}
-              variant="destructive"
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shrink-0"
+                onClick={handleFindPolice}
+                disabled={isLoading}
+                variant="destructive"
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shrink-0"
             >
-              {isLoading ? (
+                {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
+                ) : (
                 <MapPin className="mr-2 h-4 w-4" />
-              )}
-              Find Nearest Police Station
+                )}
+                Find Nearest Police Station
             </Button>
-          </AlertDescription>
-        </div>
-      </div>
+        </AlertDescription>
     </Alert>
   );
 }
