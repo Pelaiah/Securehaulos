@@ -1,3 +1,4 @@
+'use client';
 import {
   Card,
   CardContent,
@@ -32,10 +33,11 @@ export function TruckCard({ truck, onClick }: TruckCardProps) {
   };
 
   return (
-    <Card 
+    <Card
       className={cn(
-        'cursor-pointer transition-all hover:shadow-md hover:border-primary/50',
-        truck.unauthorizedDoorOpening && 'border-destructive border-2 hover:border-destructive'
+        'cursor-pointer transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden',
+        truck.unauthorizedDoorOpening &&
+          'border-destructive border-2 hover:border-destructive animate-alert-glow'
       )}
       onClick={onClick}
     >
