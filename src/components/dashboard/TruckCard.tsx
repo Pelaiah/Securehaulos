@@ -18,7 +18,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function TruckCard({ truck }: { truck: Truck }) {
+type TruckCardProps = {
+  truck: Truck;
+  onClick: () => void;
+};
+
+export function TruckCard({ truck, onClick }: TruckCardProps) {
   const statusColors = {
     'On-time': 'bg-green-500/20 text-green-400 border-green-500/30',
     Delayed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -27,7 +32,13 @@ export function TruckCard({ truck }: { truck: Truck }) {
   };
 
   return (
-    <Card className={cn(truck.unauthorizedDoorOpening && 'border-destructive border-2')}>
+    <Card 
+      className={cn(
+        'cursor-pointer transition-all hover:shadow-md hover:border-primary/50',
+        truck.unauthorizedDoorOpening && 'border-destructive border-2 hover:border-destructive'
+      )}
+      onClick={onClick}
+    >
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
