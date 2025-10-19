@@ -29,7 +29,7 @@ export function TruckCard({ truck, onClick }: TruckCardProps) {
     'On-time': 'bg-green-500/20 text-green-400 border-green-500/30',
     Delayed: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     Idle: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-    Alert: 'bg-red-500/20 text-red-400 border-red-500/30 animate-pulse',
+    Alert: 'bg-red-500/20 text-red-400 border-red-500/30',
   };
 
   return (
@@ -37,8 +37,13 @@ export function TruckCard({ truck, onClick }: TruckCardProps) {
       className={cn(
         'cursor-pointer transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden',
         truck.unauthorizedDoorOpening &&
-          'border-destructive border-2 hover:border-destructive animate-alert-glow'
+          'border-destructive/50 animate-red-alert-sweep bg-gradient-to-r from-destructive/20 via-destructive/5 to-destructive/20'
       )}
+      style={
+        truck.unauthorizedDoorOpening
+          ? ({ '--bg-size': '400%' } as React.CSSProperties)
+          : undefined
+      }
       onClick={onClick}
     >
       <CardHeader>
