@@ -141,6 +141,7 @@ export default function DashboardLayout({
                   </h2>
                 </div>
             </div>
+             <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />
           </div>
         </SidebarHeader>
         <SidebarContent>
