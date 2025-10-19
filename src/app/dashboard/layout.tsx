@@ -9,6 +9,7 @@ import {
   Truck,
   Bell,
   PlusCircle,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -61,24 +62,24 @@ export default function DashboardLayout({
     const userType = userData?.userType;
 
     const baseItems = [
-      { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
+      { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
       { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
     ];
 
     if (userType === 'Shipper') {
       return [
-        { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
+        { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
         { href: '/dashboard/load-board', icon: PlusCircle, label: 'My Loads' },
-        ...baseItems.slice(1) // Add "My Documents" and "Subscription"
+        ...baseItems.slice(1), // Add "My Documents" and "Subscription"
       ];
     }
     
     // Default for Carrier and other types
     return [
-      { href: '/dashboard/tracking', icon: Truck, label: 'Real-Time Tracking' },
+      { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
-      ...baseItems.slice(1) // Add "My Documents" and "Subscription"
+      ...baseItems.slice(1), // Add "My Documents" and "Subscription"
     ];
   }, [userData]);
 
