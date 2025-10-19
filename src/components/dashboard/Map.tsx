@@ -20,8 +20,9 @@ export function Map({ trucks }: MapProps) {
       <Image
         src="https://images.unsplash.com/photo-1594951944996-9878174b9a9a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYXAlMjBjaXR5fGVufDB8fHx8MTc2MDczNTAwMHww&ixlib=rb-4.1.0&q=80&w=1080"
         alt="City map background"
-        fill
-        className="object-cover opacity-30"
+        layout="fill"
+        objectFit="cover"
+        className="opacity-30"
         data-ai-hint="city map"
       />
       {trucks.map((truck, index) => {
