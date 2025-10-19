@@ -20,7 +20,6 @@ import { useSidebar } from '@/components/ui/sidebar';
 export default function TrackingPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const { state: sidebarState } = useSidebar();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -82,21 +81,45 @@ export default function TrackingPage() {
     )
   }
 
-  const mainContentGrid = (
-     <div className={cn(
-        "grid grid-cols-1 gap-6",
-        sidebarState === 'collapsed' ? "xl:grid-cols-3" : "xl:grid-cols-2"
-      )}>
-        <div className="space-y-6">
-          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
+  return (
+    <>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+        {/* Left Column */}
+        <div className="xl:col-span-2 space-y-6">
+          {showAlert && alertTruck && (
+            <>
+              <EmergencyAlert
+                truckId={alertTruck.id}
+                truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
+              />
+              <div className="relative aspect-video rounded-lg overflow-hidden">
+                <Image 
+                    src="https://picsum.photos/seed/truck-alert/800/450" 
+                    alt="Truck from alert" 
+                    layout="fill" 
+                    objectFit="cover"
+                    data-ai-hint="truck side"
+                />
+              </div>
+            </>
+          )}
+
+          {selectedTruck && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <StatCard icon={Clock} title="Idle Time" value={selectedTruck.idleTime} />
+              <StatCard icon={Fuel} title="Fuel" value={`${selectedTruck.fuelLevel}%`} />
+              <StatCard icon={Weight} title="Load Weight" value={`${selectedTruck.loadWeight.toLocaleString()} kg`} />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
+              <TripInfoCard />
+          </div>
         </div>
-        <div className="space-y-6">
-          <TripInfoCard />
-        </div>
-        <div className={cn(
-          "space-y-6",
-           sidebarState === 'collapsed' ? "xl:col-span-1" : "xl:col-span-2"
-        )}>
+
+        {/* Right Column */}
+        <div className="xl:col-span-1 xl:row-start-1">
           <ShipmentList 
             trucks={displayTrucks} 
             selectedTruckId={selectedTruck?.id}
@@ -105,56 +128,6 @@ export default function TrackingPage() {
             title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
           />
         </div>
-      </div>
-  )
-
-  return (
-    <>
-      <div className="space-y-6">
-        {showAlert && alertTruck && (
-          <>
-            <EmergencyAlert
-              truckId={alertTruck.id}
-              truckLocation={`${alertTruck.location.lat},${alertTruck.location.lng}`}
-            />
-            <div className="relative aspect-video rounded-lg overflow-hidden">
-              <Image 
-                  src="https://picsum.photos/seed/truck-alert/800/450" 
-                  alt="Truck from alert" 
-                  layout="fill" 
-                  objectFit="cover"
-                  data-ai-hint="truck side"
-              />
-            </div>
-          </>
-        )}
-        
-        {selectedTruck && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <StatCard icon={Clock} title="Idle Time" value={selectedTruck.idleTime} />
-            <StatCard icon={Fuel} title="Fuel" value={`${selectedTruck.fuelLevel}%`} />
-            <StatCard icon={Weight} title="Load Weight" value={`${selectedTruck.loadWeight.toLocaleString()} kg`} />
-          </div>
-        )}
-
-        <div className={cn("grid grid-cols-1 xl:grid-cols-3 gap-6")}>
-          <div className="xl:col-span-2">
-            <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
-          </div>
-          <div className="xl:col-span-1">
-             <TripInfoCard />
-          </div>
-           <div className="xl:col-span-3">
-             <ShipmentList 
-              trucks={displayTrucks} 
-              selectedTruckId={selectedTruck?.id}
-              onTruckSelect={handleTruckClick}
-              onTruckDetails={handleOpenDetails}
-              title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
-            />
-          </div>
-        </div>
-
       </div>
       <TruckDetailsDialog 
         truck={selectedTruck} 
