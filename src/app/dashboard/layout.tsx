@@ -24,6 +24,8 @@ import {
   SidebarInset,
   SidebarTrigger,
   SidebarRail,
+  SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
@@ -39,6 +41,22 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useEffect, useState, useMemo } from 'react';
 import { documents } from '@/lib/data';
+
+function SidebarToggleButton() {
+    const { state } = useSidebar();
+    if (state === 'expanded') {
+        return <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />;
+    }
+    return null;
+}
+
+function SidebarFooterButton() {
+    const { state } = useSidebar();
+    if (state === 'collapsed') {
+        return <SidebarTrigger />;
+    }
+    return null;
+}
 
 export default function DashboardLayout({
   children,
@@ -141,7 +159,7 @@ export default function DashboardLayout({
                   </h2>
                 </div>
             </div>
-             <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />
+             <SidebarToggleButton />
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -163,6 +181,9 @@ export default function DashboardLayout({
             ))}
           </SidebarMenu>
         </SidebarContent>
+        <SidebarFooter>
+            <SidebarFooterButton />
+        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
       <SidebarInset className='bg-background'>
