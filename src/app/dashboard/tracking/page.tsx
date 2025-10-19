@@ -14,11 +14,13 @@ import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Fuel, Weight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 
 
 export default function TrackingPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { state: sidebarState } = useSidebar();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -80,6 +82,32 @@ export default function TrackingPage() {
     )
   }
 
+  const mainContentGrid = (
+     <div className={cn(
+        "grid grid-cols-1 gap-6",
+        sidebarState === 'collapsed' ? "xl:grid-cols-3" : "xl:grid-cols-2"
+      )}>
+        <div className="space-y-6">
+          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
+        </div>
+        <div className="space-y-6">
+          <TripInfoCard />
+        </div>
+        <div className={cn(
+          "space-y-6",
+           sidebarState === 'collapsed' ? "xl:col-span-1" : "xl:col-span-2"
+        )}>
+          <ShipmentList 
+            trucks={displayTrucks} 
+            selectedTruckId={selectedTruck?.id}
+            onTruckSelect={handleTruckClick}
+            onTruckDetails={handleOpenDetails}
+            title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
+          />
+        </div>
+      </div>
+  )
+
   return (
     <>
       <div className="space-y-6">
@@ -109,22 +137,23 @@ export default function TrackingPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className={cn("grid grid-cols-1 xl:grid-cols-3 gap-6")}>
           <div className="xl:col-span-2">
-             <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
+            <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
           </div>
           <div className="xl:col-span-1">
-            <TripInfoCard />
+             <TripInfoCard />
+          </div>
+           <div className="xl:col-span-3">
+             <ShipmentList 
+              trucks={displayTrucks} 
+              selectedTruckId={selectedTruck?.id}
+              onTruckSelect={handleTruckClick}
+              onTruckDetails={handleOpenDetails}
+              title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
+            />
           </div>
         </div>
-
-        <ShipmentList 
-          trucks={displayTrucks} 
-          selectedTruckId={selectedTruck?.id}
-          onTruckSelect={handleTruckClick}
-          onTruckDetails={handleOpenDetails}
-          title={userType === 'Shipper' ? 'My Active Shipments' : 'Active Fleet'}
-        />
 
       </div>
       <TruckDetailsDialog 
