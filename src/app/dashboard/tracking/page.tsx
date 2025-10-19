@@ -84,7 +84,7 @@ export default function TrackingPage() {
   return (
     <>
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-        {/* Left Column */}
+        {/* Main Content Area */}
         <div className="xl:col-span-2 space-y-6">
           {showAlert && alertTruck && (
             <>
@@ -118,8 +118,8 @@ export default function TrackingPage() {
           </div>
         </div>
 
-        {/* Right Column */}
-        <div className="xl:col-span-1 xl:row-start-1">
+        {/* Right Column / Shipment List */}
+        <div className="xl:col-span-1">
           <ShipmentList 
             trucks={displayTrucks} 
             selectedTruckId={selectedTruck?.id}
