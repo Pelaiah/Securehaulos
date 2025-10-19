@@ -20,7 +20,7 @@ export function Map({ trucks, selectedTruckId }: MapProps) {
   return (
     <div className="h-96 rounded-lg bg-muted border border-border relative overflow-hidden">
       <Image
-        src="https://i.imgur.com/7lNiwq1.png"
+        src="https://picsum.photos/seed/map/1200/800"
         alt="City map background"
         layout="fill"
         objectFit="cover"
