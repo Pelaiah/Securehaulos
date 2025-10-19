@@ -16,14 +16,14 @@ export default function SignUpPage() {
        <div className="flex items-center gap-2 mb-6">
         <ShieldCheck className="w-8 h-8 text-primary" />
         <h1 className="text-2xl font-bold font-headline text-foreground">
-          SecureHaul
+          Saboor loadboard
         </h1>
       </div>
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>
-            Join SecureHaul to manage your logistics with ease.
+            Join Saboor loadboard to manage your logistics with ease.
           </CardDescription>
         </CardHeader>
         <CardContent>

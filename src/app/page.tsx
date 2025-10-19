@@ -20,7 +20,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-8 h-8 text-primary" />
           <h1 className="text-2xl font-bold font-headline text-foreground">
-            SecureHaul
+            Saboor loadboard
           </h1>
         </div>
         <div className="flex items-center gap-4">
@@ -52,7 +52,7 @@ export default function Home() {
               Secure, Transparent, and On Time.
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              SecureHaul is the intelligent loadboard connecting shippers and carriers with live tracking, unparalleled cargo security, and a network of verified professionals.
+              Saboor loadboard is the intelligent loadboard connecting shippers and carriers with live tracking, unparalleled cargo security, and a network of verified professionals.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <SignUpModal>
@@ -139,7 +139,7 @@ export default function Home() {
 
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <h3 className="text-2xl md:text-3xl font-headline font-semibold mb-4">For Everyone: The SecureHaul Verified Network</h3>
+                        <h3 className="text-2xl md:text-3xl font-headline font-semibold mb-4">For Everyone: The Saboor loadboard Verified Network</h3>
                         <p className="text-muted-foreground text-lg">
                          Trust is built-in. Look for the 'Verified' badge on profiles to connect with fully-vetted companies and carriers. Premium carriers are further highlighted with a 'Sensor-Equipped' badge, signifying the highest level of security.
                         </p>
@@ -167,7 +167,7 @@ export default function Home() {
                                     <p className="text-sm text-muted-foreground">National Foods</p>
                                 </div>
                             </div>
-                            <p className="text-muted-foreground italic">&ldquo;The Red Alert system is a game-changer. For the first time, we have true peace of mind. We only book carriers with the SecureHaul sensor now.&rdquo;</p>
+                            <p className="text-muted-foreground italic">&ldquo;The Red Alert system is a game-changer. For the first time, we have true peace of mind. We only book carriers with the Saboor loadboard sensor now.&rdquo;</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -219,7 +219,7 @@ export default function Home() {
                 <Link href="#" className="text-muted-foreground hover:text-foreground">Contact</Link>
             </div>
             <div className="mt-8 md:mt-0 md:order-1">
-                 <p className="text-center text-base text-muted-foreground">&copy; {new Date().getFullYear()} SecureHaul. All rights reserved.</p>
+                 <p className="text-center text-base text-muted-foreground">&copy; {new Date().getFullYear()} Saboor loadboard. All rights reserved.</p>
             </div>
         </div>
       </footer>

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
-  title: 'SecureHaul',
+  title: 'Saboor loadboard',
   description:
     'A comprehensive logistics platform for real-time tracking, load management, and enhanced security for carriers and shippers.',
 };

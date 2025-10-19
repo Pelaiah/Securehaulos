@@ -123,7 +123,7 @@ export default function DashboardLayout({
                 </Button>
                 <div className="flex flex-col">
                   <h2 className="text-lg font-semibold font-headline text-sidebar-foreground">
-                    SecureHaul
+                    Saboor loadboard
                   </h2>
                 </div>
             </div>
