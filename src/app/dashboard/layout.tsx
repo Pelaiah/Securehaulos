@@ -93,6 +93,22 @@ export default function DashboardLayout({
   const [selectedTruck, setSelectedTruck] = useState<TruckType | null>(shipperTrucks[0]);
   const [selectedDriver, setSelectedDriver] = useState(tripData[2]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -288,7 +304,9 @@ const secondaryNavItems = [
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
             <SidebarFooterButton />
              <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
-                <Button variant="ghost" size="icon"><Sun className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                  {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                </Button>
                 <Button variant="ghost" size="icon"><Settings className="w-5 h-5" /></Button>
                 <Button variant="ghost" size="icon"><BarChart2 className="w-5 h-5" /></Button>
             </div>
