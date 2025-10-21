@@ -97,14 +97,6 @@ export function TrackingList({ trucks, selectedTruckId, onTruckSelect }: Trackin
                     <h1 className="text-xl font-bold">Tracking</h1>
                     <Search className="w-5 h-5 text-muted-foreground" />
                 </div>
-                 <div>
-                    <h3 className='text-sm font-medium'>Filter by Partners</h3>
-                    <div className='flex flex-wrap gap-2 mt-2'>
-                        {['Lockman', 'Mertz LLC', 'Corkery', 'Kuhn and Sons', 'Weissnat and Sons', 'Morissette Inc', 'Deckow LLC'].map(partner => (
-                            <Badge key={partner} variant="outline" className='cursor-pointer hover:bg-accent'>{partner}</Badge>
-                        ))}
-                    </div>
-                </div>
                 <div>
                      <h3 className='text-sm font-medium mb-2'>Show</h3>
                      <div className="flex gap-2">
