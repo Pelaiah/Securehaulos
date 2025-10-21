@@ -29,8 +29,12 @@ const getStatusForDisplay = (truck: Truck) => {
     return truck.status;
 }
 
+const MAX_LOAD_WEIGHT = 22000; // Assume max weight in kg
+
 export function TrackingDetails({ truck }: TrackingDetailsProps) {
     const [activeTab, setActiveTab] = useState("shipping-info");
+
+    const capacityPercentage = (truck.loadWeight / MAX_LOAD_WEIGHT) * 100;
 
     return (
         <div className="space-y-6">
@@ -67,9 +71,9 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
                                 <Image src="https://i.imgur.com/gJt3wGk.png" alt="Truck capacity illustration" fill style={{ objectFit: 'contain' }} data-ai-hint="truck illustration"/>
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-[65%] h-[55%] ml-1.5 mt-1.5 rounded-sm overflow-hidden">
-                                        <Progress value={59} className="h-full bg-primary/20" />
+                                        <Progress value={capacityPercentage} className="h-full bg-primary/20" />
                                          <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="text-white text-2xl font-bold">59%</span>
+                                            <span className="text-white text-2xl font-bold">{Math.round(capacityPercentage)}%</span>
                                         </div>
                                     </div>
                                 </div>
@@ -101,7 +105,7 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
                         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {[1, 2, 3, 4].map(i => (
                                 <div key={i} className="space-y-2">
-                                     <Image src={`https://picsum.photos/seed/cargo${i}/200/150`} alt={`Cargo photo ${i}`} width={200} height={150} className="rounded-lg object-cover w-full aspect-[4/3]" data-ai-hint="cargo container"/>
+                                     <Image src={`https://picsum.photos/seed/${truck.id}-cargo${i}/200/150`} alt={`Cargo photo ${i} for truck ${truck.id}`} width={200} height={150} className="rounded-lg object-cover w-full aspect-[4/3]" data-ai-hint="cargo container"/>
                                      <div className="text-xs">
                                          <p className="font-semibold">Point #{i} Cargo Photo</p>
                                          <p className="text-muted-foreground">08:23 AM, 06.27</p>
