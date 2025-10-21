@@ -38,7 +38,6 @@ import {
   SidebarGroupLabel,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarMenuSkeleton,
   SidebarInset,
 } from '@/components/ui/sidebar';
