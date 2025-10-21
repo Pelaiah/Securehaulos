@@ -91,13 +91,21 @@ export default function TrackingPage({
               <StatCard icon={Droplet} title="Fuel consumption" value="12 liters" />
               <StatCard icon={Users} title="Passenger number" value="4 persons" />
             </div>
-          <Map trucks={displayTrucks || []} selectedTruckId={selectedTruck?.id} />
+             <Card>
+                <CardContent className="p-0 grid grid-cols-1 md:grid-cols-[2fr_1fr] lg:grid-cols-[1.5fr_1fr]">
+                    <div className="p-4 border-r">
+                       <Map trucks={displayTrucks || []} selectedTruckId={selectedTruck?.id} />
+                    </div>
+                    <div className="p-4">
+                       <TripInfoCard />
+                    </div>
+                </CardContent>
+            </Card>
         </div>
 
         {/* Middle Column */}
         <div className="space-y-6">
           <InformationCard />
-          <TripInfoCard />
         </div>
 
         {/* Right Column */}
