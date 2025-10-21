@@ -18,6 +18,8 @@ import {
   Image as ImageIcon,
   MapPin,
   FileText,
+  Check,
+  CheckCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -36,10 +38,10 @@ const conversations = [
     lastMessageTime: '10:42 AM',
     unread: 0,
     messages: [
-      { id: 1, text: 'Hey Alex, just confirming the pickup for Load #LD-101 is scheduled for 1 PM today.', sender: 'me' },
-      { id: 2, text: 'That is correct. I should be there right on time.', sender: 'other' },
-      { id: 3, text: 'Perfect. The cargo consists of 2 pallets of consumer electronics.', sender: 'me' },
-      { id: 4, text: 'Sounds good, I am on my way to the pickup location now.', sender: 'other' },
+      { id: 1, text: 'Hey Alex, just confirming the pickup for Load #LD-101 is scheduled for 1 PM today.', sender: 'me', time: '10:40 AM', status: 'read' },
+      { id: 2, text: 'That is correct. I should be there right on time.', sender: 'other', time: '10:41 AM', status: 'sent' },
+      { id: 3, text: 'Perfect. The cargo consists of 2 pallets of consumer electronics.', sender: 'me', time: '10:41 AM', status: 'read' },
+      { id: 4, text: 'Sounds good, I am on my way to the pickup location now.', sender: 'other', time: '10:42 AM', status: 'sent' },
     ],
   },
   {
@@ -50,9 +52,9 @@ const conversations = [
     lastMessageTime: '9:15 AM',
     unread: 2,
     messages: [
-      { id: 1, text: 'Hi Monika, how is the trip going for load #LD-102?', sender: 'me' },
-      { id: 2, text: 'Going smoothly! No issues so far.', sender: 'other' },
-      { id: 3, text: 'Okay, I will let you know once I have passed the weigh station.', sender: 'other' },
+      { id: 1, text: 'Hi Monika, how is the trip going for load #LD-102?', sender: 'me', time: '9:14 AM', status: 'delivered' },
+      { id: 2, text: 'Going smoothly! No issues so far.', sender: 'other', time: '9:15 AM', status: 'sent' },
+      { id: 3, text: 'Okay, I will let you know once I have passed the weigh station.', sender: 'other', time: '9:15 AM', status: 'sent' },
     ],
   },
    {
@@ -63,13 +65,28 @@ const conversations = [
     lastMessageTime: 'Yesterday',
     unread: 0,
      messages: [
-      { id: 1, text: 'ETA update for #LD-103?', sender: 'me' },
-      { id: 2, text: 'I have an ETA of 3:30 PM for the delivery in Detroit.', sender: 'other' },
+      { id: 1, text: 'ETA update for #LD-103?', sender: 'me', time: '3:28 PM', status: 'sent' },
+      { id: 2, text: 'I have an ETA of 3:30 PM for the delivery in Detroit.', sender: 'other', time: '3:30 PM', status: 'sent' },
     ],
   },
 ];
 
+type Message = (typeof conversations)[0]['messages'][0];
 type Conversation = (typeof conversations)[0];
+
+const ReadReceipt = ({ status }: { status: Message['status'] }) => {
+    if (status === 'read') {
+        return <CheckCheck className="h-4 w-4 text-blue-500" />;
+    }
+    if (status === 'delivered') {
+        return <CheckCheck className="h-4 w-4" />;
+    }
+    if (status === 'sent') {
+        return <Check className="h-4 w-4" />;
+    }
+    return null;
+}
+
 
 export default function ChatsPage() {
   const [selectedConversation, setSelectedConversation] =
@@ -78,15 +95,15 @@ export default function ChatsPage() {
 
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
-    // Here you would typically send the message to your backend
-    console.log('Sending message:', newMessage);
     
-    // For demonstration, we'll just add it to the local state
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     const updatedConversation = {
       ...selectedConversation,
       messages: [
         ...selectedConversation.messages,
-        { id: Date.now(), text: newMessage, sender: 'me' },
+        { id: Date.now(), text: newMessage, sender: 'me', time, status: 'sent' as const },
       ],
     };
     setSelectedConversation(updatedConversation);
@@ -158,30 +175,30 @@ export default function ChatsPage() {
             </p>
           </div>
         </div>
-        <div className="flex-1 p-6 overflow-y-auto space-y-6">
+        <div className="flex-1 p-6 overflow-y-auto space-y-4">
           {selectedConversation.messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                'flex gap-3',
+                'flex items-end gap-3',
                 message.sender === 'me' ? 'justify-end' : 'justify-start'
               )}
             >
               {message.sender === 'other' && (
-                 <Avatar className="h-8 w-8 border">
+                 <Avatar className="h-8 w-8 border self-end">
                     <AvatarImage src={selectedConversation.avatar} alt={selectedConversation.name} />
                     <AvatarFallback>{selectedConversation.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               )}
-              <div
-                className={cn(
-                  'max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg',
-                  message.sender === 'me'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-card'
-                )}
-              >
+              <div className={cn(
+                  'max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg flex flex-col',
+                   message.sender === 'me' ? 'bg-primary text-primary-foreground' : 'bg-card'
+              )}>
                 <p className="text-sm">{message.text}</p>
+                 <div className={cn("flex items-center gap-1.5 self-end mt-1.5", message.sender === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
+                    <span className="text-xs">{message.time}</span>
+                    {message.sender === 'me' && <ReadReceipt status={message.status} />}
+                </div>
               </div>
             </div>
           ))}
@@ -232,3 +249,4 @@ export default function ChatsPage() {
     </div>
   );
 }
+
