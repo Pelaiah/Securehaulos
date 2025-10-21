@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Droplet, Users } from 'lucide-react';
+import { Clock, Droplet, Weight } from 'lucide-react';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 
@@ -92,7 +92,7 @@ export default function TrackingPage({
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Clock} title="Trip Time" value="1h 10m" />
               <StatCard icon={Droplet} title="Fuel consumption" value="12 liters" />
-              <StatCard icon={Users} title="Passenger number" value="4 persons" />
+              <StatCard icon={Weight} title="Load Weight" value="18,000 kg" />
             </div>
              <Card>
                 <CardContent className="p-0 grid grid-cols-1 md:grid-cols-[2fr_1fr]">
