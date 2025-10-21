@@ -107,7 +107,7 @@ export default function TrackingPage({
         </div>
 
         {/* Right Column */}
-        <div className="hidden xl:block">
+        <div className="hidden xl:block h-full">
           <ShipmentList 
             trucks={trucks} 
             selectedTruckId={selectedTruck?.id}
