@@ -30,7 +30,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarInset,
   SidebarTrigger,
   SidebarRail,
   SidebarFooter,
@@ -291,10 +290,6 @@ const secondaryNavItems = [
                 <Button variant="ghost" size="icon"><Settings className="w-5 h-5" /></Button>
                 <Button variant="ghost" size="icon"><BarChart2 className="w-5 h-5" /></Button>
             </div>
-            <Button className="w-full justify-center group-data-[collapsible=icon]:hidden">
-                <FilePlus className="w-5 h-5" />
-                <span className="ml-2">Create New Request</span>
-            </Button>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className='bg-background p-6'>
