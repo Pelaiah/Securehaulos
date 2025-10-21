@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LoadCard } from '@/components/dashboard/LoadCard';
 import { loads, type Load } from '@/lib/data';
 import { Search, Filter } from 'lucide-react';
@@ -16,20 +16,65 @@ import {
 import { ShipperLoads } from '@/components/dashboard/ShipperLoads';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadDetailsDialog } from '@/components/dashboard/LoadDetailsDialog';
+import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Truck } from '@/lib/data';
 
 interface LoadBoardPageProps {
   userType?: 'Shipper' | 'Carrier';
   isLoading: boolean;
 }
 
-export default function LoadBoardPage({ userType, isLoading }: LoadBoardPageProps) {
+export default function LoadBoardPage({ userType, isLoading: isUserLoading }: LoadBoardPageProps) {
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const carrierDocRef = useMemoFirebase(() => {
+    if (!user || userType !== 'Carrier') return null;
+    return doc(firestore, 'carriers', user.uid);
+  }, [user, firestore, userType]);
+
+  const { data: carrierData, isLoading: isCarrierLoading } = useDoc(carrierDocRef);
+
+  const carrierFleet = useMemo(() => {
+    if (!carrierData) return [];
+
+    const fleetSize = carrierData.equipment; // e.g., '1', '2-5', '6-10', '11+'
+    let numberOfTrucks = 0;
+
+    if (fleetSize === '1') {
+      numberOfTrucks = 1;
+    } else if (fleetSize === '2-5') {
+      numberOfTrucks = 3; 
+    } else if (fleetSize === '6-10') {
+      numberOfTrucks = 7;
+    } else if (fleetSize === '11+') {
+      numberOfTrucks = 15;
+    }
+    
+    return Array.from({ length: numberOfTrucks }, (_, i) => ({
+      id: `CARR-TR-${100 + i + 1}`,
+      name: `Truck #${i + 1}`,
+      equipmentType: i % 3 === 0 ? 'Reefer' : i % 2 === 0 ? 'Flatbed' : 'Dry Van',
+      location: { lat: 34.0522, lng: -118.2437 },
+      status: i % 4 === 0 ? 'Idle' : i % 4 === 1 ? 'On-time' : i % 4 === 2 ? 'Delayed' : 'Alert',
+      fuelLevel: Math.floor(Math.random() * 80) + 20,
+      idleTime: `${i % 3}h ${Math.floor(Math.random() * 60)}m`,
+      loadWeight: Math.floor(Math.random() * 10000) + 10000,
+      cargoIntegrity: i % 4 !== 3,
+      unauthorizedDoorOpening: i % 4 === 3,
+  })) as (Truck & { equipmentType: string })[];
+
+  }, [carrierData]);
 
   const handleGetLoadClick = (load: Load) => {
     setSelectedLoad(load);
     setIsDetailsOpen(true);
   };
+  
+  const isLoading = isUserLoading || (userType === 'Carrier' && isCarrierLoading);
 
   if (isLoading) {
     return (
@@ -90,6 +135,7 @@ export default function LoadBoardPage({ userType, isLoading }: LoadBoardPageProp
       </div>
        <LoadDetailsDialog 
         load={selectedLoad}
+        carrierFleet={carrierFleet}
         isOpen={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
       />
