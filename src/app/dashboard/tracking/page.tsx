@@ -22,7 +22,7 @@ interface TrackingPageProps {
     setIsDetailsOpen: Dispatch<SetStateAction<boolean>>;
     displayTrucks: Truck[];
     selectedDriver: any;
-    setSelectedDriver: Dispatch<SetStateAction<any>>;
+    setSelectedDriver?: Dispatch<SetStateAction<any>>;
 }
 
 export default function TrackingPage({ 
@@ -101,7 +101,7 @@ export default function TrackingPage({
              <Card>
                 <CardContent className="p-0 grid grid-cols-1 md:grid-cols-[2fr_1fr]">
                     <div className="p-4 border-r">
-                       <Map trucks={displayTrucks || []} selectedTruckId={selectedTruck?.id} />
+                       <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
                     </div>
                     <div className="p-4">
                        <TripInfoCard />
@@ -112,10 +112,12 @@ export default function TrackingPage({
 
         {/* Right Column */}
         <div className="hidden xl:block h-full">
-          <ShipmentList 
-            onDriverSelect={setSelectedDriver}
-            title="Trips"
-          />
+          {setSelectedDriver && (
+            <ShipmentList 
+              onDriverSelect={setSelectedDriver}
+              title="Trips"
+            />
+          )}
         </div>
       </div>
       <TruckDetailsDialog 
