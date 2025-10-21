@@ -8,7 +8,7 @@ type MapProps = {
   selectedTruckId?: string | null;
 };
 
-export function Map({ trucks, selectedTruckId }: MapProps) {
+export function Map({ trucks = [], selectedTruckId }: MapProps) {
   // Define positions for the 4 trucks as percentages for responsive placement
   const truckPositions = [
     { top: '25%', left: '25%' }, // TR-001
