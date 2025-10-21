@@ -24,7 +24,7 @@ export default function DashboardPage() {
     if (userType === 'Shipper') {
       router.replace('/dashboard/load-board');
     } else {
-      router.replace('/dashboard/tracking');
+      router.replace('/dashboard/carrier');
     }
   }, [router, userType, isUserLoading, isUserDataLoading]);
 

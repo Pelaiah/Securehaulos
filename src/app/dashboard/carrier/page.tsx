@@ -13,7 +13,7 @@ interface TrackingPageProps {
     selectedDriver: any;
 }
 
-export default function TrackingPage({ 
+export default function CarrierDashboardPage({ 
     displayTrucks,
     selectedDriver,
 }: TrackingPageProps) {
