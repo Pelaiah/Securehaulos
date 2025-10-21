@@ -73,7 +73,7 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
     setIsDetailsOpen(true);
   };
   
-  const isLoading = isUserLoading || (userType === 'Carrier' && isCarrierLoading);
+  const isLoading = isUserLoading;
 
   if (isLoading) {
     return (

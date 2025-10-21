@@ -66,7 +66,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import ShipperDashboardLayout from './shipper/layout';
+
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -206,16 +206,6 @@ const secondaryNavItems = [
         </div>
     );
   }
-
-  // If the user is a shipper, render the shipper layout for all pages.
-  if (userType === 'Shipper') {
-    return (
-      <ShipperDashboardLayout>
-        {childrenWithProps}
-      </ShipperDashboardLayout>
-    );
-  }
-
 
   return (
     <SidebarProvider>

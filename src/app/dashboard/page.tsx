@@ -31,17 +31,8 @@ export default function DashboardPage() {
     }
 
     if (userData) {
-      // We have user data, redirect based on role
-      const userType = userData.userType;
-      if (userType === 'Shipper') {
-        router.replace('/dashboard/shipper');
-      } else if (userType === 'Carrier') {
-        router.replace('/dashboard/carrier');
-      } else {
-        // Fallback for unknown role, maybe to a generic dashboard or an error page
-        console.error("Unknown user type:", userType);
-        router.replace('/login'); // Or a generic dashboard
-      }
+      // We have user data, redirect all users to the carrier dashboard
+      router.replace('/dashboard/carrier');
     } else {
       // User is authenticated but has no data in Firestore yet.
       // This can happen briefly during signup. We wait, and the hook will re-run.
