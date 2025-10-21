@@ -1,12 +1,4 @@
 'use client';
-import React, { useState, Children, cloneElement } from 'react';
-import { tripData } from '@/lib/data';
-import type { Truck } from '@/lib/data';
-import { Header } from '@/components/dashboard/Header';
-import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
-import { InformationCard } from '@/components/dashboard/InformationCard';
-'use client'
-
 import { useState } from 'react';
 import { Header } from '@/components/dashboard/Header';
 import { InformationCard } from '@/components/dashboard/InformationCard';
@@ -17,7 +9,6 @@ import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
 import { tripData } from '@/lib/data';
 import { trucks } from '@/lib/data';
 import { Card, CardContent } from '@/components/ui/card';
-import { Fuel, Users, Wind } from 'lucide-react';
 
 
 export default function ShipperDashboardPage() {
