@@ -122,6 +122,7 @@ export default function DashboardLayout({
         return [
             ...baseNavItems,
             { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
+            { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
             { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
             { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
         ];
@@ -231,6 +232,7 @@ const secondaryNavItems = [
 
             {isUserDataLoading ? (
                 <>
+                    <SidebarMenuSkeleton showIcon />
                     <SidebarMenuSkeleton showIcon />
                     <SidebarMenuSkeleton showIcon />
                     <SidebarMenuSkeleton showIcon />
