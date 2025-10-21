@@ -5,15 +5,57 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Star, Cog } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from '../ui/skeleton';
 
 interface InformationCardProps {
-    driver: {
+    driver?: {
         name: string;
         avatar: string;
     }
 }
 
 export function InformationCard({ driver }: InformationCardProps) {
+
+    if (!driver) {
+        return (
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                    INFORMATION
+                    </CardTitle>
+                    <Button variant="ghost" size="icon">
+                        <Cog className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                           <Skeleton className="h-4 w-3/4" />
+                           <Skeleton className="h-4 w-1/2" />
+                           <Skeleton className="h-4 w-2/3" />
+                        </div>
+                        <Skeleton className="h-20 w-full" />
+                    </div>
+                    <div className="flex flex-col items-center text-center space-y-3">
+                        <Skeleton className="w-16 h-16 rounded-full" />
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-4 w-32" />
+                        <div className="flex justify-around w-full my-4">
+                            <div className='flex flex-col items-center gap-1'>
+                                <Skeleton className="h-3 w-8" />
+                                <Skeleton className="h-5 w-10" />
+                            </div>
+                            <div className='flex flex-col items-center gap-1'>
+                               <Skeleton className="h-3 w-20" />
+                               <Skeleton className="h-5 w-12" />
+                            </div>
+                        </div>
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
         <Card>
