@@ -51,7 +51,7 @@ export function LoadCard({ load }: { load: Load }) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">Bid Now</Button>
+        <Button className="w-full">Get Load</Button>
       </CardFooter>
     </Card>
   );
