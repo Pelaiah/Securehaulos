@@ -55,7 +55,7 @@ export const trucks: Truck[] = [
   {
     id: 'TR-004',
     name: 'Delta Cargo',
-    imageUrl: 'https://i.imgur.com/uFLl3cT.png',
+    imageUrl: 'https://imgur.com/eljOF7J.png',
     location: { lat: 29.7604, lng: -95.3698 },
     status: 'Delayed',
     fuelLevel: 30,
