@@ -109,10 +109,10 @@ export default function ShipperDashboardLayout({
 
   useEffect(() => {
     // If loading is done and the user is not a shipper, redirect them away.
-    if (!isUserDataLoading && userType && userType !== 'Shipper') {
+    if (!isUserDataLoading && !isUserLoading && userType && userType !== 'Shipper') {
       router.replace('/dashboard/carrier');
     }
-  }, [userType, isUserDataLoading, router]);
+  }, [userType, isUserDataLoading, isUserLoading, router]);
 
   if (isUserDataLoading || isUserLoading || (userType && userType !== 'Shipper')) {
     return (
