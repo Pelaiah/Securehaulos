@@ -14,32 +14,37 @@ import Link from 'next/link';
 type HeaderProps = {
   title: string;
   onLogout: () => void;
-  driverName: string;
+  driverName?: string;
 };
 
 export function Header({ title, onLogout, driverName }: HeaderProps) {
   return (
-    <header className="flex h-16 items-center gap-4 bg-transparent px-4 lg:px-6">
-      <div className="w-full flex-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-lg font-semibold p-0 hover:bg-transparent focus-visible:ring-0">
-                    {driverName}
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem>John Doe</DropdownMenuItem>
-              <DropdownMenuItem>Jane Smith</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-      </div>
-       <div className="flex items-center gap-4">
-        <span className="text-muted-foreground text-sm">Wed, 7 March 2023</span>
-        <Button variant="outline" className="text-green-400 border-green-400/50 hover:bg-green-400/10 hover:text-green-300">Completed</Button>
-        <Button variant="ghost" size="icon">
-            <Cog className="h-5 w-5 text-muted-foreground" />
-        </Button>
+    <header className="flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+       <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
+       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+        <div className="ml-auto flex-1 sm:flex-initial">
+          {/* Optional Search */}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" className="rounded-full">
+              <Avatar className="mr-2 h-6 w-6">
+                <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="@shadcn" />
+                <AvatarFallback>AD</AvatarFallback>
+              </Avatar>
+              <span>{driverName || 'Account'}</span>
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onLogout}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

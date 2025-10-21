@@ -30,23 +30,33 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
+    const resizeObserver = new ResizeObserver(entries => {
+      if (entries[0]) {
+        const { width, height } = entries[0].contentRect;
+        setDimensions({ width, height });
+      }
+    });
+
     if (mapRef.current) {
-      setDimensions({
-        width: mapRef.current.offsetWidth,
-        height: mapRef.current.offsetHeight,
-      });
+      resizeObserver.observe(mapRef.current);
     }
+
+    return () => {
+      if (mapRef.current) {
+        resizeObserver.unobserve(mapRef.current);
+      }
+    };
   }, []);
   
   return (
-    <div ref={mapRef} className="h-96 rounded-lg bg-card relative overflow-hidden border">
+    <div ref={mapRef} className="h-full w-full rounded-lg bg-card relative overflow-hidden border">
       <Image
-        src="https://i.imgur.com/7lNiwq1.png"
+        src="https://i.imgur.com/gK6y22r.png"
         alt="City map background"
         layout="fill"
         objectFit="cover"
         className="opacity-20"
-        data-ai-hint="city map"
+        data-ai-hint="dark city map"
       />
       {/* Lines between points */}
       {dimensions.width > 0 && tripPoints.slice(0, -1).map((point, index) => {
@@ -104,7 +114,7 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
         const isSelected = truck.id === selectedTruckId;
 
         // For this demo, let's assume the first truck is following the trip points path
-        const isActiveTripTruck = truck.id === 'TR-001';
+        const isActiveTripTruck = truck.id === selectedTruckId;
         const activePoint = tripPoints.find(p => p.status === 'active');
 
         let truckStyle = { 
@@ -124,7 +134,7 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
             className="absolute transition-all duration-500"
             style={truckStyle}
           >
-            <MapPin className={cn('w-6 h-6 drop-shadow-lg', colorClass, isSelected && 'fill-current')} />
+            <MapPin className={cn('w-8 h-8 drop-shadow-lg', colorClass, isSelected && 'fill-current')} />
           </div>
         );
       })}

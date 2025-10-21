@@ -1,5 +1,5 @@
 'use client';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { trucks, type Truck } from '@/lib/data';
 import { TruckCard } from '@/components/dashboard/TruckCard';
 import { TruckDetailsDialog } from '@/components/dashboard/TruckDetailsDialog';
@@ -7,19 +7,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@/firebase';
 
 interface MyTrucksPageProps {
-    selectedTruck: Truck | null;
-    setSelectedTruck: Dispatch<SetStateAction<Truck | null>>;
-    isDetailsOpen: boolean;
-    setIsDetailsOpen: Dispatch<SetStateAction<boolean>>;
+    // selectedTruck: Truck | null;
+    // setSelectedTruck: Dispatch<SetStateAction<Truck | null>>;
+    // isDetailsOpen: boolean;
+    // setIsDetailsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function MyTrucksPage({ 
-    selectedTruck,
-    setSelectedTruck,
-    isDetailsOpen,
-    setIsDetailsOpen,
+    // selectedTruck,
+    // setSelectedTruck,
+    // isDetailsOpen,
+    // setIsDetailsOpen,
 }: MyTrucksPageProps) {
   const { isUserLoading } = useUser();
+  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const handleTruckClick = (truck: Truck) => {
     setSelectedTruck(truck);
@@ -39,14 +41,17 @@ export default function MyTrucksPage({
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {trucks.map((truck) => (
-          <TruckCard 
-            key={truck.id} 
-            truck={truck} 
-            onClick={() => handleTruckClick(truck)}
-            />
-        ))}
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-4">My Trucks</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {trucks.map((truck) => (
+            <TruckCard 
+                key={truck.id} 
+                truck={truck} 
+                onClick={() => handleTruckClick(truck)}
+                />
+            ))}
+        </div>
       </div>
       <TruckDetailsDialog 
         truck={selectedTruck} 

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { Children, cloneElement, useEffect, useMemo, useState } from 'react';
 import {
-  Crown,
+  ChevronDown,
   FileText,
   Package,
   ShieldCheck,
@@ -11,6 +11,14 @@ import {
   Bell,
   PlusCircle,
   LayoutDashboard,
+  MessageSquare,
+  Users,
+  Settings,
+  History,
+  BarChart2,
+  FilePlus,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -27,6 +35,10 @@ import {
   SidebarRail,
   SidebarFooter,
   useSidebar,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
@@ -43,6 +55,8 @@ import {
 import { documents, trucks as allTrucks, type Truck as TruckType, tripData } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -86,25 +100,39 @@ export default function DashboardLayout({
   const userType = userData?.userType;
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
-  const navItems = useMemo(() => {
-    if (userType === 'Shipper') {
-      return [
-        { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
-        { href: '/dashboard/load-board', icon: PlusCircle, label: 'My Loads' },
-        { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
-        { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
-      ];
+ const navItems = [
+    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
+    { href: '/dashboard/partners', icon: Users, label: 'Partners' },
+    { href: '/dashboard/tracking', icon: Truck, label: 'Tracking' },
+];
+
+const secondaryNavItems = [
+    { 
+        id: 'requests', 
+        label: 'Requests', 
+        icon: Bell,
+        subItems: [
+            { href: '/dashboard/requests/trucks', icon: Truck, label: 'Trucks' },
+            { href: '/dashboard/requests/cargo', icon: Package, label: 'Cargo' },
+            { href: '/dashboard/requests/repair', icon: Settings, label: 'Repair' },
+            { href: '/dashboard/requests/drivers', icon: Users, label: 'Drivers' },
+            { href: '/dashboard/requests/reports', icon: FileText, label: 'Reports' },
+        ]
+    },
+    { 
+        id: 'analysis',
+        label: 'Analysis',
+        icon: BarChart2,
+        subItems: []
+    },
+    {
+        id: 'history',
+        label: 'History',
+        icon: History,
+        subItems: []
     }
-    
-    // Default for Carrier and other types
-    return [
-      { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
-      { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
-      { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
-      { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
-      { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
-    ];
-  }, [userType]);
+]
 
 
   useEffect(() => {
@@ -129,13 +157,6 @@ export default function DashboardLayout({
     return () => clearInterval(intervalId);
 
   }, [user, isUserLoading]);
-
-  const getTitle = () => {
-    return (
-      navItems.find((item) => pathname.startsWith(item.href))?.label ||
-      'Dashboard'
-    );
-  };
   
   const handleLogout = () => {
     auth.signOut();
@@ -164,8 +185,8 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar variant="floating" collapsible="icon">
-        <SidebarHeader>
+      <Sidebar variant="floating" collapsible="icon" className="group/sidebar">
+        <SidebarHeader className='p-4'>
            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="shrink-0" asChild>
@@ -173,7 +194,10 @@ export default function DashboardLayout({
                         <ShieldCheck className="w-6 h-6 text-primary" />
                     </Link>
                 </Button>
-                 <SidebarToggleButton />
+                <div className='group-data-[collapsible=icon]:hidden'>
+                    <h2 className='font-bold text-lg font-headline'>Right Direction</h2>
+                    <p className='text-xs text-muted-foreground'>Since 2002</p>
+                </div>
             </div>
           </div>
         </SidebarHeader>
@@ -194,28 +218,53 @@ export default function DashboardLayout({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
+             {secondaryNavItems.map((item) => (
+                <SidebarMenuItem key={item.id} asChild>
+                    <Collapsible>
+                        <CollapsibleTrigger asChild>
+                            <SidebarMenuButton
+                            className="justify-between w-full"
+                            variant="default"
+                            >
+                            <div className='flex items-center gap-2'>
+                                <item.icon className="h-5 w-5" />
+                                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                            </div>
+                            {item.subItems.length > 0 && <ChevronDown className="w-4 h-4 group-data-[collapsible=icon]:hidden" />}
+                            </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        {item.subItems.length > 0 && (
+                             <CollapsibleContent>
+                                <SidebarMenuSub>
+                                {item.subItems.map(subItem => (
+                                     <SidebarMenuSubItem key={subItem.href}>
+                                        <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
+                                            <Link href={subItem.href}>{subItem.label}</Link>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                ))}
+                                </SidebarMenuSub>
+                             </CollapsibleContent>
+                        )}
+                    </Collapsible>
+                </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-            <div className="group-data-[collapsible=icon]:hidden flex items-center justify-center p-4">
-                 <Avatar>
-                  <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
-                  <AvatarFallback>AD</AvatarFallback>
-                </Avatar>
+        <SidebarFooter className="group-data-[collapsible=icon]:p-3">
+             <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
+                <Button variant="ghost" size="icon"><Sun className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon"><Settings className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon"><BarChart2 className="w-5 h-5" /></Button>
             </div>
-            <SidebarFooterButton />
+            <Button className="w-full justify-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:aspect-square">
+                <FilePlus className="w-5 h-5" />
+                <span className="group-data-[collapsible=icon]:hidden ml-2">Create New Request</span>
+            </Button>
         </SidebarFooter>
-        <SidebarRail />
       </Sidebar>
       <SidebarInset className='bg-background p-0'>
-        {selectedTruck?.unauthorizedDoorOpening && pathname === '/dashboard/tracking' && (
-            <EmergencyAlert
-              truckId={selectedTruck.id}
-              truckLocation={`${selectedTruck.location.lat},${selectedTruck.location.lng}`}
-            />
-          )}
-        <Header title={getTitle()} onLogout={handleLogout} driverName={selectedDriver.name} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{childrenWithProps}</main>
+        <main className="flex-1">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent>
             <AlertDialogHeader>
