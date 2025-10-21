@@ -200,6 +200,7 @@ const secondaryNavItems = [
                     <p className='text-xs text-muted-foreground'>Since 2002</p>
                 </div>
             </div>
+            <SidebarToggleButton />
           </div>
         </SidebarHeader>
         <SidebarContent>
