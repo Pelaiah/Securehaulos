@@ -47,14 +47,6 @@ function SidebarToggleButton() {
     return null;
 }
 
-function SidebarFooterButton() {
-    const { state } = useSidebar();
-    if (state === 'collapsed') {
-        return <SidebarTrigger />;
-    }
-    return null;
-}
-
 export default function ShipperDashboardLayout({
   children,
 }: {
@@ -203,7 +195,6 @@ export default function ShipperDashboardLayout({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <SidebarFooterButton />
             </div>
         </SidebarFooter>
       </Sidebar>
