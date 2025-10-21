@@ -122,12 +122,21 @@ export default function ShipperDashboardLayout({
     }
   }, [userType, isUserDataLoading, isUserLoading, router]);
 
-  if (isUserDataLoading || isUserLoading || (userType && userType !== 'Shipper')) {
+  if (isUserDataLoading || isUserLoading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
     );
+  }
+
+  // Prevent rendering if the user is not a shipper and redirection is in progress
+  if (userType && userType !== 'Shipper') {
+      return (
+        <div className="flex items-center justify-center h-screen bg-background">
+            <Skeleton className="h-full w-full" />
+        </div>
+      );
   }
 
   return (

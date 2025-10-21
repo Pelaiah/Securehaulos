@@ -67,6 +67,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import ShipperDashboardLayout from './shipper/layout';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -207,11 +208,12 @@ const secondaryNavItems = [
     );
   }
 
-  // If the user is a shipper, don't render the carrier layout.
-  // The shipper layout will be rendered by its own layout file.
+  // If the user is a shipper, render the shipper layout for all pages.
   if (userType === 'Shipper') {
     return (
-      <main className="flex-1">{childrenWithProps}</main>
+      <ShipperDashboardLayout>
+        {childrenWithProps}
+      </ShipperDashboardLayout>
     );
   }
 
