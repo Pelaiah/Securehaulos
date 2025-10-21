@@ -12,7 +12,7 @@ import type { Load } from '@/lib/data';
 import { ArrowRight, MapPin, Truck, Crown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
-export function LoadCard({ load }: { load: Load }) {
+export function LoadCard({ load, onGetLoadClick }: { load: Load, onGetLoadClick: () => void }) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
@@ -51,7 +51,7 @@ export function LoadCard({ load }: { load: Load }) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">Get Load</Button>
+        <Button className="w-full" onClick={onGetLoadClick}>Get Load</Button>
       </CardFooter>
     </Card>
   );
