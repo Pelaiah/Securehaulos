@@ -117,19 +117,20 @@ export default function DashboardLayout({
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
-
-  useEffect(() => {
-    if (!isUserDataLoading && userType === 'Shipper') {
-      router.replace('/dashboard/shipper');
-    }
-  }, [isUserDataLoading, userType, router]);
-
- const navItems = [
+  
+  const carrierNavItems = [
+    { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
     { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
     { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
     { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
     { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
+ ];
+
+ const shipperNavItems = [
+    { href: '/dashboard/load-board', icon: Package, label: 'My Loads' },
+    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
+    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
  ];
 
 const secondaryNavItems = [
@@ -146,6 +147,8 @@ const secondaryNavItems = [
         subItems: []
     }
 ]
+
+  const navItems = userType === 'Shipper' ? shipperNavItems : carrierNavItems;
 
 
   useEffect(() => {
@@ -197,9 +200,9 @@ const secondaryNavItems = [
     return child;
   });
 
-  if (isUserDataLoading || userType !== 'Carrier') {
+  if (isUserDataLoading) {
     return (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
     );
@@ -218,7 +221,7 @@ const secondaryNavItems = [
                 </Button>
                 <div className='group-data-[collapsible=icon]:hidden'>
                     <h2 className='font-bold text-lg font-headline'>Right Direction</h2>
-                    <p className='text-xs text-muted-foreground'>Since 2002</p>
+                    <p className='text-xs text-muted-foreground'>{userType === 'Shipper' ? 'Shipper Portal' : 'Since 2002'}</p>
                 </div>
             </div>
             <SidebarToggleButton />
@@ -226,20 +229,6 @@ const secondaryNavItems = [
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/dashboard' || pathname === '/dashboard/tracking'}
-                className="justify-start"
-                tooltip="Dashboard"
-              >
-                <Link href="/dashboard">
-                  <LayoutDashboard className="h-5 w-5" />
-                  <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
             {isUserDataLoading ? (
                 <>
                     <SidebarMenuSkeleton showIcon />
@@ -251,7 +240,7 @@ const secondaryNavItems = [
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href) && item.href !== '/dashboard/tracking'}
+                  isActive={pathname.startsWith(item.href)}
                   className="justify-start"
                   tooltip={item.label}
                 >
@@ -262,7 +251,7 @@ const secondaryNavItems = [
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-             {secondaryNavItems.map((item) => (
+             {userType === 'Carrier' && secondaryNavItems.map((item) => (
                 <SidebarMenuItem key={item.id} asChild>
                     <Collapsible>
                         <CollapsibleTrigger asChild>
