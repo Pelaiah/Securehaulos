@@ -70,7 +70,7 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
                              <div className="relative w-full h-24">
                                 <Image src={truck.imageUrl} alt="Truck capacity illustration" fill style={{ objectFit: 'contain' }} data-ai-hint="truck illustration"/>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-[65%] h-[55%] ml-1.5 mt-1.5 rounded-sm overflow-hidden">
+                                    <div className="w-[65%] h-[55%] ml-10 mt-1.5 rounded-sm overflow-hidden">
                                         <Progress value={capacityPercentage} className="h-full bg-primary/20" />
                                          <div className="absolute inset-0 flex items-center justify-center">
                                             <span className="text-white text-2xl font-bold">{Math.round(capacityPercentage)}%</span>
