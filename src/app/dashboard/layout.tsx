@@ -117,12 +117,6 @@ export default function DashboardLayout({
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
-
-  useEffect(() => {
-    if (!isUserDataLoading && userType === 'Shipper') {
-        router.replace('/dashboard/shipper');
-    }
-  }, [isUserDataLoading, userType, router]);
   
   const carrierNavItems = [
     { href: '/dashboard/carrier', icon: LayoutDashboard, label: 'Dashboard' },
