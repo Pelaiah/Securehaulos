@@ -87,7 +87,6 @@ export default function DashboardLayout({
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
   const navItems = useMemo(() => {
-
     const baseItems = [
       { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
@@ -105,6 +104,7 @@ export default function DashboardLayout({
     // Default for Carrier and other types
     return [
       { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
+      { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
       { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
       ...baseItems.slice(1), // Add "My Documents" and "Subscription"
     ];
