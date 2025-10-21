@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -22,11 +23,15 @@ export default function DashboardPage() {
       return;
     }
     if (userType === 'Shipper') {
-      router.replace('/dashboard/load-board');
-    } else {
+      router.replace('/dashboard/shipper');
+    } else if (userType === 'Carrier') {
       router.replace('/dashboard/carrier');
     }
   }, [router, userType, isUserLoading, isUserDataLoading]);
 
-  return null;
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <Skeleton className="h-full w-full" />
+    </div>
+  );
 }
