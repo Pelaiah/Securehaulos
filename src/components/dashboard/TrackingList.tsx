@@ -82,28 +82,16 @@ const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className
 
 
 export function TrackingList({ trucks, selectedTruckId, onTruckSelect }: TrackingListProps) {
-    const [filter, setFilter] = useState<'All' | 'Active' | 'Inactive'>('All');
-
     const filteredTrucks = trucks.filter(truck => {
-        if (filter === 'Active') return truck.status === 'On-time' || truck.status === 'Delayed';
-        if (filter === 'Inactive') return truck.status === 'Idle';
-        return true;
+        return truck.status === 'On-time' || truck.status === 'Delayed' || truck.status === 'Alert';
     });
 
     return (
         <div className="h-full flex flex-col gap-4">
             <header className="space-y-4">
                 <div className='flex justify-between items-center'>
-                    <h1 className="text-xl font-bold">Tracking</h1>
+                    <h1 className="text-xl font-bold">Active Trucks</h1>
                     <Search className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <div>
-                     <h3 className='text-sm font-medium mb-2'>Show</h3>
-                     <div className="flex gap-2">
-                        <Button size="sm" variant={filter === 'All' ? 'default' : 'outline'} onClick={() => setFilter('All')}>All</Button>
-                        <Button size="sm" variant={filter === 'Active' ? 'default' : 'outline'} onClick={() => setFilter('Active')}>Active</Button>
-                        <Button size="sm" variant={filter === 'Inactive' ? 'default' : 'outline'} onClick={() => setFilter('Inactive')}>Inactive</Button>
-                     </div>
                 </div>
             </header>
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto">
