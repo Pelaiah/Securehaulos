@@ -58,6 +58,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -97,15 +98,36 @@ export default function DashboardLayout({
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
 
-  const { data: userData } = useDoc(userDocRef);
-  const userType = userData?.userType;
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+  const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
- const navItems = [
-    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
+ const baseNavItems = [
     { href: '/dashboard/tracking', icon: Truck, label: 'Tracking' },
-];
+    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
+ ];
+
+ const navItems = useMemo(() => {
+    if (!userType) return [];
+    
+    if (userType === 'Shipper') {
+        return [
+            ...baseNavItems,
+            { href: '/dashboard/load-board', icon: Package, label: 'My Loads' },
+            { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
+        ];
+    }
+
+    if (userType === 'Carrier') {
+        return [
+            ...baseNavItems,
+            { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
+            { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+            { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
+        ];
+    }
+    return baseNavItems;
+ }, [userType]);
 
 const secondaryNavItems = [
     { 
@@ -165,7 +187,8 @@ const secondaryNavItems = [
         displayTrucks,
         selectedDriver,
         setSelectedDriver,
-        userType
+        userType,
+        isLoading: isUserDataLoading,
       } as any);
     }
     return child;
@@ -192,11 +215,31 @@ const secondaryNavItems = [
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.map((item) => (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === '/dashboard' || pathname === '/dashboard/tracking'}
+                className="justify-start"
+                tooltip="Dashboard"
+              >
+                <Link href="/dashboard">
+                  <LayoutDashboard className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {isUserDataLoading ? (
+                <>
+                    <SidebarMenuSkeleton showIcon />
+                    <SidebarMenuSkeleton showIcon />
+                    <SidebarMenuSkeleton showIcon />
+                </>
+            ) : navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)}
+                  isActive={pathname.startsWith(item.href) && item.href !== '/dashboard/tracking'}
                   className="justify-start"
                   tooltip={item.label}
                 >
@@ -253,7 +296,7 @@ const secondaryNavItems = [
             </Button>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className='bg-background p-0'>
+      <SidebarInset className='bg-background p-6'>
         <main className="flex-1">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent>

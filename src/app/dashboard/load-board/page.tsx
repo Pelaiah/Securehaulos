@@ -1,7 +1,5 @@
 'use client';
 
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { LoadCard } from '@/components/dashboard/LoadCard';
 import { loads } from '@/lib/data';
 import { Search, Filter } from 'lucide-react';
