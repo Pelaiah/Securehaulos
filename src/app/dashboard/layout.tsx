@@ -198,7 +198,7 @@ const secondaryNavItems = [
     }
     return child;
   });
-
+  
   if (isUserDataLoading || isUserLoading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
@@ -206,6 +206,15 @@ const secondaryNavItems = [
         </div>
     );
   }
+
+  // If the user is a shipper, don't render the carrier layout.
+  // The shipper layout will be rendered by its own layout file.
+  if (userType === 'Shipper') {
+    return (
+      <main className="flex-1">{childrenWithProps}</main>
+    );
+  }
+
 
   return (
     <SidebarProvider>
