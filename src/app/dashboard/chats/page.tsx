@@ -11,8 +11,21 @@ import {
   CardFooter,
   CardHeader,
 } from '@/components/ui/card';
-import { Search, Send, Paperclip } from 'lucide-react';
+import {
+  Search,
+  Send,
+  Paperclip,
+  Image as ImageIcon,
+  MapPin,
+  FileText,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const conversations = [
   {
@@ -183,13 +196,35 @@ export default function ChatsPage() {
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground"
+                  >
                     <Paperclip className="h-5 w-5" />
-                </Button>
-                <Button size="sm" onClick={handleSendMessage}>
-                    Send
-                    <Send className="h-4 w-4 ml-2" />
-                </Button>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    <span>Picture</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <MapPin className="mr-2 h-4 w-4" />
+                    <span>Location</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>Document</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button size="sm" onClick={handleSendMessage}>
+                Send
+                <Send className="h-4 w-4 ml-2" />
+              </Button>
             </div>
           </div>
         </div>
