@@ -110,18 +110,6 @@ export default function DashboardLayout({
 
 const secondaryNavItems = [
     { 
-        id: 'requests', 
-        label: 'Requests', 
-        icon: Bell,
-        subItems: [
-            { href: '/dashboard/requests/trucks', icon: Truck, label: 'Trucks' },
-            { href: '/dashboard/requests/cargo', icon: Package, label: 'Cargo' },
-            { href: '/dashboard/requests/repair', icon: Settings, label: 'Repair' },
-            { href: '/dashboard/requests/drivers', icon: Users, label: 'Drivers' },
-            { href: '/dashboard/requests/reports', icon: FileText, label: 'Reports' },
-        ]
-    },
-    { 
         id: 'analysis',
         label: 'Analysis',
         icon: BarChart2,
