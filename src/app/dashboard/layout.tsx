@@ -117,6 +117,12 @@ export default function DashboardLayout({
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
+
+  useEffect(() => {
+    if (!isUserDataLoading && userType === 'Shipper') {
+        router.replace('/dashboard/shipper');
+    }
+  }, [isUserDataLoading, userType, router]);
   
   const carrierNavItems = [
     { href: '/dashboard/carrier', icon: LayoutDashboard, label: 'Dashboard' },
@@ -125,12 +131,6 @@ export default function DashboardLayout({
     { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
     { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
     { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
- ];
-
- const shipperNavItems = [
-    { href: '/dashboard/load-board', icon: Package, label: 'My Loads' },
-    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
-    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
  ];
 
 const secondaryNavItems = [
@@ -148,9 +148,6 @@ const secondaryNavItems = [
     }
 ]
 
-  const navItems = userType === 'Shipper' ? shipperNavItems : carrierNavItems;
-
-
   useEffect(() => {
     if (isUserLoading || !user) {
       return;
@@ -163,13 +160,10 @@ const secondaryNavItems = [
         }
     };
     
-    // Check immediately on load
     checkPendingDocuments();
 
-    // Set up an interval to check every hour
     const intervalId = setInterval(checkPendingDocuments, 60 * 60 * 1000); // 1 hour
 
-    // Cleanup the interval when the component unmounts
     return () => clearInterval(intervalId);
 
   }, [user, isUserLoading]);
@@ -200,7 +194,7 @@ const secondaryNavItems = [
     return child;
   });
 
-  if (isUserDataLoading) {
+  if (isUserDataLoading || userType !== 'Carrier') {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
@@ -221,7 +215,7 @@ const secondaryNavItems = [
                 </Button>
                 <div className='group-data-[collapsible=icon]:hidden'>
                     <h2 className='font-bold text-lg font-headline'>Right Direction</h2>
-                    <p className='text-xs text-muted-foreground'>{userType === 'Shipper' ? 'Shipper Portal' : 'Since 2002'}</p>
+                    <p className='text-xs text-muted-foreground'>Carrier Portal</p>
                 </div>
             </div>
             <SidebarToggleButton />
@@ -229,14 +223,7 @@ const secondaryNavItems = [
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {isUserDataLoading ? (
-                <>
-                    <SidebarMenuSkeleton showIcon />
-                    <SidebarMenuSkeleton showIcon />
-                    <SidebarMenuSkeleton showIcon />
-                    <SidebarMenuSkeleton showIcon />
-                </>
-            ) : navItems.map((item) => (
+            {carrierNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
@@ -251,7 +238,7 @@ const secondaryNavItems = [
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-             {userType === 'Carrier' && secondaryNavItems.map((item) => (
+             {secondaryNavItems.map((item) => (
                 <SidebarMenuItem key={item.id} asChild>
                     <Collapsible>
                         <CollapsibleTrigger asChild>

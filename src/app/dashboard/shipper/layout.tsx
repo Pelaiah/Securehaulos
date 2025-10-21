@@ -12,6 +12,10 @@ import {
   BarChart2,
   Sun,
   Moon,
+  Car,
+  Heart,
+  Wallet,
+  Compass
 } from 'lucide-react';
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -30,6 +34,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { signOut } from 'firebase/auth';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -53,6 +59,7 @@ export default function ShipperDashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
@@ -63,6 +70,8 @@ export default function ShipperDashboardLayout({
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    } else {
+        document.documentElement.classList.toggle('dark', true);
     }
   }, []);
 
@@ -89,9 +98,13 @@ export default function ShipperDashboardLayout({
   
  const navItems = [
     { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/dashboard/load-board', icon: Package, label: 'My Loads' },
+    { href: '/dashboard/my-trucks', icon: Car, label: 'My Trucks' },
+    { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
+    { href: '/dashboard/subscription', icon: Wallet, label: 'Subscription' },
+    { href: '/dashboard/tracking', icon: Compass, label: 'Tracking' },
+
  ];
 
 
@@ -104,6 +117,13 @@ export default function ShipperDashboardLayout({
     }
     return child;
   });
+
+  const handleLogout = () => {
+    if (auth) {
+        signOut(auth);
+        router.push('/login');
+    }
+  }
 
   if (isUserDataLoading || userType !== 'Shipper') {
     return (
@@ -124,10 +144,6 @@ export default function ShipperDashboardLayout({
                         <ShieldCheck className="w-6 h-6 text-primary" />
                     </Link>
                 </Button>
-                <div className='group-data-[collapsible=icon]:hidden'>
-                    <h2 className='font-bold text-lg font-headline'>Right Direction</h2>
-                    <p className='text-xs text-muted-foreground'>Shipper Portal</p>
-                </div>
             </div>
             <SidebarToggleButton />
           </div>
@@ -153,16 +169,18 @@ export default function ShipperDashboardLayout({
         </SidebarContent>
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
             <SidebarFooterButton />
-             <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
+             <div className="flex flex-col items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </Button>
-                <Button variant="ghost" size="icon"><Settings className="w-5 h-5" /></Button>
-                <Button variant="ghost" size="icon"><BarChart2 className="w-5 h-5" /></Button>
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src="https://i.imgur.com/a/pZtY2rJ.png" alt="User avatar" data-ai-hint="man avatar" />
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className='bg-background p-6'>
+      <SidebarInset className='bg-card p-0'>
         <main className="flex-1">{childrenWithProps}</main>
       </SidebarInset>
     </SidebarProvider>

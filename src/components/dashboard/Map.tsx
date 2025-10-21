@@ -91,11 +91,16 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
           
           return(
             <div key={`point-${index}`} className="absolute" style={{ top: point.pos.top, left: point.pos.left, transform: 'translate(-50%, -50%)' }}>
-              {isCompleted ? (
-                <CheckCircle2 className="w-5 h-5 text-primary bg-background rounded-full" />
-              ) : (
-                <Circle className={cn("w-5 h-5 fill-current", isActive ? 'text-primary animate-pulse' : 'text-muted-foreground/50')} />
-              )}
+                <div className="relative flex items-center justify-center">
+                    {isCompleted ? (
+                        <CheckCircle2 className="w-5 h-5 text-primary bg-background rounded-full" />
+                    ) : (
+                        <Circle className={cn("w-5 h-5 fill-current", isActive ? 'text-primary' : 'text-muted-foreground/50')} />
+                    )}
+                    {isActive && (
+                         <div className="absolute w-8 h-8 bg-primary/20 rounded-full animate-pulse"></div>
+                    )}
+                </div>
             </div>
           )
       })}
@@ -113,7 +118,6 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
         
         const isSelected = truck.id === selectedTruckId;
 
-        // For this demo, let's assume the first truck is following the trip points path
         const isActiveTripTruck = truck.id === selectedTruckId;
         const activePoint = tripPoints.find(p => p.status === 'active');
 
