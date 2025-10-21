@@ -29,15 +29,17 @@ export default function DashboardPage() {
       return;
     }
 
+    // If user is authenticated but user data is not yet available (e.g., during sign-up),
+    // just wait. The hook will re-run when the data becomes available.
+    if (!userData) {
+      return;
+    }
+
     // Once data is available, redirect based on userType
     if (userData) {
       const userType = userData.userType;
       // All users are redirected to the carrier dashboard
       router.replace('/dashboard/carrier');
-    } else {
-      // Fallback for users with no data, maybe sign out or show an error
-      console.error("User has no data.");
-      router.replace('/login');
     }
   }, [user, userData, isUserLoading, isUserDataLoading, router]);
 
