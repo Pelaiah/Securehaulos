@@ -40,6 +40,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarMenuSkeleton,
+  SidebarInset,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/dashboard/Header';
@@ -103,7 +104,6 @@ export default function DashboardLayout({
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
  const baseNavItems = [
-    { href: '/dashboard/tracking', icon: Truck, label: 'Tracking' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
  ];
 
