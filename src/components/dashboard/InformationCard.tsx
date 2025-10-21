@@ -4,12 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Star, Cog } from "lucide-react";
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from "@/components/ui/badge";
-import { Separator } from '../ui/separator';
 
-export function InformationCard() {
-    const driverImage = PlaceHolderImages.find((img) => img.id === 'driver-avatar');
+interface InformationCardProps {
+    driver: {
+        name: string;
+        avatar: string;
+    }
+}
+
+export function InformationCard({ driver }: InformationCardProps) {
 
     return (
         <Card>
@@ -59,14 +63,12 @@ export function InformationCard() {
 
                 {/* Right Side */}
                 <div className="flex flex-col items-center text-center">
-                    {driverImage && (
-                        <Avatar className="w-16 h-16 mb-3">
-                            <AvatarImage src={driverImage.imageUrl} alt="Alex Williams" />
-                            <AvatarFallback>AW</AvatarFallback>
-                        </Avatar>
-                    )}
-                    <p className="font-semibold">Alex Williams</p>
-                    <p className="text-xs text-muted-foreground">alexwilliams@gmail.com</p>
+                    <Avatar className="w-16 h-16 mb-3">
+                        <AvatarImage src={driver.avatar} alt={driver.name} />
+                        <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <p className="font-semibold">{driver.name}</p>
+                    <p className="text-xs text-muted-foreground">{driver.name.toLowerCase().replace(' ','.')}@gmail.com</p>
                     
                     <div className="flex justify-around w-full my-4">
                         <div>

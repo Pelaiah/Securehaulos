@@ -40,7 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { documents, trucks as allTrucks, type Truck as TruckType } from '@/lib/data';
+import { documents, trucks as allTrucks, type Truck as TruckType, tripData } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 
@@ -74,6 +74,7 @@ export default function DashboardLayout({
   
   const shipperTrucks = allTrucks.filter(t => ['TR-001', 'TR-004'].includes(t.id));
   const [selectedTruck, setSelectedTruck] = useState<TruckType | null>(shipperTrucks[0]);
+  const [selectedDriver, setSelectedDriver] = useState(tripData[2]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
@@ -156,7 +157,9 @@ export default function DashboardLayout({
         setSelectedTruck,
         isDetailsOpen,
         setIsDetailsOpen,
-        displayTrucks
+        displayTrucks,
+        selectedDriver,
+        setSelectedDriver
       } as any);
     }
     return child;
@@ -214,7 +217,7 @@ export default function DashboardLayout({
               truckLocation={`${selectedTruck.location.lat},${selectedTruck.location.lng}`}
             />
           )}
-        <Header title={getTitle()} onLogout={handleLogout} />
+        <Header title={getTitle()} onLogout={handleLogout} driverName={selectedDriver.name} />
         <main className="flex-1 p-4 md:p-6 lg:p-8">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent>

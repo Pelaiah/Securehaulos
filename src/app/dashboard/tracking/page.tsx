@@ -21,6 +21,8 @@ interface TrackingPageProps {
     isDetailsOpen: boolean;
     setIsDetailsOpen: Dispatch<SetStateAction<boolean>>;
     displayTrucks: Truck[];
+    selectedDriver: any;
+    setSelectedDriver: Dispatch<SetStateAction<any>>;
 }
 
 export default function TrackingPage({ 
@@ -29,6 +31,8 @@ export default function TrackingPage({
     isDetailsOpen,
     setIsDetailsOpen,
     displayTrucks,
+    selectedDriver,
+    setSelectedDriver,
 }: TrackingPageProps) {
   const { isUserLoading } = useUser();
   const { isLoading: isUserDataLoading } = useDoc(null); // Simplified for layout changes
@@ -87,7 +91,7 @@ export default function TrackingPage({
         <div className="space-y-6 xl:col-span-2">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <VehicleInfoCard />
-            <InformationCard />
+            <InformationCard driver={selectedDriver} />
           </div>
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Clock} title="Trip Time" value="1h 10m" />
@@ -109,10 +113,7 @@ export default function TrackingPage({
         {/* Right Column */}
         <div className="hidden xl:block h-full">
           <ShipmentList 
-            trucks={trucks} 
-            selectedTruckId={selectedTruck?.id}
-            onTruckSelect={handleTruckClick}
-            onTruckDetails={handleOpenDetails}
+            onDriverSelect={setSelectedDriver}
             title="Trips"
           />
         </div>

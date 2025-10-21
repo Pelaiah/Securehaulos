@@ -14,16 +14,17 @@ import Link from 'next/link';
 type HeaderProps = {
   title: string;
   onLogout: () => void;
+  driverName: string;
 };
 
-export function Header({ title, onLogout }: HeaderProps) {
+export function Header({ title, onLogout, driverName }: HeaderProps) {
   return (
     <header className="flex h-16 items-center gap-4 bg-transparent px-4 lg:px-6">
       <div className="w-full flex-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 text-lg font-semibold p-0 hover:bg-transparent focus-visible:ring-0">
-                    Alex Williams
+                    {driverName}
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </Button>
             </DropdownMenuTrigger>

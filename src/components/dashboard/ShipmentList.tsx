@@ -13,26 +13,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { tripData } from '@/lib/data';
+import React from 'react';
 
-type TripListItemProps = {
-  item: {
+
+type Trip = {
     id: string;
     name: string;
     date: string;
     status: 'Active' | 'Completed';
     earned: string;
     avatar: string;
-  }
 };
 
-function TripListItem({ item }: TripListItemProps) {
+type TripListItemProps = {
+  item: Trip,
+  onClick: () => void;
+};
+
+function TripListItem({ item, onClick }: TripListItemProps) {
     const statusColors = {
         'Active': 'bg-yellow-400/20 text-yellow-400',
         'Completed': 'bg-green-400/20 text-green-400',
     };
 
     return (
-        <div className="p-3 rounded-lg hover:bg-accent/50 transition-colors">
+        <div className="p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer" onClick={onClick}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
@@ -68,21 +74,11 @@ function TripListItem({ item }: TripListItemProps) {
 }
 
 type ShipmentListProps = {
-  trucks: Truck[];
-  selectedTruckId?: string | null;
-  onTruckSelect: (truck: Truck) => void;
-  onTruckDetails: (truck: Truck) => void;
+  onDriverSelect: (driver: Trip) => void;
   title: string;
 };
 
-export function ShipmentList({ trucks, selectedTruckId, onTruckSelect, onTruckDetails, title }: ShipmentListProps) {
-
-  const tripData = [
-    { id: '1', name: 'Harry Johnson', date: 'Wed, 7 March 2023', status: 'Active', earned: '32.25', avatar: 'https://i.pravatar.cc/150?u=harry' },
-    { id: '2', name: 'Monika Brown', date: 'Wed, 7 March 2023', status: 'Active', earned: '95.63', avatar: 'https://i.pravatar.cc/150?u=monika' },
-    { id: '3', name: 'Alex Williams', date: 'Wed, 7 March 2023', status: 'Completed', earned: '56.45', avatar: 'https://i.pravatar.cc/150?u=alex' },
-    { id: '4', name: 'Anna Miller', date: 'Thu, 6 March 2023', status: 'Completed', earned: '110.80', avatar: 'https://i.pravatar.cc/150?u=anna' },
-  ];
+export function ShipmentList({ onDriverSelect, title }: ShipmentListProps) {
 
   return (
     <Card className="h-full flex flex-col bg-card-alt border-0">
@@ -101,6 +97,7 @@ export function ShipmentList({ trucks, selectedTruckId, onTruckSelect, onTruckDe
                 <TripListItem 
                     key={trip.id}
                     item={trip}
+                    onClick={() => onDriverSelect(trip)}
                 />
             ))}
             </div>
