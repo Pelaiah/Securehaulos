@@ -104,7 +104,6 @@ export default function DashboardLayout({
  const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
-    { href: '/dashboard/partners', icon: Users, label: 'Partners' },
     { href: '/dashboard/tracking', icon: Truck, label: 'Tracking' },
 ];
 
