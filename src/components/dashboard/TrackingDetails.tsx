@@ -68,9 +68,9 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
                         </CardHeader>
                         <CardContent>
                              <div className="relative w-full h-24">
-                                <Image src={truck.imageUrl} alt="Truck capacity illustration" fill style={{ objectFit: 'contain' }} data-ai-hint="truck trailer capacity"/>
+                                <Image src={truck.imageUrl} alt="Truck capacity illustration" fill style={{ objectFit: 'contain' }} data-ai-hint="truck trailer side view"/>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-[65%] h-[55%] ml-16 mt-1.5 rounded-sm overflow-hidden">
+                                    <div className="w-[65%] h-[60%] ml-16 mt-1.5 rounded-sm overflow-hidden">
                                         <Progress value={capacityPercentage} className="h-full bg-primary/20" />
                                          <div className="absolute inset-0 flex items-center justify-center">
                                             <span className="text-white text-xl font-bold">{Math.round(capacityPercentage)}%</span>
