@@ -254,14 +254,15 @@ const secondaryNavItems = [
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
+            <SidebarFooterButton />
              <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
                 <Button variant="ghost" size="icon"><Sun className="w-5 h-5" /></Button>
                 <Button variant="ghost" size="icon"><Settings className="w-5 h-5" /></Button>
                 <Button variant="ghost" size="icon"><BarChart2 className="w-5 h-5" /></Button>
             </div>
-            <Button className="w-full justify-center group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:aspect-square">
+            <Button className="w-full justify-center group-data-[collapsible=icon]:hidden">
                 <FilePlus className="w-5 h-5" />
-                <span className="group-data-[collapsible=icon]:hidden ml-2">Create New Request</span>
+                <span className="ml-2">Create New Request</span>
             </Button>
         </SidebarFooter>
       </Sidebar>
