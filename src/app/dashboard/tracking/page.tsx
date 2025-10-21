@@ -58,8 +58,8 @@ export default function TrackingPage({
 
   if (isLoading) {
     return (
-       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_1fr_1fr] gap-6">
-        <div className="space-y-6">
+       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[3fr_2fr_2fr] gap-6">
+        <div className="space-y-6 xl:col-span-2">
             <Skeleton className="h-56" />
             <div className="grid grid-cols-3 gap-6">
                 <Skeleton className="h-20" />
@@ -82,17 +82,20 @@ export default function TrackingPage({
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_1fr_0.8fr] gap-6 items-start">
-        {/* Left Column */}
-        <div className="space-y-6">
-          <VehicleInfoCard />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] xl:grid-cols-[3fr_2fr_2fr] gap-6 items-start">
+        {/* Left & Middle Column */}
+        <div className="space-y-6 xl:col-span-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <VehicleInfoCard />
+            <InformationCard />
+          </div>
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Clock} title="Trip Time" value="1h 10m" />
               <StatCard icon={Droplet} title="Fuel consumption" value="12 liters" />
               <StatCard icon={Users} title="Passenger number" value="4 persons" />
             </div>
              <Card>
-                <CardContent className="p-0 grid grid-cols-1 md:grid-cols-[2fr_1fr] lg:grid-cols-[1.5fr_1fr]">
+                <CardContent className="p-0 grid grid-cols-1 md:grid-cols-[2fr_1fr]">
                     <div className="p-4 border-r">
                        <Map trucks={displayTrucks || []} selectedTruckId={selectedTruck?.id} />
                     </div>
@@ -101,11 +104,6 @@ export default function TrackingPage({
                     </div>
                 </CardContent>
             </Card>
-        </div>
-
-        {/* Middle Column */}
-        <div className="space-y-6">
-          <InformationCard />
         </div>
 
         {/* Right Column */}
