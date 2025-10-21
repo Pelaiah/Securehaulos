@@ -1,7 +1,9 @@
+'use client';
 import { MapPin, Circle, CheckCircle2 } from 'lucide-react';
 import type { Truck } from '@/lib/data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { useEffect, useRef, useState } from 'react';
 
 type MapProps = {
   trucks: Truck[];
@@ -24,9 +26,20 @@ const tripPoints = [
 ];
 
 export function Map({ trucks = [], selectedTruckId }: MapProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (mapRef.current) {
+      setDimensions({
+        width: mapRef.current.offsetWidth,
+        height: mapRef.current.offsetHeight,
+      });
+    }
+  }, []);
   
   return (
-    <div className="h-96 rounded-lg bg-card relative overflow-hidden border">
+    <div ref={mapRef} className="h-96 rounded-lg bg-card relative overflow-hidden border">
       <Image
         src="https://i.imgur.com/7lNiwq1.png"
         alt="City map background"
@@ -36,24 +49,25 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
         data-ai-hint="city map"
       />
       {/* Lines between points */}
-      {tripPoints.slice(0, -1).map((point, index) => {
+      {dimensions.width > 0 && tripPoints.slice(0, -1).map((point, index) => {
         const nextPoint = tripPoints[index + 1];
-        const x1 = parseFloat(point.pos.left);
-        const y1 = parseFloat(point.pos.top);
-        const x2 = parseFloat(nextPoint.pos.left);
-        const y2 = parseFloat(nextPoint.pos.top);
         
-        const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+        const x1 = parseFloat(point.pos.left) / 100 * dimensions.width;
+        const y1 = parseFloat(point.pos.top) / 100 * dimensions.height;
+        const x2 = parseFloat(nextPoint.pos.left) / 100 * dimensions.width;
+        const y2 = parseFloat(nextPoint.pos.top) / 100 * dimensions.height;
+        
         const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 
         return (
           <div
             key={`line-${index}`}
             className="absolute h-0.5 bg-primary/50 origin-left"
             style={{
-              left: `${x1}%`,
-              top: `${y1}%`,
-              width: `${length}%`,
+              left: `${x1}px`,
+              top: `${y1}px`,
+              width: `${length}px`,
               transform: `rotate(${angle}deg)`
             }}
           />
