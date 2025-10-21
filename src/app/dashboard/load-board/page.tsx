@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ShipperLoads } from '@/components/dashboard/ShipperLoads';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadDetailsDialog } from '@/components/dashboard/LoadDetailsDialog';
 import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
@@ -93,10 +92,6 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
         </div>
       </div>
     );
-  }
-
-  if (userType === 'Shipper') {
-    return <ShipperLoads />;
   }
 
   return (

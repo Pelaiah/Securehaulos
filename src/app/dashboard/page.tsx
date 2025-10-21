@@ -32,15 +32,12 @@ export default function DashboardPage() {
     // Once data is available, redirect based on userType
     if (userData) {
       const userType = userData.userType;
-      if (userType === 'Shipper') {
-        router.replace('/dashboard/shipper');
-      } else if (userType === 'Carrier') {
-        router.replace('/dashboard/carrier');
-      } else {
-        // Fallback for users with no role defined, maybe sign out or show an error
-        console.error("User has no role assigned.");
-        router.replace('/login');
-      }
+      // All users are redirected to the carrier dashboard
+      router.replace('/dashboard/carrier');
+    } else {
+      // Fallback for users with no data, maybe sign out or show an error
+      console.error("User has no data.");
+      router.replace('/login');
     }
   }, [user, userData, isUserLoading, isUserDataLoading, router]);
 

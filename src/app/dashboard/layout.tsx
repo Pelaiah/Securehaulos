@@ -207,12 +207,6 @@ const secondaryNavItems = [
     );
   }
 
-  // If the user is a shipper, don't render the carrier layout.
-  // The shipper layout will be rendered by its own layout file.
-  if (userType === 'Shipper') {
-    return <main>{childrenWithProps}</main>;
-  }
-
   return (
     <SidebarProvider>
       <Sidebar variant="floating" collapsible="icon" className="group/sidebar">
