@@ -53,7 +53,7 @@ const TruckListItem: React.FC<TruckListItemProps> = ({ truck, isSelected, onClic
                     </p>
                 </div>
                  <div className="relative w-full h-20">
-                    <Image src="https://i.imgur.com/uFLl3cT.png" alt={`Image of ${truck.name}`} fill style={{ objectFit: 'contain' }} data-ai-hint="truck side view"/>
+                    <Image src={truck.imageUrl} alt={`Image of ${truck.name}`} fill style={{ objectFit: 'contain' }} data-ai-hint="truck side view"/>
                 </div>
                 <div className="text-xs text-muted-foreground mt-2 flex justify-between">
                      <span>00:33m</span>
