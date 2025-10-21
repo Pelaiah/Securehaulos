@@ -188,7 +188,7 @@ const secondaryNavItems = [
     return child;
   });
 
-  if (isUserDataLoading || userType !== 'Carrier') {
+  if (isUserDataLoading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
