@@ -8,17 +8,13 @@ import {
   ShieldCheck,
   LayoutDashboard,
   MessageSquare,
-  Settings,
-  BarChart2,
+  Compass,
   Sun,
   Moon,
-  Car,
-  Heart,
-  Wallet,
-  Compass
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, signOut } from 'firebase/firestore';
 import {
   SidebarProvider,
   Sidebar,
@@ -35,20 +31,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { signOut } from 'firebase/auth';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
     if (state === 'expanded') {
         return <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />;
-    }
-    return null;
-}
-
-function SidebarFooterButton() {
-    const { state } = useSidebar();
-    if (state === 'collapsed') {
-        return <SidebarTrigger />;
     }
     return null;
 }
@@ -91,22 +79,18 @@ export default function ShipperDashboardLayout({
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
   
   useEffect(() => {
-    if (!isUserDataLoading && userType === 'Carrier') {
+    if (!isUserLoading && !isUserDataLoading && userType !== 'Shipper') {
       router.replace('/dashboard');
     }
-  }, [isUserDataLoading, userType, router]);
+  }, [isUserLoading, isUserDataLoading, userType, router]);
   
  const navItems = [
     { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/dashboard/my-trucks', icon: Car, label: 'My Trucks' },
-    { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+    { href: '/dashboard/load-board', icon: Package, label: 'My Loads' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
-    { href: '/dashboard/subscription', icon: Wallet, label: 'Subscription' },
     { href: '/dashboard/tracking', icon: Compass, label: 'Tracking' },
-
  ];
-
 
   const childrenWithProps = Children.map(children, child => {
     if (React.isValidElement(child)) {
@@ -120,14 +104,14 @@ export default function ShipperDashboardLayout({
 
   const handleLogout = () => {
     if (auth) {
-        signOut(auth);
+        auth.signOut();
         router.push('/login');
     }
   }
 
-  if (isUserDataLoading || userType !== 'Shipper') {
+  if (isUserLoading || isUserDataLoading || userType !== 'Shipper') {
     return (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
     );
@@ -144,6 +128,10 @@ export default function ShipperDashboardLayout({
                         <ShieldCheck className="w-6 h-6 text-primary" />
                     </Link>
                 </Button>
+                 <div className='group-data-[collapsible=icon]:hidden'>
+                    <h2 className='font-bold text-lg font-headline'>Saboor</h2>
+                    <p className='text-xs text-muted-foreground'>Shipper Portal</p>
+                </div>
             </div>
             <SidebarToggleButton />
           </div>
@@ -168,19 +156,35 @@ export default function ShipperDashboardLayout({
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
-            <SidebarFooterButton />
-             <div className="flex flex-col items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
+             <div className="flex items-center justify-center gap-2 p-2">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </Button>
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src="https://i.imgur.com/a/pZtY2rJ.png" alt="User avatar" data-ai-hint="man avatar" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
+                <div className='group-data-[collapsible=icon]:hidden flex-1 flex justify-end'>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="ghost" className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                           <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
+                          <AvatarFallback>U</AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                            <p className="text-xs text-muted-foreground">{userType}</p>
+                        </div>
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>Settings</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className='bg-card p-0'>
+      <SidebarInset className='bg-card p-6'>
         <main className="flex-1">{childrenWithProps}</main>
       </SidebarInset>
     </SidebarProvider>

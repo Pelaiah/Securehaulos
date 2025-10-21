@@ -60,6 +60,7 @@ import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { signOut } from 'firebase/auth';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -124,6 +125,7 @@ export default function DashboardLayout({
     { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
     { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
     { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
  ];
 
@@ -163,7 +165,10 @@ const secondaryNavItems = [
   }, [user, isUserLoading]);
   
   const handleLogout = () => {
-    auth.signOut();
+    if(auth) {
+      signOut(auth);
+      router.push('/login');
+    }
   }
 
   const handleGoToVerification = () => {
@@ -188,12 +193,18 @@ const secondaryNavItems = [
     return child;
   });
 
-  if (isUserDataLoading) {
+  if (isUserDataLoading || isUserLoading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
     );
+  }
+
+  // If the user is a shipper, don't render the carrier layout.
+  // The shipper layout will be rendered by its own layout file.
+  if (userType === 'Shipper') {
+    return <main>{childrenWithProps}</main>;
   }
 
   return (
@@ -266,13 +277,31 @@ const secondaryNavItems = [
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
-            <SidebarFooterButton />
-             <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden p-2">
+             <div className="flex items-center justify-center gap-2 p-2">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </Button>
-                <Button variant="ghost" size="icon"><Settings className="w-5 h-5" /></Button>
-                <Button variant="ghost" size="icon"><BarChart2 className="w-5 h-5" /></Button>
+                <div className='group-data-[collapsible=icon]:hidden flex-1 flex justify-end'>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="ghost" className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
+                          <AvatarFallback>U</AvatarFallback>
+                        </Avatar>
+                        <div className="text-left">
+                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                            <p className="text-xs text-muted-foreground">{userType}</p>
+                        </div>
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>Settings</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
             </div>
         </SidebarFooter>
       </Sidebar>
