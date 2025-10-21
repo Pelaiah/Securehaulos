@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -48,24 +47,24 @@ export function EmergencyAlert({
   return (
     <Alert
       variant="destructive"
-      className="mb-6 border-2 border-destructive/80 bg-destructive/10 animate-pulse p-4"
+      className="border-b-2 border-destructive/80 bg-destructive/10 animate-pulse p-4 rounded-none border-x-0 border-t-0"
     >
-        <div className='flex items-center gap-2'>
-            <Siren className="h-5 w-5" />
-            <AlertTitle className="font-headline text-lg font-bold">
-                RED ALERT: Unauthorized Access!
-            </AlertTitle>
-        </div>
-        <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">
-            <p className="mb-2 sm:mb-0">
+        <div className='container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between'>
+            <div className='flex items-center gap-2'>
+                <Siren className="h-5 w-5" />
+                <AlertTitle className="font-headline text-lg font-bold">
+                    RED ALERT: Unauthorized Access!
+                </AlertTitle>
+                <AlertDescription className="hidden md:block ml-4">
                 Unauthorized door opening detected on truck{' '}
                 <span className="font-semibold">{truckId}</span>.
-            </p>
+                </AlertDescription>
+            </div>
             <Button
                 onClick={handleFindPolice}
                 disabled={isLoading}
                 variant="destructive"
-                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shrink-0"
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shrink-0 mt-2 sm:mt-0"
             >
                 {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -74,7 +73,7 @@ export function EmergencyAlert({
                 )}
                 Find Nearest Police Station
             </Button>
-        </AlertDescription>
+        </div>
     </Alert>
   );
 }

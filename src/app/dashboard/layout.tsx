@@ -39,9 +39,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useEffect, useState, useMemo } from 'react';
-import { documents } from '@/lib/data';
+import { useEffect, useState, useMemo, Children, cloneElement } from 'react';
+import { documents, trucks as allTrucks, type Truck as TruckType } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -70,6 +71,10 @@ export default function DashboardLayout({
   const firestore = useFirestore();
   const router = useRouter();
   const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+  
+  const shipperTrucks = allTrucks.filter(t => ['TR-001', 'TR-004'].includes(t.id));
+  const [selectedTruck, setSelectedTruck] = useState<TruckType | null>(shipperTrucks[0]);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!user) return null;
@@ -77,9 +82,10 @@ export default function DashboardLayout({
   }, [user, firestore]);
 
   const { data: userData } = useDoc(userDocRef);
+  const userType = userData?.userType;
+  const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
   const navItems = useMemo(() => {
-    const userType = userData?.userType;
 
     const baseItems = [
       { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
@@ -143,6 +149,19 @@ export default function DashboardLayout({
     router.push('/dashboard/documents');
   }
 
+  const childrenWithProps = Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return cloneElement(child, { 
+        selectedTruck,
+        setSelectedTruck,
+        isDetailsOpen,
+        setIsDetailsOpen,
+        displayTrucks
+      } as any);
+    }
+    return child;
+  });
+
   return (
     <SidebarProvider>
       <Sidebar variant="floating" collapsible="icon">
@@ -189,8 +208,14 @@ export default function DashboardLayout({
         <SidebarRail />
       </Sidebar>
       <SidebarInset className='bg-background p-0'>
+        {selectedTruck?.unauthorizedDoorOpening && pathname === '/dashboard/tracking' && (
+            <EmergencyAlert
+              truckId={selectedTruck.id}
+              truckLocation={`${selectedTruck.location.lat},${selectedTruck.location.lng}`}
+            />
+          )}
         <Header title={getTitle()} onLogout={handleLogout} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 md:p-6 lg:p-8">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent>
             <AlertDialogHeader>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import Image from 'next/image';
 import { Map } from '@/components/dashboard/Map';
 import { trucks, type Truck } from '@/lib/data';
@@ -10,29 +10,29 @@ import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Droplet, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
 import { PaymentInfoCard } from '@/components/dashboard/PaymentInfoCard';
 import { DriverInfoCard } from '@/components/dashboard/DriverInfoCard';
-import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 
-export default function TrackingPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+interface TrackingPageProps {
+    selectedTruck: Truck | null;
+    setSelectedTruck: Dispatch<SetStateAction<Truck | null>>;
+    isDetailsOpen: boolean;
+    setIsDetailsOpen: Dispatch<SetStateAction<boolean>>;
+    displayTrucks: Truck[];
+}
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [user, firestore]);
-
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
-  
-  const shipperTrucks = trucks.filter(t => ['TR-001', 'TR-004'].includes(t.id));
-
-  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(shipperTrucks[0]);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+export default function TrackingPage({ 
+    selectedTruck,
+    setSelectedTruck,
+    isDetailsOpen,
+    setIsDetailsOpen,
+    displayTrucks,
+}: TrackingPageProps) {
+  const { isUserLoading } = useUser();
+  const { isLoading: isUserDataLoading } = useDoc(null); // Simplified for layout changes
 
   const handleTruckClick = (truck: Truck) => {
     setSelectedTruck(truck);
@@ -44,11 +44,8 @@ export default function TrackingPage() {
   }
   
   const isLoading = isUserLoading || isUserDataLoading;
-  const userType = userData?.userType;
-
-  const displayTrucks = userType === 'Shipper' ? shipperTrucks : trucks;
   
-  const StatCard = ({ icon: Icon, title, value, className }: { icon: React.ElementType, title: string, value: string | number, className?: string }) => (
+  const StatCard = ({ icon: Icon, title, value }: { icon: React.ElementType, title: string, value: string | number }) => (
     <Card className="bg-card">
       <CardContent className="p-4 flex items-center gap-4">
         <Icon className="w-5 h-5 text-muted-foreground" />
@@ -89,12 +86,6 @@ export default function TrackingPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_1fr_0.8fr] gap-6 items-start">
         {/* Left Column */}
         <div className="space-y-6">
-          {selectedTruck?.unauthorizedDoorOpening && (
-            <EmergencyAlert
-              truckId={selectedTruck.id}
-              truckLocation={`${selectedTruck.location.lat},${selectedTruck.location.lng}`}
-            />
-          )}
           <VehicleInfoCard />
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Clock} title="Trip Time" value="1h 10m" />
