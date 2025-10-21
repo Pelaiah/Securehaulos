@@ -13,8 +13,7 @@ import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Droplet, Users } from 'lucide-react';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
-import { PaymentInfoCard } from '@/components/dashboard/PaymentInfoCard';
-import { DriverInfoCard } from '@/components/dashboard/DriverInfoCard';
+import { InformationCard } from '@/components/dashboard/InformationCard';
 
 interface TrackingPageProps {
     selectedTruck: Truck | null;
@@ -92,13 +91,12 @@ export default function TrackingPage({
               <StatCard icon={Droplet} title="Fuel consumption" value="12 liters" />
               <StatCard icon={Users} title="Passenger number" value="4 persons" />
             </div>
-          <Map trucks={displayTrucks} selectedTruckId={selectedTruck?.id} />
+          <Map trucks={displayTrucks || []} selectedTruckId={selectedTruck?.id} />
         </div>
 
         {/* Middle Column */}
         <div className="space-y-6">
-          <PaymentInfoCard />
-          <DriverInfoCard />
+          <InformationCard />
           <TripInfoCard />
         </div>
 
