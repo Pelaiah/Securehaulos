@@ -22,10 +22,10 @@ interface TruckListItemProps {
 }
 
 const statusColors = {
-    'On-time': 'text-green-500',
-    Waiting: 'text-yellow-500',
-    Inactive: 'text-gray-500',
-    Alert: 'text-red-500',
+    'On Route': 'text-green-500',
+    'Waiting': 'text-yellow-500',
+    'Inactive': 'text-gray-500',
+    'Alert': 'text-red-500',
 };
 
 const getStatusForDisplay = (truck: Truck) => {
@@ -48,7 +48,7 @@ const TruckListItem: React.FC<TruckListItemProps> = ({ truck, isSelected, onClic
             <CardContent className="p-3">
                 <div className="flex justify-between items-start mb-2">
                     <p className="text-xs font-semibold">{truck.id}</p>
-                    <p className={cn("text-xs font-semibold", statusColors[truck.status] || 'text-muted-foreground')}>
+                    <p className={cn("text-xs font-semibold", statusColors[displayStatus as keyof typeof statusColors] || 'text-muted-foreground')}>
                         {displayStatus}
                     </p>
                 </div>
@@ -83,7 +83,8 @@ const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className
 
 export function TrackingList({ trucks, selectedTruckId, onTruckSelect }: TrackingListProps) {
     const filteredTrucks = trucks.filter(truck => {
-        return truck.status === 'On-time' || truck.status === 'Delayed' || truck.status === 'Alert';
+        const displayStatus = getStatusForDisplay(truck);
+        return displayStatus === 'On Route' || displayStatus === 'Waiting' || displayStatus === 'Alert';
     });
 
     return (
