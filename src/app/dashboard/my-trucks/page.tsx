@@ -45,7 +45,7 @@ export default function MyTrucksPage({
     } else if (fleetSize === '6-10') {
       numberOfTrucks = 7;
     } else if (fleetSize === '11+') {
-      numberOfTrucks = 12;
+      numberOfTrucks = 15;
     }
 
     // Generate mock truck data
