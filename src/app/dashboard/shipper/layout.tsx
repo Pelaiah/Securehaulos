@@ -107,18 +107,15 @@ export default function ShipperDashboardLayout({
     return child;
   });
 
-  if (isUserDataLoading || isUserLoading) {
-    return (
-        <div className="flex items-center justify-center h-screen bg-background">
-            <Skeleton className="h-full w-full" />
-        </div>
-    );
-  }
+  useEffect(() => {
+    // If loading is done and the user is not a shipper, redirect them away.
+    if (!isUserDataLoading && userType && userType !== 'Shipper') {
+      router.replace('/dashboard/carrier');
+    }
+  }, [userType, isUserDataLoading, router]);
 
-  // If user is not a shipper, redirect them away.
-  if (userType !== 'Shipper') {
-     router.replace('/dashboard/carrier');
-     return (
+  if (isUserDataLoading || isUserLoading || (userType && userType !== 'Shipper')) {
+    return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
