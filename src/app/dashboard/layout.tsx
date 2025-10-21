@@ -126,7 +126,7 @@ export default function DashboardLayout({
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
   
   const carrierNavItems = [
-    { href: '/dashboard/carrier', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
     { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
     { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },

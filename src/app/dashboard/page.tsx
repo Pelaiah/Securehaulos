@@ -1,52 +1,55 @@
 'use client';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+
+import { Dispatch, SetStateAction, useState } from 'react';
+import { trucks as allTrucks, type Truck } from '@/lib/data';
+import { useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TrackingList } from '@/components/dashboard/TrackingList';
+import { TrackingDetails } from '@/components/dashboard/TrackingDetails';
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [user, firestore]);
+interface TrackingPageProps {
+    displayTrucks: Truck[];
+    selectedDriver: any;
+}
 
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+export default function DashboardPage({ 
+    displayTrucks,
+    selectedDriver,
+}: TrackingPageProps) {
+  const { isUserLoading } = useUser();
+  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(allTrucks.find(t => t.id === 'SD-752069247') || allTrucks[0]);
 
-  useEffect(() => {
-    // Wait until both user and user data are loaded
-    if (isUserLoading || isUserDataLoading) {
-      return;
-    }
+  const isLoading = isUserLoading;
 
-    // If there's no user, redirect to login
-    if (!user) {
-      router.replace('/login');
-      return;
-    }
+  if (isLoading) {
+    return (
+       <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] xl:grid-cols-[1fr_2fr] h-screen">
+        <div className="p-4 border-r">
+          <Skeleton className="h-12 w-full mb-4" />
+          <div className="space-y-2">
+            {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+          </div>
+        </div>
+        <div className="p-4">
+            <Skeleton className="h-full w-full" />
+        </div>
+      </div>
+    )
+  }
 
-    // If user is authenticated but user data is not yet available (e.g., during sign-up),
-    // just wait. The hook will re-run when the data becomes available.
-    if (!userData) {
-      return;
-    }
-
-    // Once data is available, redirect based on userType
-    if (userData) {
-      const userType = userData.userType;
-      // All users are redirected to the carrier dashboard
-      router.replace('/dashboard/carrier');
-    }
-  }, [user, userData, isUserLoading, isUserDataLoading, router]);
-
-  // Show a loading skeleton while we determine the route
   return (
-    <div className="flex items-center justify-center h-screen bg-background">
-      <Skeleton className="h-full w-full" />
+    <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] xl:grid-cols-[1fr_2fr] h-screen">
+        <div className="p-4 border-r overflow-y-auto">
+            <TrackingList 
+                trucks={allTrucks}
+                selectedTruckId={selectedTruck?.id}
+                onTruckSelect={setSelectedTruck}
+            />
+        </div>
+        <div className="p-4 overflow-y-auto">
+            {selectedTruck && <TrackingDetails truck={selectedTruck} />}
+        </div>
     </div>
   );
 }
