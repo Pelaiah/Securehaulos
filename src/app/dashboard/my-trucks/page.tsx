@@ -1,5 +1,5 @@
 'use client';
-import { Dispatch, SetStateAction, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { type Truck } from '@/lib/data';
 import { TruckCard } from '@/components/dashboard/TruckCard';
 import { TruckDetailsDialog } from '@/components/dashboard/TruckDetailsDialog';
@@ -7,19 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
-interface MyTrucksPageProps {
-    // selectedTruck: Truck | null;
-    // setSelectedTruck: Dispatch<SetStateAction<Truck | null>>;
-    // isDetailsOpen: boolean;
-    // setIsDetailsOpen: Dispatch<SetStateAction<boolean>>;
-}
-
-export default function MyTrucksPage({ 
-    // selectedTruck,
-    // setSelectedTruck,
-    // isDetailsOpen,
-    // setIsDetailsOpen,
-}: MyTrucksPageProps) {
+export default function MyTrucksPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
@@ -52,6 +40,7 @@ export default function MyTrucksPage({
     return Array.from({ length: numberOfTrucks }, (_, i) => ({
         id: `CARR-TR-${100 + i + 1}`,
         name: `Truck #${i + 1}`,
+        imageUrl: `https://i.imgur.com/gJt3wGk.png`,
         location: { lat: 34.0522, lng: -118.2437 },
         status: i % 4 === 0 ? 'Idle' : i % 4 === 1 ? 'On-time' : i % 4 === 2 ? 'Delayed' : 'Alert',
         fuelLevel: Math.floor(Math.random() * 80) + 20,

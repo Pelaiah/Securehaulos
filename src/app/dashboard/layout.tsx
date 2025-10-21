@@ -117,34 +117,20 @@ export default function DashboardLayout({
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
-  const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
- const baseNavItems = [
+  useEffect(() => {
+    if (!isUserDataLoading && userType === 'Shipper') {
+      router.replace('/dashboard/shipper');
+    }
+  }, [isUserDataLoading, userType, router]);
+
+ const navItems = [
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
+    { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
+    { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
+    { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+    { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
  ];
-
- const navItems = useMemo(() => {
-    if (!userType) return [];
-    
-    if (userType === 'Shipper') {
-        return [
-            ...baseNavItems,
-            { href: '/dashboard/load-board', icon: Package, label: 'My Loads' },
-            { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
-        ];
-    }
-
-    if (userType === 'Carrier') {
-        return [
-            ...baseNavItems,
-            { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
-            { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
-            { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
-            { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
-        ];
-    }
-    return baseNavItems;
- }, [userType]);
 
 const secondaryNavItems = [
     { 
@@ -201,7 +187,7 @@ const secondaryNavItems = [
         setSelectedTruck,
         isDetailsOpen,
         setIsDetailsOpen,
-        displayTrucks,
+        displayTrucks: allTrucks,
         selectedDriver,
         setSelectedDriver,
         userType,
@@ -210,6 +196,14 @@ const secondaryNavItems = [
     }
     return child;
   });
+
+  if (isUserDataLoading || userType !== 'Carrier') {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <Skeleton className="h-full w-full" />
+        </div>
+    );
+  }
 
   return (
     <SidebarProvider>
