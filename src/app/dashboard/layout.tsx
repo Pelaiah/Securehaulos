@@ -87,17 +87,12 @@ export default function DashboardLayout({
   const displayTrucks = userType === 'Shipper' ? shipperTrucks : allTrucks;
 
   const navItems = useMemo(() => {
-    const baseItems = [
-      { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
-      { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
-      { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
-    ];
-
     if (userType === 'Shipper') {
       return [
         { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
         { href: '/dashboard/load-board', icon: PlusCircle, label: 'My Loads' },
-        ...baseItems.slice(1), // Add "My Documents" and "Subscription"
+        { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
+        { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
       ];
     }
     
@@ -106,9 +101,10 @@ export default function DashboardLayout({
       { href: '/dashboard/tracking', icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
       { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
-      ...baseItems.slice(1), // Add "My Documents" and "Subscription"
+      { href: '/dashboard/documents', icon: FileText, label: 'My Documents' },
+      { href: '/dashboard/subscription', icon: Crown, label: 'Subscription' },
     ];
-  }, [userData]);
+  }, [userType]);
 
 
   useEffect(() => {
@@ -159,7 +155,8 @@ export default function DashboardLayout({
         setIsDetailsOpen,
         displayTrucks,
         selectedDriver,
-        setSelectedDriver
+        setSelectedDriver,
+        userType
       } as any);
     }
     return child;

@@ -17,20 +17,12 @@ import {
 import { ShipperLoads } from '@/components/dashboard/ShipperLoads';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function LoadBoardPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+interface LoadBoardPageProps {
+  userType?: 'Shipper' | 'Carrier';
+  isLoading: boolean;
+}
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [user, firestore]);
-
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
-
-  const isLoading = isUserLoading || isUserDataLoading;
-  const userType = userData?.userType;
-
+export default function LoadBoardPage({ userType, isLoading }: LoadBoardPageProps) {
   if (isLoading) {
     return (
       <div className="space-y-6">
