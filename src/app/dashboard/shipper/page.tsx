@@ -21,6 +21,11 @@ export default function ShipperDashboardPage() {
             <div className="flex-grow grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-6 p-6">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <div className="space-y-6">
+                        <Card>
+                            <CardContent className="p-4">
+                                <p className="text-lg font-bold">hell shipper</p>
+                            </CardContent>
+                        </Card>
                         <VehicleInfoCard />
                         <div className="grid grid-cols-3 gap-6">
                             <Card>
