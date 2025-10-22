@@ -117,61 +117,63 @@ export default function ShipperDashboardLayout({
   });
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar variant='floating' collapsible="icon" className="group/sidebar">
-        <SidebarHeader className='p-3'>
-           <div className="flex items-center justify-center">
-                <Button variant="ghost" size="icon" className="shrink-0" asChild>
-                    <Link href="/">
-                        <ShieldCheck className="w-6 h-6 text-primary" />
+    <SidebarProvider>
+      <div className="flex min-h-screen">
+        <Sidebar variant='floating' collapsible="icon" className="group/sidebar" side="left">
+          <SidebarHeader className='p-3'>
+            <div className="flex items-center justify-center">
+                  <Button variant="ghost" size="icon" className="shrink-0" asChild>
+                      <Link href="/">
+                          <ShieldCheck className="w-6 h-6 text-primary" />
+                      </Link>
+                  </Button>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+              {shipperNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith(item.href)}
+                    className="justify-center"
+                    tooltip={item.label}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-5 w-5" />
+                      <span className="sr-only">{item.label}</span>
                     </Link>
-                </Button>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {shipperNavItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname.startsWith(item.href)}
-                  className="justify-center"
-                  tooltip={item.label}
-                >
-                  <Link href={item.href}>
-                    <item.icon className="h-5 w-5" />
-                    <span className="sr-only">{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="p-3">
-             <div className="flex items-center justify-center">
-                <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                  {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                </Button>
-            </div>
-             <div className="flex items-center justify-center">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                       <Button variant="ghost" size="icon">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
-                          <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                       <DropdownMenuItem>Settings</DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-            </div>
-        </SidebarFooter>
-      </Sidebar>
-      <main className="flex-1 h-screen overflow-hidden bg-card-alt">{childrenWithProps}</main>
-    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter className="p-3">
+              <div className="flex items-center justify-center">
+                  <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                    {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  </Button>
+              </div>
+              <div className="flex items-center justify-center">
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
+                            <AvatarFallback>U</AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>Settings</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+              </div>
+          </SidebarFooter>
+        </Sidebar>
+        <main className="flex-1 h-screen overflow-hidden bg-card-alt">{childrenWithProps}</main>
+      </div>
+    </SidebarProvider>
   );
 }
