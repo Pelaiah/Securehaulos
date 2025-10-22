@@ -91,6 +91,12 @@ export default function ShipperDashboardLayout({
     { href: '/dashboard/tracking', icon: Truck, label: 'Tracking' },
   ];
 
+  useEffect(() => {
+    if (!isUserDataLoading && userType && userType !== 'Shipper') {
+      router.replace('/dashboard/carrier');
+    }
+  }, [isUserDataLoading, userType, router]);
+
   const handleLogout = () => {
     if(auth) {
       signOut(auth);
@@ -98,18 +104,11 @@ export default function ShipperDashboardLayout({
     }
   }
 
-  // If user is not a shipper, redirect them away.
-  if (userType !== 'Shipper') {
-     router.replace('/dashboard/carrier');
+  const isLoading = isUserLoading || isUserDataLoading;
+
+  // If user is not a shipper, show a loading skeleton while redirecting.
+  if (isLoading || (userType && userType !== 'Shipper')) {
      return (
-        <div className="flex items-center justify-center h-screen bg-background">
-            <Skeleton className="h-full w-full" />
-        </div>
-    );
-  }
-  
-  if (isUserDataLoading || isUserLoading) {
-    return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
