@@ -11,13 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Form,
   FormControl,
   FormField,
@@ -121,19 +114,9 @@ export function PostLoadModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cargo Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a cargo type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="general">General Goods</SelectItem>
-                        <SelectItem value="perishables">Perishables</SelectItem>
-                        <SelectItem value="hazardous">Hazardous Materials</SelectItem>
-                        <SelectItem value="vehicles">Vehicles</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="e.g. General Goods" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
