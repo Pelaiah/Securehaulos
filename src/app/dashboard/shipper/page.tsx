@@ -1,38 +1,67 @@
 'use client';
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, CheckCircle, DollarSign } from "lucide-react";
+import { useState } from 'react';
+import { Map } from '@/components/dashboard/Map';
+import { InformationCard } from '@/components/dashboard/InformationCard';
+import { ShipmentList } from '@/components/dashboard/ShipmentList';
+import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
+import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
+import { Card, CardContent } from '@/components/ui/card';
+import { tripData } from '@/lib/data';
+import { Header } from '@/components/dashboard/Header';
+import { Fuel, Timer, Users, Weight } from 'lucide-react';
+import { trucks } from '@/lib/data';
 
 export default function ShipperDashboardPage() {
-  const stats = [
-    { title: "Active Loads", value: "12", icon: Package, color: "text-blue-500" },
-    { title: "Total Spending", value: "$45,231", icon: DollarSign, color: "text-green-500" },
-    { title: "On-Time Deliveries", value: "98.5%", icon: CheckCircle, color: "text-yellow-500" },
-    { title: "Trucks in Transit", value: "8", icon: Truck, color: "text-purple-500" },
-  ];
+  const [selectedDriver, setSelectedDriver] = useState(tripData[2]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold font-headline">Shipper Dashboard</h1>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 text-muted-foreground ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                +2.1% from last month
-              </p>
-            </CardContent>
+    <div className="flex flex-col h-full">
+      <Header title={selectedDriver.name} onLogout={() => {}} />
+      <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
+        {/* Left Column */}
+        <div className="xl:col-span-1 space-y-6 flex flex-col">
+          <VehicleInfoCard />
+           <Card className='flex-grow'>
+              <CardContent className="p-4 grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <Timer className="w-5 h-5" />
+                        <p>Trip Time</p>
+                    </div>
+                     <div className="flex items-center gap-2 text-muted-foreground">
+                        <Fuel className="w-5 h-5" />
+                        <p>Fuel consumption</p>
+                    </div>
+                     <div className="flex items-center gap-2 text-muted-foreground">
+                        <Weight className="w-5 h-5" />
+                        <p>Load Weight</p>
+                    </div>
+                </div>
+                 <div className="space-y-4 text-right">
+                    <p className="font-semibold">1h 10m</p>
+                    <p className="font-semibold">12 liters</p>
+                    <p className="font-semibold">15,500 kg</p>
+                </div>
+              </CardContent>
           </Card>
-        ))}
+        </div>
+
+        {/* Middle Column */}
+        <div className="xl:col-span-2 space-y-6 flex flex-col">
+            <div className='grid md:grid-cols-2 gap-6'>
+                <InformationCard driver={selectedDriver} />
+                <TripInfoCard />
+            </div>
+            <div className="flex-grow rounded-lg overflow-hidden">
+                 <Map trucks={trucks} selectedTruckId={'SD-752069247'} />
+            </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="xl:col-span-1">
+          <ShipmentList title="Trips" onDriverSelect={setSelectedDriver} />
+        </div>
       </div>
-      {/* Add more shipper-specific components here */}
     </div>
   );
 }

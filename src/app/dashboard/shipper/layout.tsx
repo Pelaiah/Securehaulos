@@ -13,6 +13,7 @@ import {
   Users,
   Sun,
   Moon,
+  User,
 } from 'lucide-react';
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -84,7 +85,7 @@ export default function ShipperDashboardLayout({
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
 
   const shipperNavItems = [
-    { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/dashboard/shipper', icon: User, label: 'Dashboard' },
     { href: '/dashboard/my-loads', icon: Package, label: 'My Loads' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
@@ -124,22 +125,13 @@ export default function ShipperDashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar variant="floating" collapsible="icon" className="group/sidebar">
-        <SidebarHeader className='p-4'>
-           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="shrink-0" asChild>
-                    <Link href="/">
-                        <ShieldCheck className="w-6 h-6 text-primary" />
-                    </Link>
-                </Button>
-                <div className='group-data-[collapsible=icon]:hidden'>
-                    <h2 className='font-bold text-lg font-headline'>Right Direction</h2>
-                    <p className='text-xs text-muted-foreground'>Shipper Portal</p>
-                </div>
-            </div>
-            <SidebarToggleButton />
-          </div>
+      <Sidebar collapsible="icon" className="group/sidebar" variant="floating">
+        <SidebarHeader className='p-4 justify-center'>
+            <Button variant="ghost" size="icon" className="shrink-0" asChild>
+                <Link href="/">
+                    <ShieldCheck className="w-6 h-6 text-primary" />
+                </Link>
+            </Button>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -173,15 +165,11 @@ export default function ShipperDashboardLayout({
                           <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
                           <AvatarFallback>U</AvatarFallback>
                         </Avatar>
-                        <div className="text-left">
-                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
-                            <p className="text-xs text-muted-foreground">{userType}</p>
-                        </div>
-                        <ChevronDown className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Settings</DropdownMenuItem>
+                       <DropdownMenuItem>{user?.displayName || user?.email}</DropdownMenuItem>
+                       <DropdownMenuItem>Settings</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -189,8 +177,8 @@ export default function ShipperDashboardLayout({
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className='bg-background p-6'>
-        <main className="flex-1">{childrenWithProps}</main>
+      <SidebarInset className='bg-card-alt p-0'>
+        <main className="flex-1 h-screen overflow-hidden">{childrenWithProps}</main>
       </SidebarInset>
     </SidebarProvider>
   );

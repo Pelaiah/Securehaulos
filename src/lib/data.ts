@@ -196,8 +196,8 @@ export const subscriptionPlans = {
 };
 
 export const tripData = [
-    { id: '1', name: 'Harry Johnson', date: 'Wed, 7 March 2023', status: 'Active', earned: '32.25', avatar: 'https://i.pravatar.cc/150?u=harry' },
-    { id: '2', name: 'Monika Brown', date: 'Wed, 7 March 2023', status: 'Active', earned: '95.63', avatar: 'https://i.pravatar.cc/150?u=monika' },
-    { id: '3', name: 'Alex Williams', date: 'Wed, 7 March 2023', status: 'Completed', earned: '56.45', avatar: 'https://i.pravatar.cc/150?u=alex' },
-    { id: '4', name: 'Anna Miller', date: 'Thu, 6 March 2023', status: 'Completed', earned: '110.80', avatar: 'https://i.pravatar.cc/150?u=anna' },
+    { id: '1', name: 'Harry Johnson', date: 'Wed, 7 March 2023', status: 'Active' as const, earned: '32.25', avatar: 'https://i.pravatar.cc/150?u=harry' },
+    { id: '2', name: 'Monika Brown', date: 'Wed, 7 March 2023', status: 'Active' as const, earned: '95.63', avatar: 'https://i.pravatar.cc/150?u=monika' },
+    { id: '3', name: 'Alex Williams', date: 'Wed, 7 March 2023', status: 'Completed' as const, earned: '56.45', avatar: 'https://i.pravatar.cc/150?u=alex' },
+    { id: '4', name: 'Anna Miller', date: 'Thu, 6 March 2023', status: 'Completed' as const, earned: '110.80', avatar: 'https://i.pravatar.cc/150?u=anna' },
   ];

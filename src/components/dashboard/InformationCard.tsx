@@ -59,7 +59,7 @@ export function InformationCard({ driver }: InformationCardProps) {
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                 INFORMATION
                 </CardTitle>

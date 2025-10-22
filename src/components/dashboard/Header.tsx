@@ -18,7 +18,7 @@ type HeaderProps = {
 
 export function Header({ title, onLogout }: HeaderProps) {
   return (
-    <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
+    <header className="flex h-16 items-center gap-4 border-b bg-card-alt px-6">
        <DropdownMenu>
           <DropdownMenuTrigger asChild>
              <Button variant="ghost" className="text-lg font-semibold md:text-2xl p-0 h-auto">
