@@ -135,7 +135,11 @@ export default function ShipperDashboardLayout({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={{
+        '--sidebar-width': '10.4rem',
+      } as React.CSSProperties}
+    >
       <Sidebar collapsible="icon" className="group/sidebar" side="left">
         <SidebarHeader className='p-4'>
           <div className="flex items-center justify-between">
@@ -202,7 +206,7 @@ export default function ShipperDashboardLayout({
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-card-alt h-screen overflow-y-auto">
+      <SidebarInset className="bg-card-alt overflow-y-auto">
         {childrenWithProps}
       </SidebarInset>
     </SidebarProvider>
