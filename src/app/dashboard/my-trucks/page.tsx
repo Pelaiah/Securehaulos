@@ -23,7 +23,7 @@ export default function MyTrucksPage() {
   const trucksToDisplay = useMemo(() => {
     if (!carrierData) return [];
 
-    const fleetSize = carrierData.equipment; // e.g., '1', '2-5', '6-10', '11+'
+    const fleetSize = carrierData.fleetSize; // Corrected from 'equipment' to 'fleetSize'
     let numberOfTrucks = 0;
 
     if (fleetSize === '1') {
