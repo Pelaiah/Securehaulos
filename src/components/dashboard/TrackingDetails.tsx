@@ -91,7 +91,7 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-64 rounded-lg overflow-hidden">
+                            <div className="h-40 rounded-lg overflow-hidden">
                                 <Map trucks={[truck]} selectedTruckId={truck.id} />
                             </div>
                         </CardContent>
