@@ -207,10 +207,18 @@ const secondaryNavItems = [
     );
   }
 
-  // If user is a shipper, this layout should not render its UI.
-  // The shipper layout will be used instead for shared pages.
-  if (userType === 'Shipper' && pathname !== '/dashboard/carrier') {
-      return <main className="flex-1">{childrenWithProps}</main>;
+  const carrierOnlyPaths = [
+    '/dashboard/carrier',
+    '/dashboard/my-trucks',
+    '/dashboard/my-drivers',
+    '/dashboard/load-board',
+    '/dashboard/subscription',
+  ];
+
+  // If user is a shipper, and the current path is one of the carrier-only paths, don't render carrier UI.
+  // The shipper layout will be used for all other pages under /dashboard.
+  if (userType === 'Shipper' && carrierOnlyPaths.some(p => pathname.startsWith(p))) {
+    return <main className="flex-1">{childrenWithProps}</main>;
   }
 
   return (
