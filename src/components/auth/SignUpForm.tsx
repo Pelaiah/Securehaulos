@@ -129,7 +129,7 @@ export function SignUpForm() {
         const carrierData = {
           id: user.uid,
           companyName: values.companyName,
-          equipment: values.fleetSize, 
+          fleetSize: values.fleetSize, 
           premiumMembership: false,
         };
         const carrierDocRef = doc(firestore, 'carriers', user.uid);
