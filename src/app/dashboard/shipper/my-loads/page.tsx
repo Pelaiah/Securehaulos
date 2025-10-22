@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { shipperLoads as allLoads } from '@/lib/data';
+import { shipperLoads as allLoads, type ShipperLoad } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import {
   Check,
@@ -18,6 +18,8 @@ import {
   Pencil,
   X,
 } from 'lucide-react';
+import { useState } from 'react';
+import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
 
 const statusStyles = {
   Paid: 'bg-green-500/10 text-green-400 border-green-500/20',
@@ -25,16 +27,19 @@ const statusStyles = {
   'In Transit': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
-const loadsByStatus = allLoads.reduce((acc, load) => {
-  const status = load.status;
-  if (!acc[status]) {
-    acc[status] = [];
-  }
-  acc[status].push(load);
-  return acc;
-}, {} as Record<string, typeof allLoads>);
-
 export default function MyLoadsPage() {
+  const [loads, setLoads] = useState<ShipperLoad[]>(allLoads);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const loadsByStatus = loads.reduce((acc, load) => {
+    const status = load.status;
+    if (!acc[status]) {
+      acc[status] = [];
+    }
+    acc[status].push(load);
+    return acc;
+  }, {} as Record<string, typeof loads>);
+
   const getStatusComponent = (status: string, date?: string) => {
     if (status === 'Paid') {
       return (
@@ -57,12 +62,22 @@ export default function MyLoadsPage() {
       </Button>
     );
   };
+  
+  const handlePostLoad = (newLoad: Omit<ShipperLoad, 'id'>) => {
+    const newLoadWithId = {
+      ...newLoad,
+      id: `ABIS ${String(loads.length + 1).padStart(5, '0')}`,
+    };
+    setLoads(prevLoads => [newLoadWithId, ...prevLoads]);
+  };
+
 
   return (
+    <>
     <div className="p-6 space-y-8 h-full overflow-y-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold font-headline">My Loads</h1>
-        <Button>
+        <Button onClick={() => setIsModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Post New Load
         </Button>
@@ -122,5 +137,11 @@ export default function MyLoadsPage() {
         </div>
       ))}
     </div>
+    <PostLoadModal 
+        isOpen={isModalOpen} 
+        onOpenChange={setIsModalOpen}
+        onPostLoad={handlePostLoad}
+     />
+    </>
   );
 }

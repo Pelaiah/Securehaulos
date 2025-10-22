@@ -202,7 +202,18 @@ export const tripData = [
     { id: '4', name: 'Anna Miller', date: 'Thu, 6 March 2023', status: 'Completed' as const, earned: '110.80', avatar: 'https://i.pravatar.cc/150?u=anna' },
   ];
 
-export const shipperLoads = [
+export type ShipperLoad = {
+  id: string;
+  date: string;
+  cargo: string;
+  invoiceValue: number;
+  afterTax: number;
+  status: 'Awaiting Payment' | 'Paid' | 'In Transit';
+  paidDate?: string;
+};
+
+
+export const shipperLoads: ShipperLoad[] = [
   { id: 'ABIS 00001', date: '2024-04-07', cargo: 'UAB Microsoft', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Awaiting Payment' },
   { id: 'ABIS 00002', date: '2024-04-03', cargo: 'UAB IBM', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Awaiting Payment' },
   { id: 'ABIS 00003', date: '2024-04-02', cargo: 'UAB TravelGuru', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Awaiting Payment' },
