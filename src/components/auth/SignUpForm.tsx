@@ -47,7 +47,7 @@ const carrierSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
-  fleetSize: z.enum(['1', '2-5', '6-10', '11+'], { required_error: 'Fleet size is required.' }),
+  fleetSize: z.coerce.number().positive({ message: "Fleet size must be a positive number." }).int(),
   userType: z.literal('Carrier'),
 });
 
@@ -303,19 +303,9 @@ export function SignUpForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Number of Trucks in Fleet</FormLabel>
-                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select fleet size" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2-5">2-5</SelectItem>
-                    <SelectItem value="6-10">6-10</SelectItem>
-                    <SelectItem value="11+">11+</SelectItem>
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input type="number" placeholder="e.g. 5" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

@@ -23,18 +23,7 @@ export default function MyTrucksPage() {
   const trucksToDisplay = useMemo(() => {
     if (!carrierData) return [];
 
-    const fleetSize = carrierData.fleetSize; // Corrected from 'equipment' to 'fleetSize'
-    let numberOfTrucks = 0;
-
-    if (fleetSize === '1') {
-      numberOfTrucks = 1;
-    } else if (fleetSize === '2-5') {
-      numberOfTrucks = 3; // Representative number
-    } else if (fleetSize === '6-10') {
-      numberOfTrucks = 7;
-    } else if (fleetSize === '11+') {
-      numberOfTrucks = 15;
-    }
+    const numberOfTrucks = carrierData.fleetSize || 0;
 
     // Generate mock truck data
     return Array.from({ length: numberOfTrucks }, (_, i) => ({
