@@ -119,7 +119,7 @@ export default function ShipperDashboardLayout({
   return (
      <SidebarProvider>
       <div className="flex min-h-screen">
-        <Sidebar>
+        <Sidebar collapsible="none">
           <SidebarHeader className='p-4'>
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="shrink-0" asChild>
@@ -178,7 +178,7 @@ export default function ShipperDashboardLayout({
               </div>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 h-screen overflow-hidden bg-card-alt">{childrenWithProps}</main>
+        <main className="flex-1 h-screen overflow-y-auto bg-card-alt">{childrenWithProps}</main>
       </div>
     </SidebarProvider>
   );
