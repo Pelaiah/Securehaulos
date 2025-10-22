@@ -66,6 +66,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import ShipperDashboardLayout from './shipper/layout';
 
 
 function SidebarToggleButton() {
@@ -207,18 +208,8 @@ const secondaryNavItems = [
     );
   }
 
-  const carrierOnlyPaths = [
-    '/dashboard/carrier',
-    '/dashboard/my-trucks',
-    '/dashboard/my-drivers',
-    '/dashboard/load-board',
-    '/dashboard/subscription',
-  ];
-
-  // If user is a shipper, and the current path is one of the carrier-only paths, don't render carrier UI.
-  // The shipper layout will be used for all other pages under /dashboard.
-  if (userType === 'Shipper' && carrierOnlyPaths.some(p => pathname.startsWith(p))) {
-    return <main className="flex-1">{childrenWithProps}</main>;
+  if (userType === 'Shipper') {
+    return <ShipperDashboardLayout>{childrenWithProps}</ShipperDashboardLayout>;
   }
 
   return (
