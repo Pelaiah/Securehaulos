@@ -13,9 +13,7 @@ import { trucks } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TripDetailsPage({ params }: { params: { tripId: string } }) {
-  const [selectedDriver, setSelectedDriver] = useState(() => {
-    return tripData.find(trip => trip.id === params.tripId) || null;
-  });
+  const [selectedDriver, setSelectedDriver] = useState<(typeof tripData)[0] | null>(null);
 
   useEffect(() => {
     const driver = tripData.find(trip => trip.id === params.tripId);
