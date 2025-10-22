@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Map } from '@/components/dashboard/Map';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
@@ -10,9 +10,42 @@ import { tripData } from '@/lib/data';
 import { Header } from '@/components/dashboard/Header';
 import { Fuel, Timer, Users, Weight } from 'lucide-react';
 import { trucks } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function ShipperDashboardPage() {
-  const [selectedDriver, setSelectedDriver] = useState(tripData[2]);
+export default function TripDetailsPage({ params }: { params: { tripId: string } }) {
+  const [selectedDriver, setSelectedDriver] = useState(() => {
+    return tripData.find(trip => trip.id === params.tripId) || null;
+  });
+
+  useEffect(() => {
+    const driver = tripData.find(trip => trip.id === params.tripId);
+    setSelectedDriver(driver || null);
+  }, [params.tripId]);
+
+
+  if (!selectedDriver) {
+    return (
+        <div className="flex flex-col h-full">
+            <Header title="Loading Trip..." onLogout={() => {}} />
+            <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
+                <div className="xl:col-span-1 space-y-6">
+                    <Skeleton className="h-64" />
+                    <Skeleton className="h-32" />
+                </div>
+                <div className="xl:col-span-2 space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Skeleton className="h-64" />
+                        <Skeleton className="h-64" />
+                    </div>
+                    <Skeleton className="h-full" />
+                </div>
+                <div className="xl:col-span-1">
+                    <Skeleton className="h-full" />
+                </div>
+            </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full">
