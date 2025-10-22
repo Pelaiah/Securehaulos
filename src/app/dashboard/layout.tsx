@@ -42,7 +42,6 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/dashboard/Header';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,7 +54,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { documents, trucks as allTrucks, type Truck as TruckType, tripData } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { EmergencyAlert } from '@/components/dashboard/EmergencyAlert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,8 +64,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import ShipperDashboardLayout from './shipper/layout';
-
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -80,7 +76,11 @@ function SidebarToggleButton() {
 function SidebarFooterButton() {
     const { state } = useSidebar();
     if (state === 'collapsed') {
-        return <SidebarTrigger />;
+        return (
+             <div className="flex items-center justify-center p-2">
+                <SidebarTrigger />
+            </div>
+        );
     }
     return null;
 }
@@ -122,8 +122,14 @@ export default function DashboardLayout({
     if (!user) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
+  
+  const shipperDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'shippers', user.uid);
+  }, [user, firestore]);
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+  const { data: shipperData, isLoading: isShipperDataLoading } = useDoc(shipperDocRef);
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
   
   const carrierNavItems = [
@@ -135,6 +141,14 @@ export default function DashboardLayout({
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
  ];
+
+ const shipperNavItems = [
+    { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/dashboard/shipper/my-loads', icon: Package, label: 'My Loads' },
+    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
+    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
+    { href: '/dashboard/shipper/tracking', icon: Truck, label: 'Tracking' },
+  ];
 
 const secondaryNavItems = [
     { 
@@ -183,38 +197,38 @@ const secondaryNavItems = [
     router.push('/dashboard/documents');
   }
 
+  const isLoading = isUserLoading || isUserDataLoading || (userType === 'Shipper' && isShipperDataLoading);
+
   const childrenWithProps = Children.map(children, child => {
     if (React.isValidElement(child)) {
-      return cloneElement(child, { 
-        selectedTruck,
-        setSelectedTruck,
-        isDetailsOpen,
-        setIsDetailsOpen,
-        displayTrucks: allTrucks,
-        selectedDriver,
-        setSelectedDriver,
+      const props: any = {
         userType,
-        isLoading: isUserDataLoading,
-      } as any);
+        isLoading: isUserDataLoading || isUserLoading,
+      };
+      if (userType === 'Shipper') {
+        props.companyName = shipperData?.companyName;
+      }
+      return cloneElement(child, props);
     }
     return child;
   });
   
-  if (isUserDataLoading || isUserLoading) {
+  if (isLoading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <Skeleton className="h-full w-full" />
         </div>
     );
   }
-
-  if (userType === 'Shipper') {
-    return <ShipperDashboardLayout>{childrenWithProps}</ShipperDashboardLayout>;
-  }
+  
+  const isShipper = userType === 'Shipper';
+  const navItems = isShipper ? shipperNavItems : carrierNavItems;
 
   return (
-    <SidebarProvider>
-      <Sidebar variant="floating" collapsible="icon" className="group/sidebar">
+    <SidebarProvider
+        style={ isShipper ? { '--sidebar-width': '10.4rem' } as React.CSSProperties : undefined }
+    >
+      <Sidebar variant={isShipper ? "sidebar" : "floating"} collapsible="icon" className="group/sidebar">
         <SidebarHeader className='p-4'>
            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -224,8 +238,8 @@ const secondaryNavItems = [
                     </Link>
                 </Button>
                 <div className='group-data-[collapsible=icon]:hidden'>
-                    <h2 className='font-bold text-lg font-headline'>Right Direction</h2>
-                    <p className='text-xs text-muted-foreground'>Carrier Portal</p>
+                    <h2 className='font-bold text-lg font-headline'>{isShipper ? 'Saboor' : 'Right Direction'}</h2>
+                    <p className='text-xs text-muted-foreground'>{isShipper ? 'Shipper Portal' : 'Carrier Portal'}</p>
                 </div>
             </div>
             <SidebarToggleButton />
@@ -233,7 +247,7 @@ const secondaryNavItems = [
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {carrierNavItems.map((item) => (
+            {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
@@ -248,7 +262,7 @@ const secondaryNavItems = [
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-             {secondaryNavItems.map((item) => (
+             {!isShipper && secondaryNavItems.map((item) => (
                 <SidebarMenuItem key={item.id} asChild>
                     <Collapsible>
                         <CollapsibleTrigger asChild>
@@ -301,16 +315,17 @@ const secondaryNavItems = [
                         <ChevronDown className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className={isShipper ? "w-[var(--sidebar-width)]" : ""}>
                       <DropdownMenuItem>Settings</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+                 {isShipper && <SidebarFooterButton />}
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className='bg-background p-6'>
+      <SidebarInset className={cn('overflow-y-auto', isShipper ? 'bg-card-alt' : 'bg-background p-6')}>
         <main className="flex-1">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent>
