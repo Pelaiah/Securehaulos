@@ -38,6 +38,7 @@ const formSchema = z.object({
   invoiceValue: z.coerce.number().positive('Invoice value must be positive.'),
   pickupLocation: z.string().min(1, 'Pickup location is required.'),
   deliveryLocation: z.string().min(1, 'Delivery location is required.'),
+  cargoType: z.string().min(1, 'Cargo type is required.'),
 });
 
 type PostLoadModalProps = {
@@ -61,6 +62,7 @@ export function PostLoadModal({
       invoiceValue: 0,
       pickupLocation: '',
       deliveryLocation: '',
+      cargoType: '',
     },
   });
 
@@ -113,6 +115,29 @@ export function PostLoadModal({
                 </FormItem>
               )}
             />
+             <FormField
+                control={form.control}
+                name="cargoType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cargo Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a cargo type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="general">General Goods</SelectItem>
+                        <SelectItem value="perishables">Perishables</SelectItem>
+                        <SelectItem value="hazardous">Hazardous Materials</SelectItem>
+                        <SelectItem value="vehicles">Vehicles</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             <FormField
               control={form.control}
               name="invoiceValue"
