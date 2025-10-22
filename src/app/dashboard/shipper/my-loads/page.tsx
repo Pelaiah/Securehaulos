@@ -99,7 +99,7 @@ export default function MyLoadsPage() {
                         Invoice value
                       </p>
                     </div>
-                    <div>
+                    <div className="relative -mt-5 ml-2.5">
                       <p className="font-semibold">
                         ${load.afterTax.toLocaleString()}
                       </p>
