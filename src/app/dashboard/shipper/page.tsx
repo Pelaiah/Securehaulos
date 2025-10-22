@@ -20,6 +20,7 @@ export default function ShipperDashboardPage() {
       <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
+          <InformationCard driver={selectedDriver} />
           <VehicleInfoCard />
            <Card className='flex-grow'>
               <CardContent className="p-4 grid grid-cols-2 gap-4 text-sm">
@@ -48,18 +49,17 @@ export default function ShipperDashboardPage() {
 
         {/* Middle Column */}
         <div className="xl:col-span-2 space-y-6 flex flex-col">
-            <div className='grid md:grid-cols-2 gap-6'>
-                <InformationCard driver={selectedDriver} />
-                <TripInfoCard />
-            </div>
             <div className="flex-grow rounded-lg overflow-hidden">
                  <Map trucks={trucks} />
             </div>
         </div>
 
         {/* Right Column */}
-        <div className="xl:col-span-1">
-          <ShipmentList title="Trips" />
+        <div className="xl:col-span-1 space-y-6 flex flex-col">
+            <TripInfoCard />
+            <div className="flex-grow">
+                <ShipmentList title="Trips" />
+            </div>
         </div>
       </div>
     </div>
