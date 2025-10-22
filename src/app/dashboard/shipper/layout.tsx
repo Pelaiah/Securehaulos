@@ -42,6 +42,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Header } from '@/components/dashboard/Header';
 
+function SidebarToggleButton() {
+    const { state } = useSidebar();
+    if (state === 'expanded') {
+        return <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />;
+    }
+    return null;
+}
 
 export default function ShipperDashboardLayout({
   children,
@@ -118,19 +125,21 @@ export default function ShipperDashboardLayout({
 
   return (
      <SidebarProvider>
-      <div className="flex min-h-screen">
-        <Sidebar collapsible="none">
+        <Sidebar collapsible="icon" className="group/sidebar" side="left">
           <SidebarHeader className='p-4'>
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="shrink-0" asChild>
-                    <Link href="/">
-                        <ShieldCheck className="w-6 h-6 text-primary" />
-                    </Link>
-                </Button>
-                <div>
-                    <h2 className='font-bold text-lg font-headline'>Saboor</h2>
-                    <p className='text-xs text-muted-foreground'>Shipper Portal</p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="shrink-0" asChild>
+                        <Link href="/">
+                            <ShieldCheck className="w-6 h-6 text-primary" />
+                        </Link>
+                    </Button>
+                    <div className="group-data-[collapsible=icon]:hidden">
+                        <h2 className='font-bold text-lg font-headline'>Saboor</h2>
+                        <p className='text-xs text-muted-foreground'>Shipper Portal</p>
+                    </div>
                 </div>
+                <SidebarToggleButton />
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -141,45 +150,49 @@ export default function ShipperDashboardLayout({
                     asChild
                     isActive={pathname.startsWith(item.href)}
                     tooltip={item.label}
+                    className="justify-start"
                   >
                     <Link href={item.href}>
                       <item.icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter>
-              <div className="flex items-center justify-between gap-2 p-2">
+          <SidebarFooter className="group-data-[collapsible=icon]:p-3">
+              <div className="flex items-center justify-center gap-2 p-2">
                   <Button variant="ghost" size="icon" onClick={toggleTheme}>
                     {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                   </Button>
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
-                            <AvatarFallback>U</AvatarFallback>
-                          </Avatar>
-                           <div className="text-left">
-                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
-                            <p className="text-xs text-muted-foreground">{userType}</p>
-                        </div>
-                          <ChevronDown className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                   <div className='group-data-[collapsible=icon]:hidden flex-1 flex justify-end'>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
+                              <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                            <div className="text-left flex-1 truncate">
+                              <p className="text-sm font-medium truncate">{user?.displayName || user?.email}</p>
+                              <p className="text-xs text-muted-foreground truncate">{userType}</p>
+                          </div>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[var(--sidebar-width)]">
+                          <DropdownMenuItem>Settings</DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
               </div>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 h-screen overflow-y-auto bg-card-alt">{childrenWithProps}</main>
-      </div>
+        <SidebarInset className="bg-card-alt h-screen overflow-y-auto">
+          {childrenWithProps}
+        </SidebarInset>
     </SidebarProvider>
   );
 }
