@@ -39,26 +39,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-function SidebarToggleButton() {
-    const { state } = useSidebar();
-    if (state === 'expanded') {
-        return <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />;
-    }
-    return null;
-}
-
-function SidebarFooterButton() {
-    const { state } = useSidebar();
-    if (state === 'collapsed') {
-        return (
-             <div className="flex items-center justify-center p-2">
-                <SidebarTrigger />
-            </div>
-        );
-    }
-    return null;
-}
-
 
 export default function ShipperDashboardLayout({
   children,
@@ -71,6 +51,27 @@ export default function ShipperDashboardLayout({
   const firestore = useFirestore();
   const router = useRouter();
   const [theme, setTheme] = useState('dark');
+
+  // Moved components inside to access useSidebar hook correctly
+  function SidebarToggleButton() {
+    const { state } = useSidebar();
+    if (state === 'expanded') {
+        return <SidebarTrigger className="group-data-[collapsible=icon]:hidden" />;
+    }
+    return null;
+  }
+
+  function SidebarFooterButton() {
+    const { state } = useSidebar();
+    if (state === 'collapsed') {
+        return (
+             <div className="flex items-center justify-center p-2">
+                <SidebarTrigger />
+            </div>
+        );
+    }
+    return null;
+  }
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -161,7 +162,7 @@ export default function ShipperDashboardLayout({
                   isActive={pathname.startsWith(item.href)}
                   tooltip={{
                     children: item.label,
-                    hidden: useSidebar().state === 'expanded'
+                    hidden: useSidebar().state === 'expanded' || useSidebar().isMobile,
                   }}
                   className="justify-start"
                 >
