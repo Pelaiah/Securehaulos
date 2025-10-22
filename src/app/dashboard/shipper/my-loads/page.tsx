@@ -105,7 +105,7 @@ export default function MyLoadsPage() {
                       </p>
                       <p className="text-xs text-muted-foreground">After tax</p>
                     </div>
-                    <div className="col-span-2 flex items-center justify-end gap-2 mt-5">
+                    <div className="col-span-2 flex items-center justify-end gap-2 mt-8">
                       {getStatusComponent(load.status, load.paidDate)}
                       <Button variant="ghost" size="icon" className='text-muted-foreground'>
                         <Pencil className="w-4 h-4" />
