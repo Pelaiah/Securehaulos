@@ -51,8 +51,8 @@ export default function MyLoadsPage() {
       );
     }
     return (
-      <Button size="sm" className="bg-primary/80 hover:bg-primary">
-        <Plus className="mr-2 h-4 w-4" />
+      <Button size="sm" className="bg-primary/80 hover:bg-primary h-7 px-2.5 text-xs">
+        <Plus className="mr-2 h-3 w-3" />
         Fix payment
       </Button>
     );
