@@ -125,7 +125,7 @@ export default function ShipperDashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" className="group/sidebar" variant="floating">
+      <Sidebar side="left" collapsible="icon" className="group/sidebar" variant="floating">
         <SidebarHeader className='p-4'>
            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
