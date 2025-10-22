@@ -83,7 +83,7 @@ export default function MyLoadsPage() {
                   <Button variant="ghost" className="text-muted-foreground">
                     <FileDown className="mr-2" /> PDF
                   </Button>
-                  <div className="ml-4 flex-1 grid grid-cols-5 items-center gap-4">
+                  <div className="ml-4 flex-1 grid grid-cols-6 items-center gap-4">
                     <div>
                       <p className="font-semibold">{load.date}</p>
                       <p className="text-xs text-muted-foreground">
@@ -105,7 +105,7 @@ export default function MyLoadsPage() {
                       </p>
                       <p className="text-xs text-muted-foreground">After tax</p>
                     </div>
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="col-span-2 flex items-center justify-end gap-2">
                       {getStatusComponent(load.status, load.paidDate)}
                       <Button variant="ghost" size="icon" className='text-muted-foreground'>
                         <Pencil className="w-4 h-4" />
