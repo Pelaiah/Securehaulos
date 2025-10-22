@@ -126,12 +126,21 @@ export default function ShipperDashboardLayout({
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" className="group/sidebar" variant="floating">
-        <SidebarHeader className='p-4 justify-center'>
-            <Button variant="ghost" size="icon" className="shrink-0" asChild>
-                <Link href="/">
-                    <ShieldCheck className="w-6 h-6 text-primary" />
-                </Link>
-            </Button>
+        <SidebarHeader className='p-4'>
+           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="shrink-0" asChild>
+                    <Link href="/">
+                        <ShieldCheck className="w-6 h-6 text-primary" />
+                    </Link>
+                </Button>
+                <div className='group-data-[collapsible=icon]:hidden'>
+                    <h2 className='font-bold text-lg font-headline'>Saboor loadboard</h2>
+                    <p className='text-xs text-muted-foreground'>Shipper Portal</p>
+                </div>
+            </div>
+            <SidebarToggleButton />
+          </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -139,7 +148,7 @@ export default function ShipperDashboardLayout({
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href)}
                   className="justify-start"
                   tooltip={item.label}
                 >
@@ -165,10 +174,14 @@ export default function ShipperDashboardLayout({
                           <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
                           <AvatarFallback>U</AvatarFallback>
                         </Avatar>
+                         <div className="text-left">
+                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                            <p className="text-xs text-muted-foreground">{userType}</p>
+                        </div>
+                        <ChevronDown className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                       <DropdownMenuItem>{user?.displayName || user?.email}</DropdownMenuItem>
                        <DropdownMenuItem>Settings</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                     </DropdownMenuContent>
