@@ -31,8 +31,11 @@ export default function DashboardPage() {
     }
 
     if (userData) {
-      // We have user data, redirect all users to the carrier dashboard
-      router.replace('/dashboard/carrier');
+      if (userData.userType === 'Shipper') {
+        router.replace('/dashboard/shipper');
+      } else {
+        router.replace('/dashboard/carrier');
+      }
     } else {
       // User is authenticated but has no data in Firestore yet.
       // This can happen briefly during signup. We wait, and the hook will re-run.

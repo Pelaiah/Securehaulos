@@ -207,6 +207,12 @@ const secondaryNavItems = [
     );
   }
 
+  // If user is a shipper, this layout should not render its UI.
+  // The shipper layout will be used instead for shared pages.
+  if (userType === 'Shipper' && pathname !== '/dashboard/carrier') {
+      return <main className="flex-1">{childrenWithProps}</main>;
+  }
+
   return (
     <SidebarProvider>
       <Sidebar variant="floating" collapsible="icon" className="group/sidebar">
