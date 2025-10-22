@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -22,7 +21,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { type ShipperLoad } from '@/lib/data';
 
@@ -38,12 +37,14 @@ type PostLoadModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onPostLoad: (load: Omit<ShipperLoad, 'id'>) => void;
+  companyName?: string;
 };
 
 export function PostLoadModal({
   isOpen,
   onOpenChange,
   onPostLoad,
+  companyName,
 }: PostLoadModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -51,13 +52,19 @@ export function PostLoadModal({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      cargo: '',
+      cargo: companyName || '',
       invoiceValue: 0,
       pickupLocation: '',
       deliveryLocation: '',
       cargoType: '',
     },
   });
+
+  useEffect(() => {
+    if (companyName) {
+      form.setValue('cargo', companyName);
+    }
+  }, [companyName, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -102,7 +109,7 @@ export function PostLoadModal({
                 <FormItem>
                   <FormLabel>Cargo / Company</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. UAB Microsoft" {...field} />
+                    <Input placeholder="e.g. UAB Microsoft" {...field} readOnly />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,7 +122,7 @@ export function PostLoadModal({
                   <FormItem>
                     <FormLabel>Cargo Type</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. General Goods" {...field} />
+                       <Input placeholder="e.g. General Goods" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

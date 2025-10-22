@@ -27,7 +27,11 @@ const statusStyles = {
   'In Transit': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
-export default function MyLoadsPage() {
+interface MyLoadsPageProps {
+  companyName?: string;
+}
+
+export default function MyLoadsPage({ companyName }: MyLoadsPageProps) {
   const [loads, setLoads] = useState<ShipperLoad[]>(allLoads);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -114,7 +118,7 @@ export default function MyLoadsPage() {
                         Invoice value
                       </p>
                     </div>
-                    <div className="relative">
+                    <div>
                       <p className="font-semibold">
                         ${load.afterTax.toLocaleString()}
                       </p>
@@ -141,6 +145,7 @@ export default function MyLoadsPage() {
         isOpen={isModalOpen} 
         onOpenChange={setIsModalOpen}
         onPostLoad={handlePostLoad}
+        companyName={companyName}
      />
     </>
   );

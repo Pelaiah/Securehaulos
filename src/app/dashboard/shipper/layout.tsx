@@ -92,8 +92,14 @@ export default function ShipperDashboardLayout({
     if (!user) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
+  
+  const shipperDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'shippers', user.uid);
+  }, [user, firestore]);
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+  const { data: shipperData, isLoading: isShipperDataLoading } = useDoc(shipperDocRef);
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
 
   const shipperNavItems = [
@@ -117,11 +123,11 @@ export default function ShipperDashboardLayout({
     }
   }
 
-  const isLoading = isUserLoading || isUserDataLoading;
+  const isLoading = isUserLoading || isUserDataLoading || isShipperDataLoading;
 
   const childrenWithProps = Children.map(children, child => {
     if (React.isValidElement(child)) {
-      return cloneElement(child, { userType } as any);
+      return cloneElement(child, { userType, companyName: shipperData?.companyName } as any);
     }
     return child;
   });
