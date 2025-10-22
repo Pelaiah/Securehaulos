@@ -8,7 +8,7 @@ import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { tripData } from '@/lib/data';
 import { Header } from '@/components/dashboard/Header';
-import { Fuel, Timer, Users, Weight } from 'lucide-react';
+import { Fuel, Timer, Weight } from 'lucide-react';
 import { trucks } from '@/lib/data';
 
 export default function ShipperDashboardPage() {
@@ -53,7 +53,7 @@ export default function ShipperDashboardPage() {
                 <TripInfoCard />
             </div>
             <div className="flex-grow rounded-lg overflow-hidden">
-                 <Map trucks={trucks} selectedTruckId={'SD-752069247'} />
+                 <Map trucks={trucks} />
             </div>
         </div>
 
