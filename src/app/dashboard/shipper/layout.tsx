@@ -160,10 +160,7 @@ export default function ShipperDashboardLayout({
                 <SidebarMenuButton
                   asChild
                   isActive={pathname.startsWith(item.href)}
-                  tooltip={{
-                    children: item.label,
-                    hidden: useSidebar().state === 'expanded' || useSidebar().isMobile,
-                  }}
+                  tooltip={item.label}
                   className="justify-start"
                 >
                   <Link href={item.href}>
