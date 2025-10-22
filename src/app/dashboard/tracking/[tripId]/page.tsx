@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { Map } from '@/components/dashboard/Map';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
@@ -12,13 +13,17 @@ import { Fuel, Timer, Users, Weight } from 'lucide-react';
 import { trucks } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function TripDetailsPage({ params }: { params: { tripId: string } }) {
+export default function TripDetailsPage() {
+  const params = useParams();
+  const tripId = params.tripId as string;
   const [selectedDriver, setSelectedDriver] = useState<(typeof tripData)[0] | null>(null);
 
   useEffect(() => {
-    const driver = tripData.find(trip => trip.id === params.tripId);
-    setSelectedDriver(driver || null);
-  }, [params.tripId]);
+    if (tripId) {
+      const driver = tripData.find(trip => trip.id === tripId);
+      setSelectedDriver(driver || null);
+    }
+  }, [tripId]);
 
 
   if (!selectedDriver) {
