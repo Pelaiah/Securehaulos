@@ -201,3 +201,14 @@ export const tripData = [
     { id: '3', name: 'Alex Williams', date: 'Wed, 7 March 2023', status: 'Completed' as const, earned: '56.45', avatar: 'https://i.pravatar.cc/150?u=alex' },
     { id: '4', name: 'Anna Miller', date: 'Thu, 6 March 2023', status: 'Completed' as const, earned: '110.80', avatar: 'https://i.pravatar.cc/150?u=anna' },
   ];
+
+export const shipperLoads = [
+  { id: 'ABIS 00001', date: '2024-04-07', cargo: 'UAB Microsoft', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Awaiting Payment' },
+  { id: 'ABIS 00002', date: '2024-04-03', cargo: 'UAB IBM', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Awaiting Payment' },
+  { id: 'ABIS 00003', date: '2024-04-02', cargo: 'UAB TravelGuru', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Awaiting Payment' },
+  { id: 'ABIS 00004', date: '2024-03-24', cargo: 'UAB Flair Digital', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Paid', paidDate: '2024-03-28' },
+  { id: 'ABIS 00005', date: '2024-03-20', cargo: 'UAB Apple Store', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Paid', paidDate: '2024-03-22' },
+  { id: 'ABIS 00006', date: '2024-02-20', cargo: 'UAB IBM', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Paid', paidDate: '2024-02-25' },
+  { id: 'ABIS 00007', date: '2024-02-14', cargo: 'UAB TravelGuru', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Paid', paidDate: '2024-02-18' },
+  { id: 'ABIS 00008', date: '2024-01-15', cargo: 'UAB Microsoft', invoiceValue: 1380.77, afterTax: 1247.16, status: 'In Transit' },
+];

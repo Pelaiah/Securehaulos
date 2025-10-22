@@ -79,7 +79,7 @@ export default function ShipperDashboardLayout({
 
   const shipperNavItems = [
     { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/dashboard/my-loads', icon: Package, label: 'My Loads' },
+    { href: '/dashboard/shipper/my-loads', icon: Package, label: 'My Loads' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
     { href: '/dashboard/shipper/tracking', icon: Truck, label: 'Tracking' },
