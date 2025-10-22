@@ -78,11 +78,11 @@ export default function ShipperDashboardLayout({
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
 
   const shipperNavItems = [
-    { href: '/dashboard/shipper', icon: User, label: 'Dashboard' },
+    { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/dashboard/my-loads', icon: Package, label: 'My Loads' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
-    { href: '/dashboard/tracking', icon: Truck, label: 'Tracking' },
+    { href: '/dashboard/shipper/tracking', icon: Truck, label: 'Tracking' },
   ];
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function ShipperDashboardLayout({
   });
 
   return (
-    <SidebarProvider>
+     <SidebarProvider>
       <div className="flex min-h-screen">
         <Sidebar variant='floating' collapsible="icon" className="group/sidebar" side="left">
           <SidebarHeader className='p-3'>

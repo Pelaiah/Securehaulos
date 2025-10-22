@@ -38,7 +38,7 @@ function TripListItem({ item }: TripListItemProps) {
     };
 
     return (
-        <Link href={`/dashboard/tracking/${item.id}`} className="block p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+        <Link href={`/dashboard/shipper/tracking/${item.id}`} className="block p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">

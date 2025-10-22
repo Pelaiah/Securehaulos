@@ -6,7 +6,7 @@ import { tripData } from '@/lib/data';
 export default function TrackingPage() {
   const firstTripId = tripData[0]?.id;
   if (firstTripId) {
-    redirect(`/dashboard/tracking/${firstTripId}`);
+    redirect(`/dashboard/shipper/tracking/${firstTripId}`);
   }
 
   return (
