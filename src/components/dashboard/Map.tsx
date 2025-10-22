@@ -48,6 +48,8 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
     };
   }, []);
   
+  const activePoint = tripPoints.find(p => p.status === 'active');
+  
   return (
     <div ref={mapRef} className="h-full w-full rounded-lg bg-card relative overflow-hidden border">
       <Image
@@ -106,42 +108,19 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
       })}
 
 
-      {/* Trucks */}
-      {trucks.map((truck, index) => {
-        const position = truckPositions[index % truckPositions.length];
-        
-        let colorClass = 'text-primary';
-        if(truck.status === 'On-time') colorClass = 'text-green-500';
-        if(truck.status === 'Delayed') colorClass = 'text-yellow-500';
-        if(truck.status === 'Idle') colorClass = 'text-gray-500';
-        if(truck.status === 'Alert') colorClass = 'text-red-500';
-        
-        const isSelected = truck.id === selectedTruckId;
-
-        const isActiveTripTruck = truck.id === selectedTruckId;
-        const activePoint = tripPoints.find(p => p.status === 'active');
-
-        let truckStyle = { 
-            top: position.top, 
-            left: position.left, 
-            transform: `translate(-50%, -50%) scale(${isSelected ? 1.5 : 1})` 
-        };
-
-        if(isActiveTripTruck && activePoint){
-            truckStyle.top = activePoint.pos.top;
-            truckStyle.left = activePoint.pos.left;
-        }
-
-        return (
+      {/* Truck Position */}
+      {selectedTruckId && activePoint && (
           <div
-            key={truck.id}
             className="absolute transition-all duration-500"
-            style={truckStyle}
+            style={{
+                top: activePoint.pos.top, 
+                left: activePoint.pos.left, 
+                transform: `translate(-50%, -50%) scale(1.5)` 
+            }}
           >
-            <MapPin className={cn('w-8 h-8 drop-shadow-lg', colorClass, isSelected && 'fill-current')} />
+            <MapPin className='w-8 h-8 drop-shadow-lg text-primary fill-current' />
           </div>
-        );
-      })}
+        )}
     </div>
   );
 }
