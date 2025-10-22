@@ -101,7 +101,13 @@ export default function ShipperDashboardLayout({
 
   const isLoading = isUserLoading || isUserDataLoading;
 
-  // If user is not a shipper, show a loading skeleton while redirecting.
+  const childrenWithProps = Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return cloneElement(child, { userType } as any);
+    }
+    return child;
+  });
+
   if (isLoading || (userType && userType !== 'Shipper')) {
      return (
         <div className="flex items-center justify-center h-screen bg-background">
@@ -110,24 +116,21 @@ export default function ShipperDashboardLayout({
     );
   }
 
-  const childrenWithProps = Children.map(children, child => {
-    if (React.isValidElement(child)) {
-      return cloneElement(child, { userType } as any);
-    }
-    return child;
-  });
-
   return (
      <SidebarProvider>
       <div className="flex min-h-screen">
-        <Sidebar variant='floating' collapsible="icon" className="group/sidebar" side="left">
-          <SidebarHeader className='p-3'>
-            <div className="flex items-center justify-center">
-                  <Button variant="ghost" size="icon" className="shrink-0" asChild>
-                      <Link href="/">
-                          <ShieldCheck className="w-6 h-6 text-primary" />
-                      </Link>
-                  </Button>
+        <Sidebar>
+          <SidebarHeader className='p-4'>
+            <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="shrink-0" asChild>
+                    <Link href="/">
+                        <ShieldCheck className="w-6 h-6 text-primary" />
+                    </Link>
+                </Button>
+                <div>
+                    <h2 className='font-bold text-lg font-headline'>Saboor</h2>
+                    <p className='text-xs text-muted-foreground'>Shipper Portal</p>
+                </div>
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -137,32 +140,34 @@ export default function ShipperDashboardLayout({
                   <SidebarMenuButton
                     asChild
                     isActive={pathname.startsWith(item.href)}
-                    className="justify-center"
                     tooltip={item.label}
                   >
                     <Link href={item.href}>
                       <item.icon className="h-5 w-5" />
-                      <span className="sr-only">{item.label}</span>
+                      <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="p-3">
-              <div className="flex items-center justify-center">
+          <SidebarFooter>
+              <div className="flex items-center justify-between gap-2 p-2">
                   <Button variant="ghost" size="icon" onClick={toggleTheme}>
                     {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                   </Button>
-              </div>
-              <div className="flex items-center justify-center">
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
                             <AvatarFallback>U</AvatarFallback>
                           </Avatar>
+                           <div className="text-left">
+                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                            <p className="text-xs text-muted-foreground">{userType}</p>
+                        </div>
+                          <ChevronDown className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
