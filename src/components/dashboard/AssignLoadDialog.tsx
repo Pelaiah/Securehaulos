@@ -15,7 +15,6 @@ import { useState } from 'react';
 import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
 import { FileUpload } from './FileUpload';
-import { cn } from '@/lib/utils';
 
 type AssignLoadDialogProps = {
   isOpen: boolean;
@@ -61,8 +60,8 @@ export function AssignLoadDialog({
       setIsSubmitting(false);
       onOpenChange(false);
       toast({
-        title: 'Load Assigned Successfully!',
-        description: `${load?.cargo} has been assigned to truck ${selectedTruckId}.`,
+        title: 'Documents Submitted for Review',
+        description: `The load has been assigned a truck. The shipper will now review the documents and accept the assignment.`,
       });
       router.push('/dashboard/my-trucks');
     }, 1500);

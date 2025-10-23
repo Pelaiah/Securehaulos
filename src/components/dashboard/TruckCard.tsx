@@ -9,7 +9,8 @@ import {
   ShieldOff,
   Fuel,
   Weight,
-  Clock
+  Clock,
+  FileClock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -26,14 +27,18 @@ export function TruckCard({ truck, onClick }: TruckCardProps) {
     'Delayed': 'bg-yellow-500/20 text-yellow-400 border-transparent',
     'Idle': 'bg-gray-500/20 text-gray-400 border-transparent',
     'Alert': 'bg-red-500/20 text-red-400 border-transparent',
+    'Pending': 'bg-orange-500/20 text-orange-400 border-transparent',
   };
+
+  const isPending = truck.status === 'Pending';
 
   return (
     <Card
       className={cn(
         'cursor-pointer transition-all hover:shadow-md hover:border-primary/50 relative overflow-hidden bg-card',
         truck.unauthorizedDoorOpening &&
-          'border-destructive/50 animate-red-alert-sweep bg-gradient-to-r from-destructive/20 via-destructive/5 to-destructive/20'
+          'border-destructive/50 animate-red-alert-sweep bg-gradient-to-r from-destructive/20 via-destructive/5 to-destructive/20',
+        isPending && 'border-orange-500/50'
       )}
       style={
         truck.unauthorizedDoorOpening
@@ -42,6 +47,11 @@ export function TruckCard({ truck, onClick }: TruckCardProps) {
       }
       onClick={onClick}
     >
+       {isPending && (
+        <div className="absolute top-2 right-2 bg-orange-500/20 text-orange-400 p-1.5 rounded-full z-10">
+          <FileClock className="w-4 h-4" />
+        </div>
+      )}
       <CardContent className="p-4 space-y-3">
         <div className="flex justify-between items-start">
           <p className='font-bold'>{truck.name}</p>

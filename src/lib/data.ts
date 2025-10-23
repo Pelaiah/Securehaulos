@@ -7,7 +7,7 @@ export type Truck = {
     lat: number;
     lng: number;
   };
-  status: 'On-time' | 'Delayed' | 'Idle' | 'Alert';
+  status: 'On-time' | 'Delayed' | 'Idle' | 'Alert' | 'Pending';
   fuelLevel: number;
   idleTime: string;
   loadWeight: number;
@@ -57,10 +57,10 @@ export const trucks: Truck[] = [
     name: 'Delta Cargo',
     imageUrl: 'https://i.imgur.com/eljOF7J.png',
     location: { lat: 29.7604, lng: -95.3698 },
-    status: 'Delayed',
-    fuelLevel: 30,
-    idleTime: '1h 5m',
-    loadWeight: 20000,
+    status: 'Pending',
+    fuelLevel: 75,
+    idleTime: '0h 0m',
+    loadWeight: 19500,
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
   },

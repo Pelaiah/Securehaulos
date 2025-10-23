@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { type Truck } from '@/lib/data';
+import { trucks as allTrucks, type Truck } from '@/lib/data';
 import { TruckCard } from '@/components/dashboard/TruckCard';
 import { TruckDetailsDialog } from '@/components/dashboard/TruckDetailsDialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,25 +21,9 @@ export default function MyTrucksPage() {
   const { data: carrierData, isLoading: isCarrierLoading } = useDoc(carrierDocRef);
 
   const trucksToDisplay = useMemo(() => {
-    if (!carrierData) return [];
-
-    const numberOfTrucks = carrierData.fleetSize || 0;
-
-    // Generate mock truck data
-    return Array.from({ length: numberOfTrucks }, (_, i) => ({
-        id: `CARR-TR-${100 + i + 1}`,
-        name: `Truck #${i + 1}`,
-        imageUrl: `https://i.imgur.com/gJt3wGk.png`,
-        location: { lat: 34.0522, lng: -118.2437 },
-        status: i % 4 === 0 ? 'Idle' : i % 4 === 1 ? 'On-time' : i % 4 === 2 ? 'Delayed' : 'Alert',
-        fuelLevel: Math.floor(Math.random() * 80) + 20,
-        idleTime: `${i % 3}h ${Math.floor(Math.random() * 60)}m`,
-        loadWeight: Math.floor(Math.random() * 10000) + 10000,
-        cargoIntegrity: i % 4 !== 3,
-        unauthorizedDoorOpening: i % 4 === 3,
-    })) as Truck[];
-
-  }, [carrierData]);
+    // For demo purposes, we'll just use the mock data
+    return allTrucks;
+  }, []);
 
 
   const handleTruckClick = (truck: Truck) => {
