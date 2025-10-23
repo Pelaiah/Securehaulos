@@ -135,9 +135,10 @@ export const loads: Load[] = [
 export type Document = {
   id: string;
   name: string;
-  type: 'Tax' | 'Registration' | 'Insurance';
+  type: 'Tax' | 'Registration' | 'Insurance' | 'License' | 'Certification';
   status: 'Approved' | 'Pending' | 'Rejected' | 'Expired';
   expiryDate?: string;
+  uploadDate?: string;
 };
 
 export const documents: Document[] = [
@@ -222,4 +223,72 @@ export const shipperLoads: ShipperLoad[] = [
   { id: 'ABIS 00006', date: '2024-02-20', cargo: 'UAB IBM', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Paid', paidDate: '2024-02-25' },
   { id: 'ABIS 00007', date: '2024-02-14', cargo: 'UAB TravelGuru', invoiceValue: 1380.77, afterTax: 1247.16, status: 'Paid', paidDate: '2024-02-18' },
   { id: 'ABIS 00008', date: '2024-01-15', cargo: 'UAB Microsoft', invoiceValue: 1380.77, afterTax: 1247.16, status: 'In Transit' },
+];
+
+export type Driver = {
+    id: string;
+    name: string;
+    avatar: string;
+    phone: string;
+    truck: string;
+    status: 'On-time' | 'Delayed' | 'Alert' | 'Idle';
+    documents: Document[];
+    onLeave: boolean;
+    leaveStartDate?: string;
+    leaveEndDate?: string;
+};
+
+export const drivers: Driver[] = [
+  {
+    id: 'DRV-001',
+    name: 'Alex Williams',
+    avatar: 'https://i.pravatar.cc/150?u=alex',
+    phone: '+1 (555) 123-4567',
+    truck: 'TR-002',
+    status: 'On-time',
+    onLeave: false,
+    documents: [
+      { id: 'DOC-AW-01', name: "Driver's License", type: 'License', status: 'Approved', expiryDate: '2026-10-15', uploadDate: '2023-10-10'},
+      { id: 'DOC-AW-02', name: "HAZMAT Certification", type: 'Certification', status: 'Approved', expiryDate: '2025-01-20', uploadDate: '2023-01-15'},
+    ]
+  },
+  {
+    id: 'DRV-002',
+    name: 'Monika Brown',
+    avatar: 'https://i.pravatar.cc/150?u=monika',
+    phone: '+1 (555) 987-6543',
+    truck: 'TR-004',
+    status: 'Delayed',
+    onLeave: true,
+    leaveStartDate: '2024-07-20',
+    leaveEndDate: '2024-08-05',
+    documents: [
+      { id: 'DOC-MB-01', name: "Driver's License", type: 'License', status: 'Approved', expiryDate: '2027-05-22', uploadDate: '2023-05-18'},
+    ]
+  },
+  {
+    id: 'DRV-003',
+    name: 'Harry Johnson',
+    avatar: 'https://i.pravatar.cc/150?u=harry',
+    phone: '+1 (555) 345-6789',
+    truck: 'TR-001',
+    status: 'Alert',
+    onLeave: false,
+    documents: [
+       { id: 'DOC-HJ-01', name: "Driver's License", type: 'License', status: 'Pending', uploadDate: '2024-07-15'},
+       { id: 'DOC-HJ-02', name: "Medical Certificate", type: 'Certification', status: 'Expired', expiryDate: '2024-06-30', uploadDate: '2022-06-25'},
+    ]
+  },
+  {
+    id: 'DRV-004',
+    name: 'Anna Miller',
+    avatar: 'https://i.pravatar.cc/150?u=anna',
+    phone: '+1 (555) 234-5678',
+    truck: 'N/A',
+    status: 'Idle',
+    onLeave: false,
+    documents: [
+       { id: 'DOC-AM-01', name: "Driver's License", type: 'License', status: 'Approved', expiryDate: '2028-02-10', uploadDate: '2024-02-01'},
+    ]
+  },
 ];
