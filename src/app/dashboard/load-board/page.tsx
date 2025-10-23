@@ -38,32 +38,18 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
   const { data: carrierData, isLoading: isCarrierLoading } = useDoc(carrierDocRef);
 
   const carrierFleet = useMemo(() => {
-    if (!carrierData) return [];
-
-    const fleetSize = carrierData.equipment; // e.g., '1', '2-5', '6-10', '11+'
-    let numberOfTrucks = 0;
-
-    if (fleetSize === '1') {
-      numberOfTrucks = 1;
-    } else if (fleetSize === '2-5') {
-      numberOfTrucks = 3; 
-    } else if (fleetSize === '6-10') {
-      numberOfTrucks = 7;
-    } else if (fleetSize === '11+') {
-      numberOfTrucks = 15;
-    }
-    
-    return Array.from({ length: numberOfTrucks }, (_, i) => ({
+    // For demo purposes, we'll show 3 idle trucks
+    return Array.from({ length: 3 }, (_, i) => ({
       id: `CARR-TR-${100 + i + 1}`,
       name: `Truck #${i + 1}`,
       equipmentType: i % 3 === 0 ? 'Reefer' : i % 2 === 0 ? 'Flatbed' : 'Dry Van',
       location: { lat: 34.0522, lng: -118.2437 },
-      status: i % 4 === 0 ? 'Idle' : i % 4 === 1 ? 'On-time' : i % 4 === 2 ? 'Delayed' : 'Alert',
+      status: 'Idle', // Ensure trucks are available
       fuelLevel: Math.floor(Math.random() * 80) + 20,
-      idleTime: `${i % 3}h ${Math.floor(Math.random() * 60)}m`,
-      loadWeight: Math.floor(Math.random() * 10000) + 10000,
-      cargoIntegrity: i % 4 !== 3,
-      unauthorizedDoorOpening: i % 4 === 3,
+      idleTime: `0h 0m`,
+      loadWeight: 0,
+      cargoIntegrity: true,
+      unauthorizedDoorOpening: false,
   })) as (Truck & { equipmentType: string })[];
 
   }, [carrierData]);
