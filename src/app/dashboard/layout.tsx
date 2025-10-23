@@ -138,6 +138,7 @@ export default function DashboardLayout({
     { href: '/dashboard/my-trucks', icon: Truck, label: 'My Trucks' },
     { href: '/dashboard/my-drivers', icon: Users, label: 'My Drivers' },
     { href: '/dashboard/load-board', icon: Package, label: 'Load Board' },
+    { href: '/dashboard/analysis', icon: BarChart2, label: 'Analysis' },
     { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/subscription', icon: ShieldCheck, label: 'Subscription' },
  ];
@@ -152,12 +153,6 @@ export default function DashboardLayout({
 
 const secondaryNavItems = [
     { 
-        id: 'analysis',
-        label: 'Analysis',
-        icon: BarChart2,
-        subItems: []
-    },
-    {
         id: 'history',
         label: 'History',
         icon: History,
