@@ -80,14 +80,14 @@ export function AssignLoadDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-headline text-xl">Assign Load</DialogTitle>
           <DialogDescription>
             Assign a truck and upload documents for Load ID: <span className="font-semibold text-foreground">{load.id}</span>
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 overflow-y-auto pr-4">
              <div>
                 <label className="text-sm font-medium">Available Trucks</label>
                  <Select onValueChange={setSelectedTruckId} value={selectedTruckId}>
@@ -109,7 +109,7 @@ export function AssignLoadDialog({
                 <FileUpload onFilesChange={setFiles} />
              </div>
         </div>
-        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-4">
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-4 border-t mt-auto">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
             Cancel
           </Button>
