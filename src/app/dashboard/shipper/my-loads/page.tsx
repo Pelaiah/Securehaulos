@@ -32,22 +32,28 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
   const [loads, setLoads] = useState<Load[]>(allLoads);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handlePostLoad = (newLoad: Omit<Load, 'id' | 'isPremium' | 'shipper'>) => {
-    const newLoadWithId: Load = {
-      ...newLoad,
+  const handlePostLoad = (newLoadData: Omit<Load, 'id' | 'isPremium' | 'shipper' | 'status'>) => {
+    const newLoad: Load = {
+      ...newLoadData,
       id: `LD-${String(allLoads.length + 1).padStart(3, '0')}`,
       isPremium: Math.random() > 0.5,
       shipper: companyName,
+      status: 'Posted',
     };
     // Add to the main data source so it's reflected on the load board
-    allLoads.unshift(newLoadWithId);
+    allLoads.unshift(newLoad);
     // Update local state to re-render this page
     setLoads([...allLoads]);
   };
 
-  const activeLoads = loads.filter(load => ['On-time', 'Delayed', 'Alert', 'Pending', 'Idle'].includes(load.status || ''))
-  const pastLoads = loads.filter(load => !activeLoads.includes(load))
+  const activeLoads = loads.filter(load => ['Posted', 'In Transit'].includes(load.status));
+  const pastLoads = loads.filter(load => load.status === 'Completed');
 
+  const statusColors = {
+    'Posted': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
+    'In Transit': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    'Completed': 'text-green-400 bg-green-500/10 border-green-500/20',
+  }
 
   return (
     <>
@@ -79,7 +85,7 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
                                 </CardTitle>
                                 <CardDescription>ID: {load.id}</CardDescription>
                             </div>
-                             <Badge variant="outline" className="text-blue-400 bg-blue-500/10 border-blue-500/20">In Transit</Badge>
+                             <Badge variant="outline" className={cn(statusColors[load.status])}>{load.status}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -131,7 +137,7 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
                         </p>
                         </div>
                         <div className="flex items-center justify-end gap-2">
-                          <Badge variant="outline" className="text-green-400 bg-green-500/10 border-green-500/20">Completed</Badge>
+                          <Badge variant="outline" className={cn(statusColors[load.status])}>Completed</Badge>
                           <Button variant="ghost" size="icon" className='text-muted-foreground'>
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>

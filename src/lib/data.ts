@@ -87,6 +87,7 @@ export type Load = {
   isPremium: boolean;
   shipper: string;
   payout: number;
+  status: 'Posted' | 'In Transit' | 'Completed';
 };
 
 export const loads: Load[] = [
@@ -99,6 +100,7 @@ export const loads: Load[] = [
     isPremium: true,
     shipper: 'Global Tech Inc.',
     payout: 2500,
+    status: 'In Transit',
   },
   {
     id: 'LD-102',
@@ -109,6 +111,7 @@ export const loads: Load[] = [
     isPremium: false,
     shipper: 'East Coast Organics',
     payout: 1800,
+    status: 'Completed',
   },
   {
     id: 'LD-103',
@@ -119,6 +122,7 @@ export const loads: Load[] = [
     isPremium: false,
     shipper: 'Motor City Suppliers',
     payout: 1200,
+    status: 'Completed',
   },
   {
     id: 'LD-104',
@@ -129,6 +133,7 @@ export const loads: Load[] = [
     isPremium: true,
     shipper: 'State Construction Co.',
     payout: 950,
+    status: 'In Transit',
   },
 ];
 
