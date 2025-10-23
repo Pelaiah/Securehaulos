@@ -35,15 +35,16 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
   const handlePostLoad = (newLoad: Omit<Load, 'id' | 'isPremium' | 'shipper'>) => {
     const newLoadWithId: Load = {
       ...newLoad,
-      id: `LD-${String(loads.length + 1).padStart(3, '0')}`,
+      id: `LD-${String(allLoads.length + 1).padStart(3, '0')}`,
       isPremium: Math.random() > 0.5,
       shipper: companyName,
     };
-    setLoads(prevLoads => [newLoadWithId, ...prevLoads]);
+    allLoads.unshift(newLoadWithId);
+    setLoads([...allLoads]);
   };
 
-  const activeLoads = loads.slice(0, 4); // Example logic
-  const pastLoads = loads.slice(4);
+  const activeLoads = loads.filter(load => ['On-time', 'Delayed', 'Alert', 'Pending', 'Idle'].includes(load.status || ''))
+  const pastLoads = loads.filter(load => !activeLoads.includes(load))
 
 
   return (
