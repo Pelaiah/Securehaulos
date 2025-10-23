@@ -61,7 +61,7 @@ export function PostLoadModal({
   });
 
   useEffect(() => {
-    if (companyName) {
+    if (companyName && !form.formState.isDirty) {
       form.setValue('cargo', companyName);
     }
   }, [companyName, form]);
@@ -87,7 +87,13 @@ export function PostLoadModal({
       
       setIsLoading(false);
       onOpenChange(false);
-      form.reset();
+      form.reset({
+        cargo: companyName || '',
+        invoiceValue: 0,
+        pickupLocation: '',
+        deliveryLocation: '',
+        cargoType: '',
+      });
     }, 1000);
   }
 
@@ -109,7 +115,7 @@ export function PostLoadModal({
                 <FormItem>
                   <FormLabel>Cargo / Company</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. UAB Microsoft" {...field} readOnly />
+                    <Input placeholder="e.g. UAB Microsoft" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
