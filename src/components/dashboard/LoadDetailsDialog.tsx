@@ -24,7 +24,8 @@ import {
   Package,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { AcceptLoadConfirmationDialog } from './AcceptLoadConfirmationDialog';
 
 type LoadDetailsDialogProps = {
   load: Load | null;
@@ -39,15 +40,22 @@ export function LoadDetailsDialog({
   isOpen,
   onOpenChange,
 }: LoadDetailsDialogProps) {
+  const [isConfirmationOpen, setConfirmationOpen] = useState(false);
 
   const recommendedTruck = useMemo(() => {
     if (!load || !carrierFleet) return null;
     return carrierFleet.find(truck => truck.equipmentType === load.equipment);
   }, [load, carrierFleet]);
 
+  const handleAcceptLoad = () => {
+    onOpenChange(false); // Close the current dialog
+    setConfirmationOpen(true); // Open the confirmation dialog
+  };
+
   if (!load) return null;
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -151,9 +159,14 @@ export function LoadDetailsDialog({
         </div>
         <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-            <Button className="w-full">Accept Load</Button>
+            <Button className="w-full" onClick={handleAcceptLoad}>Accept Load</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <AcceptLoadConfirmationDialog
+        isOpen={isConfirmationOpen}
+        onOpenChange={setConfirmationOpen}
+    />
+    </>
   );
 }
