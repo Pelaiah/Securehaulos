@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
-import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
 
 interface MyLoadsPageProps {
@@ -33,6 +33,7 @@ interface MyLoadsPageProps {
 export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const firestore = useFirestore();
+  const { user } = useUser();
 
   const loadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -41,16 +42,22 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
 
   const { data: loads } = useCollection<Load>(loadsCollectionRef);
 
-  const handlePostLoad = (newLoadData: Omit<Load, 'id'>) => {
-    if (!loadsCollectionRef) return;
-    addDoc(loadsCollectionRef, newLoadData)
+  const handlePostLoad = (newLoadData: Omit<Load, 'id' | 'shipperId'>) => {
+    if (!loadsCollectionRef || !user) return;
+    
+    const loadWithShipperId = {
+      ...newLoadData,
+      shipperId: user.uid,
+    };
+
+    addDoc(loadsCollectionRef, loadWithShipperId)
       .catch((error) => {
         errorEmitter.emit(
           'permission-error',
           new FirestorePermissionError({
             path: loadsCollectionRef.path,
             operation: 'create',
-            requestResourceData: newLoadData,
+            requestResourceData: loadWithShipperId,
           })
         );
         // Re-throw to be caught by other error handlers if needed,

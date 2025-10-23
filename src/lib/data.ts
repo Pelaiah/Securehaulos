@@ -81,6 +81,7 @@ export const trucks: Truck[] = [
 
 export type Load = {
   id: string;
+  shipperId: string;
   origin: string;
   destination: string;
   cargo: string;
@@ -91,7 +92,7 @@ export type Load = {
   status: 'Posted' | 'In Transit' | 'Completed';
 };
 
-export const loads: Load[] = [];
+
 
 
 export type Document = {
