@@ -39,7 +39,9 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
       isPremium: Math.random() > 0.5,
       shipper: companyName,
     };
+    // Add to the main data source so it's reflected on the load board
     allLoads.unshift(newLoadWithId);
+    // Update local state to re-render this page
     setLoads([...allLoads]);
   };
 
