@@ -33,6 +33,7 @@ import type { Driver, Document } from '@/lib/data';
 import { useState } from 'react';
 import { Calendar as CalendarIcon, FileText, Upload } from 'lucide-react';
 import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
 type DriverDetailsDialogProps = {
   driver: Driver | null;
@@ -46,11 +47,11 @@ export function DriverDetailsDialog({
   onOpenChange,
 }: DriverDetailsDialogProps) {
   const [driverOnLeave, setDriverOnLeave] = useState(driver?.onLeave || false);
-  const [leaveStartDate, setLeaveStartDate] = useState<Date | undefined>(
-    driver?.leaveStartDate ? new Date(driver.leaveStartDate) : undefined
-  );
-  const [leaveEndDate, setLeaveEndDate] = useState<Date | undefined>(
-    driver?.leaveEndDate ? new Date(driver.leaveEndDate) : undefined
+  const [leaveDateRange, setLeaveDateRange] = useState<DateRange | undefined>(
+    {
+      from: driver?.leaveStartDate ? new Date(driver.leaveStartDate) : undefined,
+      to: driver?.leaveEndDate ? new Date(driver.leaveEndDate) : undefined,
+    }
   );
   const [files, setFiles] = useState<File[]>([]);
 
@@ -145,63 +146,42 @@ export function DriverDetailsDialog({
               </div>
 
               {driverOnLeave && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="leave-start">Leave Start Date</Label>
-                    <Popover>
+                    <Label htmlFor="leave-dates">Leave Dates</Label>
+                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
-                          id="leave-start"
-                          variant={'outline'}
+                          id="leave-dates"
+                          variant={"outline"}
                           className={cn(
-                            'w-full justify-start text-left font-normal',
-                            !leaveStartDate && 'text-muted-foreground'
+                            "w-full justify-start text-left font-normal",
+                            !leaveDateRange && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {leaveStartDate ? (
-                            format(leaveStartDate, 'PPP')
+                          {leaveDateRange?.from ? (
+                            leaveDateRange.to ? (
+                              <>
+                                {format(leaveDateRange.from, "LLL dd, y")} -{" "}
+                                {format(leaveDateRange.to, "LLL dd, y")}
+                              </>
+                            ) : (
+                              format(leaveDateRange.from, "LLL dd, y")
+                            )
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Pick a date range</span>
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
-                          mode="single"
-                          selected={leaveStartDate}
-                          onSelect={setLeaveStartDate}
                           initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="leave-end">Leave End Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          id="leave-end"
-                          variant={'outline'}
-                          className={cn(
-                            'w-full justify-start text-left font-normal',
-                            !leaveEndDate && 'text-muted-foreground'
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {leaveEndDate ? (
-                            format(leaveEndDate, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={leaveEndDate}
-                          onSelect={setLeaveEndDate}
-                          initialFocus
+                          mode="range"
+                          defaultMonth={leaveDateRange?.from}
+                          selected={leaveDateRange}
+                          onSelect={setLeaveDateRange}
+                          numberOfMonths={2}
                         />
                       </PopoverContent>
                     </Popover>
