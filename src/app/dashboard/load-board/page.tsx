@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { LoadCard } from '@/components/dashboard/LoadCard';
-import { loads, type Load } from '@/lib/data';
-import { Search, Filter } from 'lucide-react';
+import { loads as initialLoads, type Load } from '@/lib/data';
+import { Search, Filter, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,7 @@ import { LoadDetailsDialog } from '@/components/dashboard/LoadDetailsDialog';
 import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Truck } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
 
 interface LoadBoardPageProps {
   userType?: 'Shipper' | 'Carrier';
@@ -25,10 +26,13 @@ interface LoadBoardPageProps {
 }
 
 export default function LoadBoardPage({ userType, isLoading: isUserLoading }: LoadBoardPageProps) {
+  const [loads, setLoads] = useState<Load[]>(initialLoads);
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const carrierDocRef = useMemoFirebase(() => {
     if (!user || userType !== 'Carrier') return null;
@@ -59,20 +63,37 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
     setIsDetailsOpen(true);
   };
   
-  const isLoading = isUserLoading;
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setLoads([]);
+    setTimeout(() => {
+      setLoads(initialLoads);
+      setIsRefreshing(false);
+      toast({
+        title: 'Load Board Refreshed',
+        description: 'New loads have been fetched.',
+      });
+    }, 1000);
+  };
 
-  if (isLoading) {
+  const isLoading = isUserLoading || isRefreshing;
+
+  if (isLoading && !isDetailsOpen) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row gap-4">
           <Skeleton className="h-10 flex-grow" />
           <div className="flex gap-4">
+            <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-[180px]" />
             <Skeleton className="h-10 w-24" />
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+           <Skeleton className="h-64" />
           <Skeleton className="h-64" />
           <Skeleton className="h-64" />
         </div>
@@ -92,6 +113,10 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
             />
           </div>
           <div className="flex gap-4">
+             <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
             <Select>
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Equipment Type" />
