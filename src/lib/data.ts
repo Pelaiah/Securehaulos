@@ -1,4 +1,5 @@
 
+
 export type Truck = {
   id: string;
   name: string;
@@ -90,52 +91,8 @@ export type Load = {
   status: 'Posted' | 'In Transit' | 'Completed';
 };
 
-export const loads: Load[] = [
-  {
-    id: 'LD-101',
-    origin: 'Los Angeles, CA',
-    destination: 'Phoenix, AZ',
-    cargo: 'Consumer Electronics',
-    equipment: 'Dry Van',
-    isPremium: true,
-    shipper: 'Global Tech Inc.',
-    payout: 2500,
-    status: 'In Transit',
-  },
-  {
-    id: 'LD-102',
-    origin: 'New York, NY',
-    destination: 'Boston, MA',
-    cargo: 'Fresh Produce',
-    equipment: 'Reefer',
-    isPremium: false,
-    shipper: 'East Coast Organics',
-    payout: 1800,
-    status: 'Completed',
-  },
-  {
-    id: 'LD-103',
-    origin: 'Chicago, IL',
-    destination: 'Detroit, MI',
-    cargo: 'Automotive Parts',
-    equipment: 'Dry Van',
-    isPremium: false,
-    shipper: 'Motor City Suppliers',
-    payout: 1200,
-    status: 'Completed',
-  },
-  {
-    id: 'LD-104',
-    origin: 'Houston, TX',
-    destination: 'Dallas, TX',
-    cargo: 'Building Materials',
-    equipment: 'Flatbed',
-    isPremium: true,
-    shipper: 'State Construction Co.',
-    payout: 950,
-    status: 'In Transit',
-  },
-];
+export const loads: Load[] = [];
+
 
 export type Document = {
   id: string;

@@ -43,7 +43,7 @@ const formSchema = z.object({
 type PostLoadModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onPostLoad: (load: Omit<Load, 'id' | 'isPremium' | 'shipper' | 'status'>) => void;
+  onPostLoad: (load: Omit<Load, 'id'>) => void;
   companyName?: string;
 };
 
@@ -72,8 +72,11 @@ export function PostLoadModal({
     
     // Simulate API call
     setTimeout(() => {
-      const newLoad: Omit<Load, 'id' | 'isPremium' | 'shipper' | 'status'> = {
-        ...values
+      const newLoad: Omit<Load, 'id'> = {
+        ...values,
+        shipper: companyName || 'Unknown Shipper',
+        isPremium: Math.random() > 0.5,
+        status: 'Posted',
       };
       
       onPostLoad(newLoad);

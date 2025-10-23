@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { LoadCard } from '@/components/dashboard/LoadCard';
-import { loads as initialLoads, type Load } from '@/lib/data';
+import { type Load } from '@/lib/data';
 import { Search, Filter, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadDetailsDialog } from '@/components/dashboard/LoadDetailsDialog';
-import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { Truck } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,13 +26,19 @@ interface LoadBoardPageProps {
 }
 
 export default function LoadBoardPage({ userType, isLoading: isUserLoading }: LoadBoardPageProps) {
-  const [loads, setLoads] = useState<Load[]>(initialLoads);
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+
+  const loadsCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'loads');
+  }, [firestore]);
+
+  const { data: loads, isLoading: areLoadsLoading } = useCollection<Load>(loadsCollectionRef);
 
   const carrierDocRef = useMemoFirebase(() => {
     if (!user || userType !== 'Carrier') return null;
@@ -65,9 +71,8 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
   
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setLoads([]);
+    // Data is real-time, so we just show a toast and the UI will update automatically
     setTimeout(() => {
-      setLoads(initialLoads);
       setIsRefreshing(false);
       toast({
         title: 'Load Board Refreshed',
@@ -76,7 +81,7 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
     }, 1000);
   };
 
-  const isLoading = isUserLoading || isRefreshing;
+  const isLoading = isUserLoading || isRefreshing || areLoadsLoading;
 
   if (isLoading && !isDetailsOpen) {
     return (
@@ -134,7 +139,7 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {loads.map((load) => (
+          {loads?.map((load) => (
             <LoadCard key={load.id} load={load} onGetLoadClick={() => handleGetLoadClick(load)} />
           ))}
         </div>

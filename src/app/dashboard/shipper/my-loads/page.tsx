@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { loads as allLoads, type Load } from '@/lib/data';
+import { type Load } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import {
   Check,
@@ -23,31 +23,31 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { addDoc, collection, doc } from 'firebase/firestore';
 
 interface MyLoadsPageProps {
   companyName?: string;
 }
 
 export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPageProps) {
-  const [loads, setLoads] = useState<Load[]>(allLoads);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const firestore = useFirestore();
 
-  const handlePostLoad = (newLoadData: Omit<Load, 'id' | 'isPremium' | 'shipper' | 'status'>) => {
-    const newLoad: Load = {
-      ...newLoadData,
-      id: `LD-${String(allLoads.length + 1).padStart(3, '0')}`,
-      isPremium: Math.random() > 0.5,
-      shipper: companyName,
-      status: 'Posted',
-    };
-    // Add to the main data source so it's reflected on the load board
-    allLoads.unshift(newLoad);
-    // Update local state to re-render this page
-    setLoads([...allLoads]);
+  const loadsCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'loads');
+  }, [firestore]);
+
+  const { data: loads } = useCollection<Load>(loadsCollectionRef);
+
+  const handlePostLoad = (newLoadData: Omit<Load, 'id'>) => {
+    if (!loadsCollectionRef) return;
+    addDoc(loadsCollectionRef, newLoadData);
   };
 
-  const activeLoads = loads.filter(load => ['Posted', 'In Transit'].includes(load.status));
-  const pastLoads = loads.filter(load => load.status === 'Completed');
+  const activeLoads = loads?.filter(load => ['Posted', 'In Transit'].includes(load.status)) || [];
+  const pastLoads = loads?.filter(load => load.status === 'Completed') || [];
 
   const statusColors = {
     'Posted': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
