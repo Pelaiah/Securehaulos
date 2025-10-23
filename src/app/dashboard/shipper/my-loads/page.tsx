@@ -23,8 +23,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { addDoc, collection } from 'firebase/firestore';
 
 interface MyLoadsPageProps {
   companyName?: string;
@@ -43,7 +43,20 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
 
   const handlePostLoad = (newLoadData: Omit<Load, 'id'>) => {
     if (!loadsCollectionRef) return;
-    addDoc(loadsCollectionRef, newLoadData);
+    addDoc(loadsCollectionRef, newLoadData)
+      .catch((error) => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: loadsCollectionRef.path,
+            operation: 'create',
+            requestResourceData: newLoadData,
+          })
+        );
+        // Re-throw to be caught by other error handlers if needed,
+        // but the primary mechanism is the event emitter.
+        throw error;
+      });
   };
 
   const activeLoads = loads?.filter(load => ['Posted', 'In Transit'].includes(load.status)) || [];
