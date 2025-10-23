@@ -26,6 +26,8 @@ import {
   Clock,
   User,
   TrendingUp,
+  Fuel,
+  Wrench,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +52,13 @@ const loadStatusData = [
   { name: 'Completed', value: 85, fill: 'hsl(var(--chart-1))' },
   { name: 'In Transit', value: 10, fill: 'hsl(var(--chart-2))' },
   { name: 'Canceled', value: 5, fill: 'hsl(var(--chart-3))' },
+];
+
+const expenseDistributionData = [
+  { name: 'Fuel', value: 4500, fill: 'hsl(var(--chart-1))' },
+  { name: 'Maintenance', value: 1200, fill: 'hsl(var(--chart-2))' },
+  { name: 'Insurance', value: 800, fill: 'hsl(var(--chart-3))' },
+  { name: 'Other', value: 500, fill: 'hsl(var(--chart-4))' },
 ];
 
 const topDriversData = [
@@ -80,6 +89,9 @@ const chartConfig = {
   loads: {
     label: 'Loads',
   },
+  expenses: {
+    label: 'Expenses',
+  },
 };
 
 export default function AnalysisPage() {
@@ -96,7 +108,7 @@ export default function AnalysisPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -138,6 +150,34 @@ export default function AnalysisPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
+              Total Fuel
+            </CardTitle>
+            <Fuel className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2,450 gal</div>
+            <p className="text-xs text-muted-foreground">
+              +5% from last month
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Expenses
+            </CardTitle>
+            <Wrench className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$7,000</div>
+            <p className="text-xs text-muted-foreground">
+              +12% from last month
+            </p>
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Average Idle Time
             </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -151,8 +191,8 @@ export default function AnalysisPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="font-headline">Monthly Earnings</CardTitle>
             <CardDescription>
@@ -228,37 +268,79 @@ export default function AnalysisPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline">Top Performing Drivers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {topDriversData.map((driver) => (
-              <div
-                key={driver.name}
-                className="flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={driver.avatar} alt={driver.name} />
-                    <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold">{driver.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {driver.loads} loads completed
-                    </p>
-                  </div>
+       <div className="grid gap-6 lg:grid-cols-3">
+         <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Expense Distribution</CardTitle>
+            <CardDescription>
+              A breakdown of your operational expenses.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[250px] w-full">
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={expenseDistributionData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  innerRadius={60}
+                  paddingAngle={5}
+                  labelLine={false}
+                >
+                  {expenseDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                 <ChartLegend
+                  content={<ChartLegendContent nameKey="name" />}
+                  verticalAlign="middle"
+                  align="right"
+                  layout="vertical"
+                  iconSize={12}
+                />
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card className="lg:col-span-2">
+            <CardHeader>
+            <CardTitle className="font-headline">Top Performing Drivers</CardTitle>
+            </CardHeader>
+            <CardContent>
+            <div className="space-y-4">
+                {topDriversData.map((driver) => (
+                <div
+                    key={driver.name}
+                    className="flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={driver.avatar} alt={driver.name} />
+                        <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold">{driver.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                        {driver.loads} loads completed
+                        </p>
+                    </div>
+                    </div>
+                    <Badge variant="outline" className="text-sm">
+                    ⭐ {driver.rating}
+                    </Badge>
                 </div>
-                <Badge variant="outline" className="text-sm">
-                  ⭐ {driver.rating}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                ))}
+            </div>
+            </CardContent>
+        </Card>
+       </div>
     </div>
   );
 }
