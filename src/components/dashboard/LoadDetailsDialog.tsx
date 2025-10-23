@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import { AcceptLoadConfirmationDialog } from './AcceptLoadConfirmationDialog';
+import { AssignLoadDialog } from './AssignLoadDialog';
 
 type LoadDetailsDialogProps = {
   load: Load | null;
@@ -40,16 +40,22 @@ export function LoadDetailsDialog({
   isOpen,
   onOpenChange,
 }: LoadDetailsDialogProps) {
-  const [isConfirmationOpen, setConfirmationOpen] = useState(false);
+  const [isAssignDialogOpen, setAssignDialogOpen] = useState(false);
 
   const recommendedTruck = useMemo(() => {
     if (!load || !carrierFleet) return null;
     return carrierFleet.find(truck => truck.equipmentType === load.equipment);
   }, [load, carrierFleet]);
+  
+  const availableTrucks = useMemo(() => {
+     if (!carrierFleet) return [];
+     // For demo, assuming trucks with 'Idle' status are available
+     return carrierFleet.filter(truck => truck.status === 'Idle');
+  }, [carrierFleet]);
 
   const handleAcceptLoad = () => {
-    onOpenChange(false); // Close the current dialog
-    setConfirmationOpen(true); // Open the confirmation dialog
+    onOpenChange(false); // Close the details dialog
+    setAssignDialogOpen(true); // Open the assign dialog
   };
 
   if (!load) return null;
@@ -163,9 +169,11 @@ export function LoadDetailsDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-    <AcceptLoadConfirmationDialog
-        isOpen={isConfirmationOpen}
-        onOpenChange={setConfirmationOpen}
+    <AssignLoadDialog
+        isOpen={isAssignDialogOpen}
+        onOpenChange={setAssignDialogOpen}
+        load={load}
+        availableTrucks={availableTrucks}
     />
     </>
   );
