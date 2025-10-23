@@ -17,26 +17,33 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { type ShipperLoad } from '@/lib/data';
+import { type Load } from '@/lib/data';
 
 const formSchema = z.object({
   cargo: z.string().min(1, 'Cargo description is required.'),
-  invoiceValue: z.coerce.number().positive('Invoice value must be positive.'),
-  pickupLocation: z.string().min(1, 'Pickup location is required.'),
-  deliveryLocation: z.string().min(1, 'Delivery location is required.'),
-  cargoType: z.string().min(1, 'Cargo type is required.'),
+  payout: z.coerce.number().positive('Payout must be a positive number.'),
+  origin: z.string().min(1, 'Pickup location is required.'),
+  destination: z.string().min(1, 'Delivery location is required.'),
+  equipment: z.enum(['Dry Van', 'Reefer', 'Flatbed']),
 });
 
 type PostLoadModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onPostLoad: (load: Omit<ShipperLoad, 'id'>) => void;
+  onPostLoad: (load: Omit<Load, 'id' | 'isPremium' | 'shipper'>) => void;
   companyName?: string;
 };
 
@@ -52,48 +59,33 @@ export function PostLoadModal({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      cargo: companyName || '',
-      invoiceValue: 0,
-      pickupLocation: '',
-      deliveryLocation: '',
-      cargoType: '',
+      cargo: '',
+      payout: 0,
+      origin: '',
+      destination: '',
+      equipment: 'Dry Van',
     },
   });
-
-  useEffect(() => {
-    if (companyName && !form.formState.isDirty) {
-      form.setValue('cargo', companyName);
-    }
-  }, [companyName, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     
     // Simulate API call
     setTimeout(() => {
-      const newLoad: Omit<ShipperLoad, 'id'> = {
-        ...values,
-        date: new Date().toISOString().split('T')[0],
-        afterTax: values.invoiceValue * 0.9, // Assuming 10% tax
-        status: 'Awaiting Payment',
+      const newLoad: Omit<Load, 'id' | 'isPremium' | 'shipper'> = {
+        ...values
       };
       
       onPostLoad(newLoad);
       
       toast({
         title: 'Load Posted Successfully',
-        description: `${values.cargo} has been added to your loads.`,
+        description: `${values.cargo} has been added to the load board.`,
       });
       
       setIsLoading(false);
       onOpenChange(false);
-      form.reset({
-        cargo: companyName || '',
-        invoiceValue: 0,
-        pickupLocation: '',
-        deliveryLocation: '',
-        cargoType: '',
-      });
+      form.reset();
     }, 1000);
   }
 
@@ -113,46 +105,57 @@ export function PostLoadModal({
               name="cargo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cargo / Company</FormLabel>
+                  <FormLabel>Cargo Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. UAB Microsoft" {...field} />
+                    <Input placeholder="e.g. Consumer Electronics" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
                 control={form.control}
-                name="cargoType"
+                name="payout"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cargo Type</FormLabel>
+                    <FormItem>
+                    <FormLabel>Payout ($)</FormLabel>
                     <FormControl>
-                       <Input placeholder="e.g. General Goods" {...field} />
+                        <Input type="number" placeholder="e.g. 2500" {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>
+                    </FormItem>
                 )}
-              />
-            <FormField
-              control={form.control}
-              name="invoiceValue"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Invoice Value ($)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g. 1500" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                />
+                 <FormField
+                control={form.control}
+                name="equipment"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Equipment Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select equipment" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        <SelectItem value="Dry Van">Dry Van</SelectItem>
+                        <SelectItem value="Reefer">Reefer</SelectItem>
+                        <SelectItem value="Flatbed">Flatbed</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
              <FormField
               control={form.control}
-              name="pickupLocation"
+              name="origin"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Pickup Location</FormLabel>
+                  <FormLabel>Origin</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Los Angeles, CA" {...field} />
                   </FormControl>
@@ -162,10 +165,10 @@ export function PostLoadModal({
             />
              <FormField
               control={form.control}
-              name="deliveryLocation"
+              name="destination"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Delivery Location</FormLabel>
+                  <FormLabel>Destination</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Phoenix, AZ" {...field} />
                   </FormControl>
