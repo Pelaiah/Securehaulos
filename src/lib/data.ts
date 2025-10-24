@@ -1,5 +1,6 @@
 
 
+
 export type Truck = {
   id: string;
   name: string;
@@ -56,7 +57,7 @@ export const trucks: Truck[] = [
   {
     id: 'TR-004',
     name: 'Delta Cargo',
-    imageUrl: 'https://i.imgur.com/eljOF7J.png',
+    imageUrl: 'https://imgur.com/eljOF7J.png',
     location: { lat: 29.7604, lng: -95.3698 },
     status: 'Pending',
     fuelLevel: 75,
