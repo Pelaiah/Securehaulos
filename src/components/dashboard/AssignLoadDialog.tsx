@@ -62,53 +62,56 @@ export function AssignLoadDialog({
 
     setIsSubmitting(true);
     
-    try {
-        const batch = writeBatch(firestore);
+    const batch = writeBatch(firestore);
 
-        const loadRef = doc(firestore, 'loads', load.id);
-        const truckRef = doc(firestore, 'trucks', selectedTruckId);
+    const loadRef = doc(firestore, 'loads', load.id);
+    const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-        const loadUpdateData = { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId };
-        const truckUpdateData = { status: 'Pending' };
+    const loadUpdateData = { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId };
+    const truckUpdateData = { status: 'Pending' };
 
-        batch.update(loadRef, loadUpdateData);
-        batch.update(truckRef, truckUpdateData);
-        
-        // In a real app, you would upload files to Firebase Storage and get URLs.
-        // For this demo, we'll just create document references with mock data.
-        files.forEach((file) => {
-            const docRef = doc(firestore, 'loads', load.id, 'submitted_documents', file.name.replace(/[^a-zA-Z0-9]/g, ''));
-            const docData = {
-                fileName: file.name,
-                fileType: file.type,
-                fileSize: file.size,
-                status: 'Submitted',
-                submittedAt: new Date().toISOString(),
-                // In a real app, this would be a gs:// or https:// URL from Firebase Storage.
-                fileUrl: 'https://example.com/placeholder.pdf',
-            };
-            batch.set(docRef, docData);
-        });
-        
-        await batch.commit();
-
+    batch.update(loadRef, loadUpdateData);
+    batch.update(truckRef, truckUpdateData);
+    
+    // In a real app, you would upload files to Firebase Storage and get URLs.
+    // For this demo, we'll just create document references with mock data.
+    files.forEach((file) => {
+        const docRef = doc(firestore, 'loads', load.id, 'submitted_documents', file.name.replace(/[^a-zA-Z0-9]/g, ''));
+        const docData = {
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            status: 'Submitted',
+            submittedAt: new Date().toISOString(),
+            // In a real app, this would be a gs:// or https:// URL from Firebase Storage.
+            fileUrl: 'https://example.com/placeholder.pdf',
+        };
+        batch.set(docRef, docData);
+    });
+    
+    batch.commit().then(() => {
         toast({
             title: 'Documents Submitted for Review',
             description: `The shipper will now review your application for load #${load.id}.`,
         });
         onOpenChange(false);
         router.push('/dashboard/my-trucks');
-
-    } catch (error: any) {
-        console.error("Error during load assignment:", error);
-        toast({
-            title: 'Assignment Failed',
-            description: error.message || 'An unexpected error occurred. Please check security rules and try again.',
-            variant: 'destructive',
-        });
-    } finally {
+    }).catch(error => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: `batch write for load ${load.id}`,
+            operation: 'write',
+            requestResourceData: {
+                loadUpdate: loadUpdateData,
+                truckUpdate: truckUpdateData,
+                files: files.map(f => f.name)
+            }
+          })
+        );
+    }).finally(() => {
         setIsSubmitting(false);
-    }
+    });
   };
 
   if (!load) return null;
