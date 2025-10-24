@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Map } from '@/components/dashboard/Map';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
@@ -13,10 +13,13 @@ import { Fuel, Timer, Users, Weight } from 'lucide-react';
 import { trucks } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
+type Trip = (typeof tripData)[0];
+
 export default function TripDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const tripId = params.tripId as string;
-  const [selectedDriver, setSelectedDriver] = useState<(typeof tripData)[0] | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<Trip | null>(null);
 
   useEffect(() => {
     if (tripId) {
@@ -24,6 +27,12 @@ export default function TripDetailsPage() {
       setSelectedDriver(driver || null);
     }
   }, [tripId]);
+
+  const handleTripSelect = (trip: Trip) => {
+    router.push(`/dashboard/shipper/tracking/${trip.id}`);
+  };
+
+  const selectedTruck = trucks.find(truck => truck.id === selectedDriver?.truckId);
 
 
   if (!selectedDriver) {
@@ -56,7 +65,7 @@ export default function TripDetailsPage() {
       <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
-          <VehicleInfoCard />
+          <VehicleInfoCard truck={selectedTruck} />
            <Card className='flex-grow'>
               <CardContent className="p-4 grid grid-cols-2 gap-4 text-sm">
                 <div className="space-y-4">
@@ -89,13 +98,17 @@ export default function TripDetailsPage() {
                 <TripInfoCard />
             </div>
             <div className="flex-grow rounded-lg overflow-hidden">
-                 <Map trucks={trucks} selectedTruckId={'SD-752069247'} />
+                 <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
             </div>
         </div>
 
         {/* Right Column */}
         <div className="xl:col-span-1">
-          <ShipmentList title="Trips" />
+          <ShipmentList 
+            title="Trips" 
+            onTripSelect={handleTripSelect}
+            selectedTripId={selectedDriver.id}
+          />
         </div>
       </div>
     </div>
