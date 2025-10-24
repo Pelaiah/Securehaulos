@@ -15,7 +15,7 @@ import { useState } from 'react';
 import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
 import { FileUpload } from './FileUpload';
-import { useFirestore } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 type AssignLoadDialogProps = {
@@ -61,13 +61,33 @@ export function AssignLoadDialog({
 
     setIsSubmitting(true);
     
-    try {
-      const loadRef = doc(firestore, 'loads', load.id);
-      await updateDoc(loadRef, { status: 'Pending' });
+    const loadRef = doc(firestore, 'loads', load.id);
+    const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-      // Also update the assigned truck's status
-      const truckRef = doc(firestore, 'trucks', selectedTruckId);
-      await updateDoc(truckRef, { status: 'Pending' });
+    const loadUpdateData = { status: 'Pending' };
+    const truckUpdateData = { status: 'Pending' };
+
+    try {
+      await Promise.all([
+        updateDoc(loadRef, loadUpdateData).catch(error => {
+          const permissionError = new FirestorePermissionError({
+            path: loadRef.path,
+            operation: 'update',
+            requestResourceData: loadUpdateData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError;
+        }),
+        updateDoc(truckRef, truckUpdateData).catch(error => {
+           const permissionError = new FirestorePermissionError({
+            path: truckRef.path,
+            operation: 'update',
+            requestResourceData: truckUpdateData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError;
+        })
+      ]);
 
       toast({
         title: 'Documents Submitted for Review',
@@ -77,12 +97,19 @@ export function AssignLoadDialog({
       router.push('/dashboard/my-trucks');
 
     } catch (error) {
-       console.error("Error updating load/truck status:", error);
-       toast({
-        variant: 'destructive',
-        title: 'Assignment Failed',
-        description: 'Could not update the load or truck status. Please try again.',
-      });
+        if (error instanceof FirestorePermissionError) {
+             toast({
+                title: 'Permission Denied',
+                description: 'Could not submit application. See console for details.',
+                variant: 'destructive',
+            });
+        } else {
+            toast({
+                title: 'Assignment Failed',
+                description: 'An unexpected error occurred. Please try again.',
+                variant: 'destructive',
+            });
+        }
     } finally {
         setIsSubmitting(false);
     }
@@ -157,5 +184,3 @@ export function AssignLoadDialog({
     </Dialog>
   );
 }
-
-  

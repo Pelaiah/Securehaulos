@@ -9,30 +9,21 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Driver, Document, Load, Truck } from '@/lib/data';
+import type { Load, Truck, Driver, Document } from '@/lib/data';
 import { useState } from 'react';
 import {
   FileText,
   Truck as TruckIcon,
-  User,
   ShieldCheck,
   ShieldAlert,
   Thermometer,
   MapPin as GpsIcon,
-  Contact
+  Contact,
 } from 'lucide-react';
 import Image from 'next/image';
 import { drivers, documents as mockCarrierDocs } from '@/lib/data';
@@ -91,28 +82,27 @@ export function PendingLoadDetailsDialog({
         truckUpdateData = { status: 'Idle' };
     }
 
-    const loadUpdatePromise = updateDoc(loadRef, loadUpdateData).catch(error => {
-        const permissionError = new FirestorePermissionError({
-            path: loadRef.path,
-            operation: 'update',
-            requestResourceData: loadUpdateData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError; // re-throw to be caught by Promise.all
-    });
-
-    const truckUpdatePromise = updateDoc(truckRef, truckUpdateData).catch(error => {
-        const permissionError = new FirestorePermissionError({
-            path: truckRef.path,
-            operation: 'update',
-            requestResourceData: truckUpdateData,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError; // re-throw to be caught by Promise.all
-    });
-
     try {
-        await Promise.all([loadUpdatePromise, truckUpdatePromise]);
+        await Promise.all([
+            updateDoc(loadRef, loadUpdateData).catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: loadRef.path,
+                    operation: 'update',
+                    requestResourceData: loadUpdateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                throw permissionError; // re-throw to be caught by Promise.all
+            }),
+            updateDoc(truckRef, truckUpdateData).catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: truckRef.path,
+                    operation: 'update',
+                    requestResourceData: truckUpdateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                throw permissionError; // re-throw to be caught by Promise.all
+            })
+        ]);
 
         if (decision === 'Approved') {
             toast({
@@ -128,13 +118,21 @@ export function PendingLoadDetailsDialog({
         }
         onOpenChange(false);
     } catch (error) {
-        // The specific error is already emitted. We just need to handle the UI state.
-        // The global error boundary will display the detailed error.
-        toast({
-            title: 'Permission Denied',
-            description: 'Could not update the load status. Check the error overlay for details.',
-            variant: 'destructive',
-        });
+        // Errors are now emitted globally, so a generic toast is sufficient here.
+        // The FirebaseErrorListener will throw the detailed error for debugging.
+        if (error instanceof FirestorePermissionError) {
+             toast({
+                title: 'Permission Denied',
+                description: 'Could not update status. See console for details.',
+                variant: 'destructive',
+            });
+        } else {
+            toast({
+                title: 'Update Failed',
+                description: 'An unexpected error occurred. Please try again.',
+                variant: 'destructive',
+            });
+        }
     } finally {
         setIsSubmitting(false);
     }
@@ -150,7 +148,7 @@ export function PendingLoadDetailsDialog({
             Review Application for Load #{load.id}
           </DialogTitle>
           <DialogDescription>
-            Carrier <span className="font-semibold">{load.shipper}</span> has applied for this load. Review their details and documents below.
+            Carrier <span className="font-semibold">{assignedTruck.name}</span> has applied for this load. Review their details and documents below.
           </DialogDescription>
         </DialogHeader>
 
@@ -164,7 +162,7 @@ export function PendingLoadDetailsDialog({
                     <CardContent className="space-y-4">
                          <div>
                             <p className="text-sm text-muted-foreground">Carrier Company</p>
-                            <p className="font-semibold">{load.shipper}</p>
+                            <p className="font-semibold">{assignedTruck.name}</p>
                         </div>
                         <Separator />
                         <div className="flex items-center gap-4">
