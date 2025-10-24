@@ -39,7 +39,7 @@ export function AssignLoadDialog({
   const [files, setFiles] = useState<File[]>([]);
 
   const handleAssignLoad = async () => {
-    if (!load || !firestore) return;
+    if (!load || !firestore || !selectedTruckId) return;
 
     if (!selectedTruckId) {
       toast({
@@ -64,30 +64,31 @@ export function AssignLoadDialog({
     const loadRef = doc(firestore, 'loads', load.id);
     const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-    const loadUpdateData = { status: 'Pending' };
+    const loadUpdateData = { status: 'Pending', carrierId: 'temp_carrier_id' }; // carrierId will be replaced by rules
     const truckUpdateData = { status: 'Pending' };
 
     try {
-      await Promise.all([
-        updateDoc(loadRef, loadUpdateData).catch(error => {
-          const permissionError = new FirestorePermissionError({
-            path: loadRef.path,
-            operation: 'update',
-            requestResourceData: loadUpdateData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError;
-        }),
-        updateDoc(truckRef, truckUpdateData).catch(error => {
-           const permissionError = new FirestorePermissionError({
-            path: truckRef.path,
-            operation: 'update',
-            requestResourceData: truckUpdateData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError;
-        })
-      ]);
+      // First, update the load. If this fails, we won't proceed to the truck update.
+      await updateDoc(loadRef, loadUpdateData).catch(error => {
+        const permissionError = new FirestorePermissionError({
+          path: loadRef.path,
+          operation: 'update',
+          requestResourceData: loadUpdateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError; // Re-throw to stop execution
+      });
+
+      // If load update is successful, update the truck.
+      await updateDoc(truckRef, truckUpdateData).catch(error => {
+         const permissionError = new FirestorePermissionError({
+          path: truckRef.path,
+          operation: 'update',
+          requestResourceData: truckUpdateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError; // Re-throw to be caught by the outer catch block
+      });
 
       toast({
         title: 'Documents Submitted for Review',
@@ -97,6 +98,7 @@ export function AssignLoadDialog({
       router.push('/dashboard/my-trucks');
 
     } catch (error) {
+        // The specific errors are already emitted. Here, we just handle UI feedback.
         if (error instanceof FirestorePermissionError) {
              toast({
                 title: 'Permission Denied',
@@ -104,6 +106,7 @@ export function AssignLoadDialog({
                 variant: 'destructive',
             });
         } else {
+            console.error("An unexpected error occurred:", error);
             toast({
                 title: 'Assignment Failed',
                 description: 'An unexpected error occurred. Please try again.',
@@ -173,7 +176,7 @@ export function AssignLoadDialog({
           </Button>
           <Button
             onClick={handleAssignLoad}
-            disabled={isSubmitting || availableTrucks.length === 0}
+            disabled={isSubmitting || availableTrucks.length === 0 || !selectedTruckId}
             className="w-full sm:w-auto"
           >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
