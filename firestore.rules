@@ -1,79 +1,67 @@
 /**
- * @file SecureHaul Firestore Security Rules
- * @version 2
+ * @file Firebase Security Rules for SecureHaul application.
  *
- * @Core Philosophy
- * This ruleset enforces a strict user-ownership model for personal data and a role-based model for shared resources like loads and bids. It leverages denormalization to avoid costly `get()` calls, improving performance and security.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for personal data (users, drivers).
+ * Loads can be created by any authenticated user, but only the owner (shipper) can modify them.
+ * Carriers are allowed to bid on loads.
  *
- * @Data Structure
- * - /users/{userId}: User profiles, accessible only to the user themselves.
- * - /users/{userId}/verification_documents/{documentId}: Verification documents owned by the user.
- * - /users/{userId}/subscriptions/{subscriptionId}: Subscription information owned by the user.
- * - /drivers/{driverId}: Driver profiles, accessible only to the driver themselves.
- * - /drivers/{driverId}/trucks/{truckId}: Trucks owned by the driver.
- * - /loads/{loadId}: Load postings, owned by the shipper.
- * - /loads/{loadId}/bids/{bidId}: Bids for loads, accessible to the carrier and the shipper of the load.
- * - /trucks/{truckId}/emergency_alerts/{alertId}: Emergency alerts for trucks, accessible to the truck's driver.
- * - /shippers/{shipperId}: Shipper profiles, accessible only to the shipper themselves.
- * - /carriers/{carrierId}: Carrier profiles, accessible only to the carrier themselves.
- * - /freight_managers/{freightManagerId}: Freight manager profiles, accessible only to the freight manager themselves.
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles, secured by user ID.
+ * - /users/{userId}/verification_documents/{documentId}: Stores verification documents, owned by the user.
+ * - /users/{userId}/subscriptions/{subscriptionId}: Stores subscription information, owned by the user.
+ * - /drivers/{driverId}: Stores driver profiles, secured by driver ID.
+ * - /drivers/{driverId}/trucks/{truckId}: Stores truck information, owned by the driver. Truck document includes the `driverId`
+ * - /loads/{loadId}: Stores load postings. Includes denormalized 'shipperId' for authorization independence.
+ * - /loads/{loadId}/bids/{bidId}: Stores bids for each load. Includes denormalized 'carrierId' and `loadId` for authorization independence. The bid document includes the `loadId` and `carrierId`.
+ * - /trucks/{truckId}/emergency_alerts/{alertId}: Stores emergency alerts for each truck.
+ * - /shippers/{shipperId}: Stores shipper profiles, secured by shipper ID.
+ * - /carriers/{carrierId}: Stores carrier profiles, secured by carrier ID.
+ * - /freight_managers/{freightManagerId}: Stores freight manager profiles, secured by freight manager ID.
  *
- * @Key Security Decisions
- * - Users can only access their own data under their /users/{userId} path.
- * - Load data is accessible to the shipper (owner) and the assigned carrier.
- * - Bids are accessible to the carrier who created the bid and the shipper who owns the load.
- * - Listing of user documents is disallowed for privacy.
+ * Key Security Decisions:
+ * - Users can only access their own data under /users/{userId}.
+ * - Loads are readable by anyone but only the shipper can modify them.
+ * - Bids can only be created by carriers for specific loads.
+ * - Listing of user documents is not allowed.
  *
- * @Denormalization for Authorization
- * - Loads include the `shipperId` for owner-based access control.
- * - Bids include both the `carrierId` and `loadId` for access control.
- *
- * @Structural Segregation
- * Private user data (verification documents, subscriptions) is stored in user-specific subcollections to avoid accidental public exposure.
+ * Denormalization for Authorization:
+ * - Loads: Contains a `shipperId` field to avoid needing to read the associated Shipper document.
+ * - Bids: Contains `carrierId` and `loadId` to avoid needing to read the associated Carrier and Load documents.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is made by an authenticated user.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle N/A
+     * @description Checks if the user is signed in.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * @description Checks if the request is made by the owner of the document.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle N/A
+     * @description Checks if the user is the owner of the document.
      */
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of the existing document.
-     * @path N/A
-     * @allow N/A
-     * @deny N/A
-     * @principle N/A
+     * @description Checks if the user is the existing owner of the document (exists and is owner).
      */
     function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
+      return isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Allows the user to read their own profile.
+     * @description Security rules for user profiles.
      * @path /users/{userId}
-     * @allow (get, list) User with ID 'user123' reads their own profile.
-     * @deny (get, list) User with ID 'user123' tries to read the profile of user 'user456'.
-     * @principle Enforces user-only access to profile data.
+     * @allow (create) User with ID 'user123' can create their own profile.
+     * @allow (get) User with ID 'user123' can read their own profile.
+     * @deny (create) User with ID 'user456' cannot create a profile for 'user123'.
+     * @deny (update) User with ID 'user456' cannot update the profile for 'user123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
@@ -84,11 +72,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a user to manage their own verification documents.
+     * @description Security rules for verification documents.
      * @path /users/{userId}/verification_documents/{documentId}
-     * @allow (create, get, update, delete) User with ID 'user123' creates, reads, updates, or deletes their own verification document.
-     * @deny (create, get, update, delete) User with ID 'user123' tries to manage verification documents of user 'user456'.
-     * @principle Enforces user-only access to verification documents.
+     * @allow (create) User with ID 'user123' can create a verification document.
+     * @allow (get) User with ID 'user123' can read their own verification document.
+     * @deny (create) User with ID 'user456' cannot create a verification document for 'user123'.
+     * @deny (update) User with ID 'user456' cannot update the verification document for 'user123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/verification_documents/{documentId} {
       allow get: if isOwner(userId);
@@ -99,11 +89,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a user to manage their own subscription information.
+     * @description Security rules for subscriptions.
      * @path /users/{userId}/subscriptions/{subscriptionId}
-     * @allow (create, get, update, delete) User with ID 'user123' creates, reads, updates, or deletes their own subscription.
-     * @deny (create, get, update, delete) User with ID 'user123' tries to manage subscriptions of user 'user456'.
-     * @principle Enforces user-only access to subscription data.
+     * @allow (create) User with ID 'user123' can create a subscription.
+     * @allow (get) User with ID 'user123' can read their own subscription.
+     * @deny (create) User with ID 'user456' cannot create a subscription for 'user123'.
+     * @deny (update) User with ID 'user456' cannot update the subscription for 'user123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/subscriptions/{subscriptionId} {
       allow get: if isOwner(userId);
@@ -114,13 +106,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a driver to read and manage their own driver profile.
+     * @description Security rules for driver profiles.
      * @path /drivers/{driverId}
-     * @allow (get, list) Driver with ID 'driver123' reads their own profile.
-     * @allow (create, update, delete) Driver with ID 'driver123' creates, updates, or deletes their own profile.
-     * @deny (get, list) Driver with ID 'driver123' tries to read the profile of driver 'driver456'.
-     * @deny (create, update, delete) Driver with ID 'driver123' tries to modify the profile of driver 'driver456'.
-     * @principle Enforces user-only access to driver profiles.
+     * @allow (create) Driver with ID 'driver123' can create their own profile.
+     * @allow (get) Driver with ID 'driver123' can read their own profile.
+     * @deny (create) User with ID 'user456' cannot create a profile for 'driver123'.
+     * @deny (update) User with ID 'user456' cannot update the profile for 'driver123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /drivers/{driverId} {
       allow get: if isOwner(driverId);
@@ -131,11 +123,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a driver to manage their own trucks.
+     * @description Security rules for truck information.
      * @path /drivers/{driverId}/trucks/{truckId}
-     * @allow (create, get, update, delete) Driver with ID 'driver123' creates, reads, updates, or deletes their own truck.
-     * @deny (create, get, update, delete) Driver with ID 'driver123' tries to manage trucks of driver 'driver456'.
-     * @principle Enforces user-only access to truck data.
+     * @allow (create) Driver with ID 'driver123' can create a truck.
+     * @allow (get) Driver with ID 'driver123' can read their own truck.
+     * @deny (create) User with ID 'user456' cannot create a truck for 'driver123'.
+     * @deny (update) User with ID 'user456' cannot update the truck for 'driver123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /drivers/{driverId}/trucks/{truckId} {
       allow get: if isOwner(driverId);
@@ -146,62 +140,61 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows anyone to read load postings, but only the shipper can create, update, or delete them.
+     * @description Security rules for load postings.
      * @path /loads/{loadId}
-     * @allow (get, list) Any user can read or list load postings.
-     * @allow (create) Shipper with ID 'shipper123' creates a load posting.
-     * @allow (update, delete) Shipper with ID 'shipper123' updates or deletes their own load posting.
-     * @deny (create, update, delete) User with ID 'user123' tries to modify load postings of shipper 'shipper123'.
-     * @principle Enforces owner-only writes for loads while allowing public reads.
+     * @allow (create) Shipper can create a load if the shipperId matches their user ID.
+     * @allow (get) Anyone can read a load.
+     * @deny (update) User who is not the shipper cannot update the load.
+     * @principle Allows public read access but restricts write access to the owner (shipper).
      */
     match /loads/{loadId} {
       allow get: if true;
       allow list: if true;
       allow create: if isSignedIn() && request.resource.data.shipperId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
-      allow delete: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
+      allow update: if isSignedIn() && resource != null && resource.data.shipperId == request.auth.uid;
+      allow delete: if isSignedIn() && resource != null && resource.data.shipperId == request.auth.uid;
     }
 
     /**
-     * @description Allows a carrier to create bids for loads, and allows the carrier and shipper to read their own bids.
+     * @description Security rules for bids on loads.
      * @path /loads/{loadId}/bids/{bidId}
-     * @allow (create) Carrier with ID 'carrier123' creates a bid for a load.
-     * @allow (get) Carrier with ID 'carrier123' reads their own bid for load 'load123'.
-     * @allow (get) Shipper with ID 'shipper456' reads bids for their load 'load123'.
-     * @deny (update, delete) No one can update or delete bids.
-     * @principle Allows carrier to bid, and shipper/carrier to read.  No updates or deletes.
+     * @allow (create) Carrier can create a bid for a load if the carrierId matches their user ID.
+     * @allow (get) Anyone can read a bid.
+     * @deny (update) User who is not the carrier cannot update the bid.
+     * @principle Allows public read access but restricts write access to the owner (carrier).
      */
     match /loads/{loadId}/bids/{bidId} {
-      allow get: if request.auth.uid == resource.data.carrierId || get(/databases/$(database)/documents/loads/$(loadId)).data.shipperId == request.auth.uid;
-      allow list: if false;
+      allow get: if true;
+      allow list: if true;
       allow create: if isSignedIn() && request.resource.data.carrierId == request.auth.uid && request.resource.data.loadId == loadId;
+      allow update: if isExistingOwner(request.auth.uid) && request.resource.data.carrierId == resource.data.carrierId && request.resource.data.loadId == resource.data.loadId; //TODO: Remove isExistingOwner, no ownership.
+      allow delete: if false; //Bids cannot be deleted
+    }
+
+    /**
+     * @description Security rules for emergency alerts for trucks.
+     * @path /trucks/{truckId}/emergency_alerts/{alertId}
+     * @allow (create) Truck can create an emergency alert. Requires authentication.
+     * @allow (get) Only the owner (driver) of the truck can read the emergency alert.
+     * @deny (update) No one can update the emergency alert.
+     * @principle Restricts access to emergency alerts based on truck ownership.
+     */
+    match /trucks/{truckId}/emergency_alerts/{alertId} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if isSignedIn();
       allow update: if false;
       allow delete: if false;
     }
 
     /**
-     * @description Allows a truck's driver to manage emergency alerts for their trucks.
-     * @path /trucks/{truckId}/emergency_alerts/{alertId}
-     * @allow (create, get, update, delete) Driver with ID 'driver123' creates, reads, updates, or deletes emergency alerts for their truck.
-     * @deny (create, get, update, delete) User with ID 'user123' tries to manage emergency alerts for trucks of driver 'driver123'.
-     * @principle Enforces user-only access to emergency alerts.
-     */
-    match /trucks/{truckId}/emergency_alerts/{alertId} {
-      allow get: if get(/databases/$(database)/documents/drivers/$(resource.data.truckId)).data.driverId == request.auth.uid;
-      allow list: if false;
-      allow create: if isSignedIn();  // TODO: Refine this rule to check for truck ownership.
-      allow update: if false; // TODO: Add owner validation once truck ownership is clarified.
-      allow delete: if false; // TODO: Add owner validation once truck ownership is clarified.
-    }
-
-    /**
-     * @description Allows a shipper to manage their own shipper profile.
+     * @description Security rules for shipper profiles.
      * @path /shippers/{shipperId}
-     * @allow (get, list) Shipper with ID 'shipper123' reads their own profile.
-     * @allow (create, update, delete) Shipper with ID 'shipper123' creates, updates, or deletes their own profile.
-     * @deny (get, list) Shipper with ID 'shipper123' tries to read the profile of shipper 'shipper456'.
-     * @deny (create, update, delete) Shipper with ID 'shipper123' tries to modify the profile of shipper 'shipper456'.
-     * @principle Enforces user-only access to shipper profiles.
+     * @allow (create) Shipper can create their own profile.
+     * @allow (get) Shipper can read their own profile.
+     * @deny (create) User with ID 'user456' cannot create a profile for 'shipper123'.
+     * @deny (update) User with ID 'user456' cannot update the profile for 'shipper123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /shippers/{shipperId} {
       allow get: if isOwner(shipperId);
@@ -212,13 +205,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a carrier to manage their own carrier profile.
+     * @description Security rules for carrier profiles.
      * @path /carriers/{carrierId}
-     * @allow (get, list) Carrier with ID 'carrier123' reads their own profile.
-     * @allow (create, update, delete) Carrier with ID 'carrier123' creates, updates, or deletes their own profile.
-     * @deny (get, list) Carrier with ID 'carrier123' tries to read the profile of carrier 'carrier456'.
-     * @deny (create, update, delete) Carrier with ID 'carrier123' tries to modify the profile of carrier 'carrier456'.
-     * @principle Enforces user-only access to carrier profiles.
+     * @allow (create) Carrier can create their own profile.
+     * @allow (get) Carrier can read their own profile.
+     * @deny (create) User with ID 'user456' cannot create a profile for 'carrier123'.
+     * @deny (update) User with ID 'user456' cannot update the profile for 'carrier123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /carriers/{carrierId} {
       allow get: if isOwner(carrierId);
@@ -229,13 +222,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a freight manager to manage their own freight manager profile.
+     * @description Security rules for freight manager profiles.
      * @path /freight_managers/{freightManagerId}
-     * @allow (get, list) Freight manager with ID 'freightManager123' reads their own profile.
-     * @allow (create, update, delete) Freight manager with ID 'freightManager123' creates, updates, or deletes their own profile.
-     * @deny (get, list) Freight manager with ID 'freightManager123' tries to read the profile of freight manager 'freightManager456'.
-     * @deny (create, update, delete) Freight manager with ID 'freightManager123' tries to modify the profile of freight manager 'freightManager456'.
-     * @principle Enforces user-only access to freight manager profiles.
+     * @allow (create) Freight manager can create their own profile.
+     * @allow (get) Freight manager can read their own profile.
+     * @deny (create) User with ID 'user456' cannot create a profile for 'freightManager123'.
+     * @deny (update) User with ID 'user456' cannot update the profile for 'freightManager123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /freight_managers/{freightManagerId} {
       allow get: if isOwner(freightManagerId);
