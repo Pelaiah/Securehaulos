@@ -15,7 +15,7 @@ import { useState } from 'react';
 import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
 import { FileUpload } from './FileUpload';
-import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 type AssignLoadDialogProps = {
@@ -34,12 +34,13 @@ export function AssignLoadDialog({
   const router = useRouter();
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTruckId, setSelectedTruckId] = useState<string | undefined>();
   const [files, setFiles] = useState<File[]>([]);
 
   const handleAssignLoad = async () => {
-    if (!load || !firestore || !selectedTruckId) return;
+    if (!load || !firestore || !selectedTruckId || !user) return;
 
     if (!selectedTruckId) {
       toast({
@@ -64,7 +65,7 @@ export function AssignLoadDialog({
     const loadRef = doc(firestore, 'loads', load.id);
     const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-    const loadUpdateData = { status: 'Pending', carrierId: 'temp_carrier_id' }; // carrierId will be replaced by rules
+    const loadUpdateData = { status: 'Pending', carrierId: user.uid };
     const truckUpdateData = { status: 'Pending' };
 
     try {
