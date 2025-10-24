@@ -25,13 +25,18 @@ import { useState } from 'react';
 import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
 import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
 import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
+import { PendingLoadDetailsDialog } from '@/components/dashboard/shipper/PendingLoadDetailsDialog';
+import { trucks } from '@/lib/data';
 
 interface MyLoadsPageProps {
   companyName?: string;
 }
 
 export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPageProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
+
   const firestore = useFirestore();
   const { user } = useUser();
 
@@ -62,6 +67,14 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
       });
   };
 
+  const handleLoadClick = (load: Load) => {
+    if (load.status === 'Pending') {
+      setSelectedLoad(load);
+      setIsReviewModalOpen(true);
+    }
+    // You can add else logic for other statuses if needed
+  };
+
   const activeLoads = loads?.filter(load => ['Posted', 'In Transit', 'Pending'].includes(load.status)) || [];
   const pastLoads = loads?.filter(load => load.status === 'Completed') || [];
 
@@ -80,7 +93,7 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
           <h1 className="text-2xl font-bold font-headline">My Posted Loads</h1>
           <p className="text-muted-foreground">Manage all your active and past shipments.</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsPostModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Post New Load
         </Button>
@@ -92,7 +105,11 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
               {activeLoads.map((load) => (
-                <Card key={load.id}>
+                <Card 
+                  key={load.id}
+                  onClick={() => handleLoadClick(load)}
+                  className={cn(load.status === 'Pending' && 'cursor-pointer hover:border-primary')}
+                >
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
@@ -168,13 +185,18 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
         </div>
     </div>
     <PostLoadModal 
-        isOpen={isModalOpen} 
-        onOpenChange={setIsModalOpen}
+        isOpen={isPostModalOpen} 
+        onOpenChange={setIsPostModalOpen}
         onPostLoad={handlePostLoad}
         companyName={companyName}
+     />
+     <PendingLoadDetailsDialog
+        isOpen={isReviewModalOpen}
+        onOpenChange={setIsReviewModalOpen}
+        load={selectedLoad}
+        // For demo, we'll find the truck that is pending
+        assignedTruck={trucks.find(t => t.status === 'Pending')}
      />
     </>
   );
 }
-
-  

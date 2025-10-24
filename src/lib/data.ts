@@ -3,6 +3,7 @@
 
 
 
+
 export type Truck = {
   id: string;
   name: string;
@@ -17,6 +18,11 @@ export type Truck = {
   loadWeight: number;
   cargoIntegrity: boolean;
   unauthorizedDoorOpening: boolean;
+  sensors: {
+    door: boolean;
+    temperature: boolean;
+    gps: boolean;
+  }
 };
 
 export const trucks: Truck[] = [
@@ -31,6 +37,7 @@ export const trucks: Truck[] = [
     loadWeight: 18000,
     cargoIntegrity: false,
     unauthorizedDoorOpening: true,
+    sensors: { door: true, temperature: false, gps: true },
   },
   {
     id: 'TR-002',
@@ -43,6 +50,7 @@ export const trucks: Truck[] = [
     loadWeight: 15500,
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
+    sensors: { door: true, temperature: true, gps: true },
   },
   {
     id: 'TR-003',
@@ -55,6 +63,7 @@ export const trucks: Truck[] = [
     loadWeight: 0,
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
+    sensors: { door: false, temperature: false, gps: true },
   },
   {
     id: 'TR-004',
@@ -67,6 +76,7 @@ export const trucks: Truck[] = [
     loadWeight: 19500,
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
+    sensors: { door: true, temperature: true, gps: true },
   },
    {
     id: 'SD-752069247',
@@ -79,6 +89,7 @@ export const trucks: Truck[] = [
     loadWeight: 12000,
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
+    sensors: { door: true, temperature: true, gps: true },
   },
 ];
 
@@ -258,5 +269,3 @@ export const drivers: Driver[] = [
     ]
   },
 ];
-
-  
