@@ -15,6 +15,8 @@ import { useState } from 'react';
 import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
 import { FileUpload } from './FileUpload';
+import { useFirestore } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 type AssignLoadDialogProps = {
   isOpen: boolean;
@@ -31,11 +33,14 @@ export function AssignLoadDialog({
 }: AssignLoadDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTruckId, setSelectedTruckId] = useState<string | undefined>();
   const [files, setFiles] = useState<File[]>([]);
 
-  const handleAssignLoad = () => {
+  const handleAssignLoad = async () => {
+    if (!load || !firestore) return;
+
     if (!selectedTruckId) {
       toast({
         variant: 'destructive',
@@ -55,16 +60,32 @@ export function AssignLoadDialog({
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onOpenChange(false);
+    
+    try {
+      const loadRef = doc(firestore, 'loads', load.id);
+      await updateDoc(loadRef, { status: 'Pending' });
+
+      // Also update the assigned truck's status
+      const truckRef = doc(firestore, 'trucks', selectedTruckId);
+      await updateDoc(truckRef, { status: 'Pending' });
+
       toast({
         title: 'Documents Submitted for Review',
-        description: `The load has been assigned a truck. The shipper will now review the documents and accept the assignment.`,
+        description: `The shipper will now review your application for load #${load.id}.`,
       });
+      onOpenChange(false);
       router.push('/dashboard/my-trucks');
-    }, 1500);
+
+    } catch (error) {
+       console.error("Error updating load/truck status:", error);
+       toast({
+        variant: 'destructive',
+        title: 'Assignment Failed',
+        description: 'Could not update the load or truck status. Please try again.',
+      });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   if (!load) return null;
@@ -136,3 +157,5 @@ export function AssignLoadDialog({
     </Dialog>
   );
 }
+
+  

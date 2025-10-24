@@ -2,6 +2,7 @@
 
 
 
+
 export type Truck = {
   id: string;
   name: string;
@@ -91,7 +92,7 @@ export type Load = {
   isPremium: boolean;
   shipper: string;
   payout: number;
-  status: 'Posted' | 'In Transit' | 'Completed';
+  status: 'Posted' | 'In Transit' | 'Completed' | 'Pending';
 };
 
 
@@ -258,4 +259,4 @@ export const drivers: Driver[] = [
   },
 ];
 
-    
+  

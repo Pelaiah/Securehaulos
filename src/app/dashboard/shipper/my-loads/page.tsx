@@ -24,7 +24,7 @@ import {
 import { useState } from 'react';
 import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
 import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 
 interface MyLoadsPageProps {
   companyName?: string;
@@ -42,7 +42,7 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
 
   const { data: loads } = useCollection<Load>(loadsCollectionRef);
 
-  const handlePostLoad = (newLoadData: Omit<Load, 'id' | 'shipperId'>) => {
+  const handlePostLoad = (newLoadData: Omit<Load, 'id'>) => {
     if (!loadsCollectionRef || !user) return;
     
     const loadWithShipperId = {
@@ -52,27 +52,24 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
 
     addDoc(loadsCollectionRef, loadWithShipperId)
       .catch((error) => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: loadsCollectionRef.path,
-            operation: 'create',
-            requestResourceData: loadWithShipperId,
-          })
-        );
-        // Re-throw to be caught by other error handlers if needed,
-        // but the primary mechanism is the event emitter.
+        const permissionError = new FirestorePermissionError({
+          path: loadsCollectionRef.path,
+          operation: 'create',
+          requestResourceData: loadWithShipperId,
+        });
+        errorEmitter.emit('permission-error', permissionError);
         throw error;
       });
   };
 
-  const activeLoads = loads?.filter(load => ['Posted', 'In Transit'].includes(load.status)) || [];
+  const activeLoads = loads?.filter(load => ['Posted', 'In Transit', 'Pending'].includes(load.status)) || [];
   const pastLoads = loads?.filter(load => load.status === 'Completed') || [];
 
-  const statusColors = {
+  const statusColors: { [key in Load['status']]: string } = {
     'Posted': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
     'In Transit': 'text-blue-400 bg-blue-500/10 border-blue-500/20',
     'Completed': 'text-green-400 bg-green-500/10 border-green-500/20',
+    'Pending': 'text-orange-400 bg-orange-500/10 border-orange-500/20',
   }
 
   return (
@@ -179,3 +176,5 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
     </>
   );
 }
+
+  
