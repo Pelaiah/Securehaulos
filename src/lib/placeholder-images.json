@@ -9,8 +9,8 @@
     {
       "id": "volvo-xc40",
       "description": "A blue volvo xc40 car",
-      "imageUrl": "https://i.imgur.com/uFLl3cT.png",
-      "imageHint": "blue car"
+      "imageUrl": "https://images.unsplash.com/photo-1592838064575-70ed626d3a0e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0cnVja3xlbnwwfHx8fDE3NjEyODg1NTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "truck side view"
     },
     {
       "id": "driver-avatar",
