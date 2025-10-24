@@ -194,8 +194,6 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
         isOpen={isReviewModalOpen}
         onOpenChange={setIsReviewModalOpen}
         load={selectedLoad}
-        // For demo, we'll find the truck that is pending
-        assignedTruck={trucks.find(t => t.status === 'Pending')}
      />
     </>
   );

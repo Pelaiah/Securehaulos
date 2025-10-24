@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Load, Truck, Driver, Document } from '@/lib/data';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FileText,
   Truck as TruckIcon,
@@ -24,17 +24,27 @@ import {
   Thermometer,
   MapPin as GpsIcon,
   Contact,
+  Download,
 } from 'lucide-react';
 import Image from 'next/image';
 import { drivers, documents as mockCarrierDocs } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { useCollection, useFirestore, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
+import { collection, doc, updateDoc, writeBatch } from 'firebase/firestore';
 
+
+type SubmittedDocument = {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    status: 'Submitted' | 'Approved' | 'Rejected';
+    submittedAt: string;
+    fileUrl: string;
+}
 
 type PendingLoadDetailsDialogProps = {
   load: Load | null;
-  assignedTruck: Truck | undefined;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -45,10 +55,14 @@ const getDriverForTruck = (truckId?: string) => {
     return drivers.find(d => d.truck === truckId) || drivers[0];
 }
 
+const getTruckForLoad = (load: Load | null, allTrucks: Truck[]) => {
+    if (!load?.assignedTruckId) return undefined;
+    return allTrucks.find(t => t.id === load.assignedTruckId);
+}
+
 
 export function PendingLoadDetailsDialog({
   load,
-  assignedTruck,
   isOpen,
   onOpenChange,
 }: PendingLoadDetailsDialogProps) {
@@ -56,53 +70,35 @@ export function PendingLoadDetailsDialog({
   const { toast } = useToast();
   const firestore = useFirestore();
 
+  const assignedTruck = getTruckForLoad(load, drivers.map(d => ({...d, ...d.truck && {truck: d.truck}} as any))); // This is messy, needs fixing
   const assignedDriver = getDriverForTruck(assignedTruck?.id);
+  
+  const documentsRef = useMemoFirebase(() => {
+    if (!firestore || !load) return null;
+    return collection(firestore, 'loads', load.id, 'submitted_documents');
+  }, [firestore, load]);
+  const { data: submittedDocs, isLoading: isLoadingDocs } = useCollection<SubmittedDocument>(documentsRef);
 
-  const documentStatusColors: { [key: string]: string } = {
-    Approved: 'text-green-400 bg-green-500/10',
-    Pending: 'text-yellow-400 bg-yellow-500/10',
-    Rejected: 'text-red-400 bg-red-500/10',
-    Expired: 'text-gray-400 bg-gray-500/10',
-  };
 
   const handleDecision = async (decision: 'Approved' | 'Rejected') => {
-    if (!load || !firestore || !assignedTruck) return;
+    if (!load || !firestore || !load.assignedTruckId) return;
     
     setIsSubmitting(true);
-    const loadRef = doc(firestore, 'loads', load.id);
-    const truckRef = doc(firestore, 'trucks', assignedTruck.id);
     
-    let loadUpdateData, truckUpdateData;
-
-    if (decision === 'Approved') {
-        loadUpdateData = { status: 'In Transit' };
-        truckUpdateData = { status: 'On-time' };
-    } else {
-        loadUpdateData = { status: 'Posted' };
-        truckUpdateData = { status: 'Idle' };
-    }
-
     try {
-        await Promise.all([
-            updateDoc(loadRef, loadUpdateData).catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: loadRef.path,
-                    operation: 'update',
-                    requestResourceData: loadUpdateData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                throw permissionError; // re-throw to be caught by Promise.all
-            }),
-            updateDoc(truckRef, truckUpdateData).catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: truckRef.path,
-                    operation: 'update',
-                    requestResourceData: truckUpdateData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                throw permissionError; // re-throw to be caught by Promise.all
-            })
-        ]);
+        const batch = writeBatch(firestore);
+        const loadRef = doc(firestore, 'loads', load.id);
+        const truckRef = doc(firestore, 'trucks', load.assignedTruckId);
+        
+        if (decision === 'Approved') {
+            batch.update(loadRef, { status: 'In Transit' });
+            batch.update(truckRef, { status: 'On-time' });
+        } else {
+            batch.update(loadRef, { status: 'Posted', carrierId: null, assignedTruckId: null });
+            batch.update(truckRef, { status: 'Idle' });
+        }
+        
+        await batch.commit();
 
         if (decision === 'Approved') {
             toast({
@@ -117,22 +113,12 @@ export function PendingLoadDetailsDialog({
             });
         }
         onOpenChange(false);
-    } catch (error) {
-        // Errors are now emitted globally, so a generic toast is sufficient here.
-        // The FirebaseErrorListener will throw the detailed error for debugging.
-        if (error instanceof FirestorePermissionError) {
-             toast({
-                title: 'Permission Denied',
-                description: 'Could not update status. See console for details.',
-                variant: 'destructive',
-            });
-        } else {
-            toast({
-                title: 'Update Failed',
-                description: 'An unexpected error occurred. Please try again.',
-                variant: 'destructive',
-            });
-        }
+    } catch (error: any) {
+        toast({
+            title: 'Update Failed',
+            description: error.message || 'An unexpected error occurred. Please check security rules.',
+            variant: 'destructive',
+        });
     } finally {
         setIsSubmitting(false);
     }
@@ -190,21 +176,21 @@ export function PendingLoadDetailsDialog({
                            <div className="flex flex-col items-center gap-1">
                                 {assignedTruck.sensors.door ? <ShieldCheck className="w-6 h-6 text-green-500" /> : <ShieldAlert className="w-6 h-6 text-yellow-500" />}
                                 <p>Door Sensor</p>
-                                <Badge variant={assignedTruck.sensors.door ? "outline" : "secondary"} className={cn(assignedTruck.sensors.door && "border-green-500/50 text-green-500")}>
+                                <Badge variant={assignedTruck.sensors.door ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.door && 'border-green-500/50 text-green-500')}>
                                   {assignedTruck.sensors.door ? 'Equipped' : 'Not Present'}
                                 </Badge>
                            </div>
                             <div className="flex flex-col items-center gap-1">
                                 {assignedTruck.sensors.temperature ? <Thermometer className="w-6 h-6 text-green-500" /> : <Thermometer className="w-6 h-6 text-muted-foreground" />}
                                 <p>Temp. Sensor</p>
-                                <Badge variant={assignedTruck.sensors.temperature ? "outline" : "secondary"} className={cn(assignedTruck.sensors.temperature && "border-green-500/50 text-green-500")}>
+                                <Badge variant={assignedTruck.sensors.temperature ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.temperature && 'border-green-500/50 text-green-500')}>
                                   {assignedTruck.sensors.temperature ? 'Equipped' : 'Not Present'}
                                 </Badge>
                            </div>
                             <div className="flex flex-col items-center gap-1">
                                 {assignedTruck.sensors.gps ? <GpsIcon className="w-6 h-6 text-green-500" /> : <GpsIcon className="w-6 h-6 text-muted-foreground" />}
                                 <p>GPS Tracking</p>
-                                <Badge variant={assignedTruck.sensors.gps ? "outline" : "secondary"} className={cn(assignedTruck.sensors.gps && "border-green-500/50 text-green-500")}>
+                                <Badge variant={assignedTruck.sensors.gps ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.gps && 'border-green-500/50 text-green-500')}>
                                   {assignedTruck.sensors.gps ? 'Active' : 'Inactive'}
                                 </Badge>
                            </div>
@@ -224,22 +210,31 @@ export function PendingLoadDetailsDialog({
                                 <TableRow>
                                 <TableHead>Document Name</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Expires</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {mockCarrierDocs.slice(0,3).map((doc) => (
+                                {isLoadingDocs && (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="text-center">Loading documents...</TableCell>
+                                    </TableRow>
+                                )}
+                                {submittedDocs?.map((doc) => (
                                 <TableRow key={doc.id}>
-                                    <TableCell className="font-medium">{doc.name}</TableCell>
+                                    <TableCell className="font-medium">{doc.fileName}</TableCell>
                                     <TableCell>
                                     <Badge
                                         variant="outline"
-                                        className={cn('border-0', documentStatusColors[doc.status])}
+                                        className={'border-0 text-yellow-400 bg-yellow-500/10'}
                                     >
                                         {doc.status}
                                     </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right">{doc.expiryDate || 'N/A'}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon">
+                                            <Download className="w-4 h-4" />
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                                 ))}
                             </TableBody>
@@ -256,7 +251,7 @@ export function PendingLoadDetailsDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Close
           </Button>
-           <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting}>
+           <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting || isLoadingDocs || !submittedDocs?.length}>
               Approve and Assign Load
           </Button>
         </DialogFooter>

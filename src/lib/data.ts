@@ -1,9 +1,4 @@
 
-
-
-
-
-
 export type Truck = {
   id: string;
   name: string;
@@ -96,6 +91,8 @@ export const trucks: Truck[] = [
 export type Load = {
   id: string;
   shipperId: string;
+  carrierId?: string | null;
+  assignedTruckId?: string | null;
   origin: string;
   destination: string;
   cargo: string;

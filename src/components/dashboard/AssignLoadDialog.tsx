@@ -16,7 +16,7 @@ import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { useFirestore, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, writeBatch } from 'firebase/firestore';
 
 type AssignLoadDialogProps = {
   isOpen: boolean;
@@ -62,58 +62,50 @@ export function AssignLoadDialog({
 
     setIsSubmitting(true);
     
-    const loadRef = doc(firestore, 'loads', load.id);
-    const truckRef = doc(firestore, 'trucks', selectedTruckId);
-
-    const loadUpdateData = { status: 'Pending', carrierId: user.uid };
-    const truckUpdateData = { status: 'Pending' };
-
     try {
-      // First, update the load. If this fails, we won't proceed to the truck update.
-      await updateDoc(loadRef, loadUpdateData).catch(error => {
-        const permissionError = new FirestorePermissionError({
-          path: loadRef.path,
-          operation: 'update',
-          requestResourceData: loadUpdateData,
+        const batch = writeBatch(firestore);
+
+        const loadRef = doc(firestore, 'loads', load.id);
+        const truckRef = doc(firestore, 'trucks', selectedTruckId);
+
+        const loadUpdateData = { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId };
+        const truckUpdateData = { status: 'Pending' };
+
+        batch.update(loadRef, loadUpdateData);
+        batch.update(truckRef, truckUpdateData);
+        
+        // In a real app, you would upload files to Firebase Storage and get URLs.
+        // For this demo, we'll just create document references with mock data.
+        files.forEach((file) => {
+            const docRef = doc(firestore, 'loads', load.id, 'submitted_documents', file.name.replace(/[^a-zA-Z0-9]/g, ''));
+            const docData = {
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size,
+                status: 'Submitted',
+                submittedAt: new Date().toISOString(),
+                // In a real app, this would be a gs:// or https:// URL from Firebase Storage.
+                fileUrl: 'https://example.com/placeholder.pdf',
+            };
+            batch.set(docRef, docData);
         });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError; // Re-throw to stop execution
-      });
+        
+        await batch.commit();
 
-      // If load update is successful, update the truck.
-      await updateDoc(truckRef, truckUpdateData).catch(error => {
-         const permissionError = new FirestorePermissionError({
-          path: truckRef.path,
-          operation: 'update',
-          requestResourceData: truckUpdateData,
+        toast({
+            title: 'Documents Submitted for Review',
+            description: `The shipper will now review your application for load #${load.id}.`,
         });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError; // Re-throw to be caught by the outer catch block
-      });
+        onOpenChange(false);
+        router.push('/dashboard/my-trucks');
 
-      toast({
-        title: 'Documents Submitted for Review',
-        description: `The shipper will now review your application for load #${load.id}.`,
-      });
-      onOpenChange(false);
-      router.push('/dashboard/my-trucks');
-
-    } catch (error) {
-        // The specific errors are already emitted. Here, we just handle UI feedback.
-        if (error instanceof FirestorePermissionError) {
-             toast({
-                title: 'Permission Denied',
-                description: 'Could not submit application. See console for details.',
-                variant: 'destructive',
-            });
-        } else {
-            console.error("An unexpected error occurred:", error);
-            toast({
-                title: 'Assignment Failed',
-                description: 'An unexpected error occurred. Please try again.',
-                variant: 'destructive',
-            });
-        }
+    } catch (error: any) {
+        console.error("Error during load assignment:", error);
+        toast({
+            title: 'Assignment Failed',
+            description: error.message || 'An unexpected error occurred. Please check security rules and try again.',
+            variant: 'destructive',
+        });
     } finally {
         setIsSubmitting(false);
     }
