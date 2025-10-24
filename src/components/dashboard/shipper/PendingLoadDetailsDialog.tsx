@@ -37,7 +37,7 @@ import {
 import Image from 'next/image';
 import { drivers, documents as mockCarrierDocs } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 
@@ -78,33 +78,61 @@ export function PendingLoadDetailsDialog({
     if (!load || !firestore || !assignedTruck) return;
     
     setIsSubmitting(true);
+    const loadRef = doc(firestore, 'loads', load.id);
+    const truckRef = doc(firestore, 'trucks', assignedTruck.id);
+    
+    let loadUpdateData, truckUpdateData;
+
+    if (decision === 'Approved') {
+        loadUpdateData = { status: 'In Transit' };
+        truckUpdateData = { status: 'On-time' };
+    } else {
+        loadUpdateData = { status: 'Posted' };
+        truckUpdateData = { status: 'Idle' };
+    }
+
+    const loadUpdatePromise = updateDoc(loadRef, loadUpdateData).catch(error => {
+        const permissionError = new FirestorePermissionError({
+            path: loadRef.path,
+            operation: 'update',
+            requestResourceData: loadUpdateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError; // re-throw to be caught by Promise.all
+    });
+
+    const truckUpdatePromise = updateDoc(truckRef, truckUpdateData).catch(error => {
+        const permissionError = new FirestorePermissionError({
+            path: truckRef.path,
+            operation: 'update',
+            requestResourceData: truckUpdateData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError; // re-throw to be caught by Promise.all
+    });
+
     try {
-        const loadRef = doc(firestore, 'loads', load.id);
-        const truckRef = doc(firestore, 'trucks', assignedTruck.id);
-        
+        await Promise.all([loadUpdatePromise, truckUpdatePromise]);
+
         if (decision === 'Approved') {
-            await updateDoc(loadRef, { status: 'In Transit' });
-            await updateDoc(truckRef, { status: 'On-time' });
             toast({
                 title: 'Load Approved!',
                 description: `Carrier has been assigned and load #${load.id} is now In Transit.`,
             });
         } else {
-            await updateDoc(loadRef, { status: 'Posted' });
-            await updateDoc(truckRef, { status: 'Idle' });
              toast({
                 title: 'Application Rejected',
                 description: `Load #${load.id} has been returned to the load board.`,
                 variant: 'destructive'
             });
         }
-
         onOpenChange(false);
     } catch (error) {
-        console.error('Error updating status:', error);
+        // The specific error is already emitted. We just need to handle the UI state.
+        // The global error boundary will display the detailed error.
         toast({
-            title: 'Error',
-            description: 'Failed to update load status. Please try again.',
+            title: 'Permission Denied',
+            description: 'Could not update the load status. Check the error overlay for details.',
             variant: 'destructive',
         });
     } finally {
