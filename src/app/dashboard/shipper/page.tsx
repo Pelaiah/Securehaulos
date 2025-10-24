@@ -1,27 +1,37 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Map } from '@/components/dashboard/Map';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
 import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 import { Card, CardContent } from '@/components/ui/card';
-import { tripData } from '@/lib/data';
+import { tripData, trucks } from '@/lib/data';
 import { Header } from '@/components/dashboard/Header';
 import { Fuel, Timer, Weight } from 'lucide-react';
-import { trucks } from '@/lib/data';
+
+type Trip = (typeof tripData)[0];
 
 export default function ShipperDashboardPage() {
-  const [selectedDriver, setSelectedDriver] = useState(tripData[2]);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(tripData[2]);
+
+  const selectedTruck = useMemo(() => {
+    if (!selectedTrip) return null;
+    return trucks.find(truck => truck.id === selectedTrip.truckId) || null;
+  }, [selectedTrip]);
+
+  const handleTripSelect = (trip: Trip) => {
+    setSelectedTrip(trip);
+  };
 
   return (
     <div className="flex flex-col h-full">
-      <Header title={selectedDriver.name} onLogout={() => {}} />
+      <Header title={selectedTrip?.name || "Dashboard"} onLogout={() => {}} />
       <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
-          <InformationCard driver={selectedDriver} />
-          <VehicleInfoCard />
+          <InformationCard driver={selectedTrip} />
+          <VehicleInfoCard truck={selectedTruck} />
            <Card className='flex-grow'>
               <CardContent className="p-4 grid grid-cols-2 gap-4 text-sm">
                 <div className="space-y-4">
@@ -50,7 +60,7 @@ export default function ShipperDashboardPage() {
         {/* Middle Column */}
         <div className="xl:col-span-2 space-y-6 flex flex-col">
             <div className="flex-grow rounded-lg overflow-hidden">
-                 <Map trucks={trucks} />
+                 <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
             </div>
         </div>
 
@@ -58,10 +68,16 @@ export default function ShipperDashboardPage() {
         <div className="xl:col-span-1 space-y-6 flex flex-col">
             <TripInfoCard />
             <div className="flex-grow">
-                <ShipmentList title="Trips" />
+                <ShipmentList 
+                  title="Trips"
+                  onTripSelect={handleTripSelect}
+                  selectedTripId={selectedTrip?.id}
+                />
             </div>
         </div>
       </div>
     </div>
   );
 }
+
+    

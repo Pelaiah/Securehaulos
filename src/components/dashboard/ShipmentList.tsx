@@ -13,32 +13,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { tripData } from '@/lib/data';
+import { tripData, type tripData as TripDataType } from '@/lib/data';
 import React from 'react';
-import Link from 'next/link';
 
-
-type Trip = {
-    id: string;
-    name: string;
-    date: string;
-    status: 'Active' | 'Completed';
-    earned: string;
-    avatar: string;
-};
+type Trip = (typeof tripData)[0];
 
 type TripListItemProps = {
-  item: Trip,
+  item: Trip;
+  onTripSelect: (trip: Trip) => void;
+  isSelected: boolean;
 };
 
-function TripListItem({ item }: TripListItemProps) {
+function TripListItem({ item, onTripSelect, isSelected }: TripListItemProps) {
     const statusColors = {
         'Active': 'bg-yellow-400/20 text-yellow-400',
         'Completed': 'bg-green-400/20 text-green-400',
     };
 
     return (
-        <Link href={`/dashboard/shipper/tracking/${item.id}`} className="block p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+        <div 
+          onClick={() => onTripSelect(item)}
+          className={cn(
+            "block p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer",
+            isSelected && "bg-accent"
+          )}
+        >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
@@ -69,15 +68,17 @@ function TripListItem({ item }: TripListItemProps) {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-        </Link>
+        </div>
     );
 }
 
 type ShipmentListProps = {
   title: string;
+  onTripSelect: (trip: Trip) => void;
+  selectedTripId?: string | null;
 };
 
-export function ShipmentList({ title }: ShipmentListProps) {
+export function ShipmentList({ title, onTripSelect, selectedTripId }: ShipmentListProps) {
 
   return (
     <Card className="h-full flex flex-col bg-card-alt border-0">
@@ -96,6 +97,8 @@ export function ShipmentList({ title }: ShipmentListProps) {
                 <TripListItem 
                     key={trip.id}
                     item={trip}
+                    onTripSelect={onTripSelect}
+                    isSelected={trip.id === selectedTripId}
                 />
             ))}
             </div>
@@ -106,3 +109,5 @@ export function ShipmentList({ title }: ShipmentListProps) {
     </Card>
   )
 }
+
+    
