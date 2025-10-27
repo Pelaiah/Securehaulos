@@ -73,8 +73,11 @@ export function SignUpForm() {
       email: '',
       password: '',
       phone: '',
+      // Shipper fields
       companyReg: '',
       taxNumber: '',
+      // Carrier fields
+      fleetSize: 0,
     },
   });
 
