@@ -21,14 +21,14 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMemo } from 'react';
-import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
 export default function DocumentsPage() {
    const { user } = useUser();
   const firestore = useFirestore();
 
-  const documentsCollectionRef = useMemo(() => {
+  const documentsCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, 'users', user.uid, 'verification_documents');
   }, [firestore, user]);
