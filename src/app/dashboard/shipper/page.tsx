@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { tripData, trucks } from '@/lib/data';
 import { Header } from '@/components/dashboard/Header';
 import { Fuel, Timer, Weight } from 'lucide-react';
+import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 
 type Trip = (typeof tripData)[0];
 
