@@ -4,7 +4,6 @@ import { Map } from '@/components/dashboard/Map';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
-import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { tripData, trucks } from '@/lib/data';
 import { Header } from '@/components/dashboard/Header';
@@ -30,7 +29,7 @@ export default function ShipperDashboardPage() {
       <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
-           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <VehicleInfoCard truck={selectedTruck} />
               <InformationCard driver={selectedTrip} />
             </div>
@@ -38,8 +37,10 @@ export default function ShipperDashboardPage() {
 
         {/* Middle Column */}
         <div className="xl:col-span-2 space-y-6 flex flex-col">
-            <div className="h-[280px] rounded-lg overflow-hidden flex flex-col gap-6">
-                 <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
+            <div className="h-full rounded-lg overflow-hidden flex flex-col gap-6">
+                 <div className="h-[280px]">
+                    <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
+                 </div>
                  <Card>
                     <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div className="flex items-center gap-2">

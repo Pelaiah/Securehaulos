@@ -41,14 +41,13 @@ export default function TripDetailsPage() {
             <Header title="Loading Trip..." onLogout={() => {}} />
             <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
                 <div className="xl:col-span-1 space-y-6">
-                    <Skeleton className="h-64" />
-                    <Skeleton className="h-32" />
-                </div>
-                <div className="xl:col-span-2 space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Skeleton className="h-64" />
                         <Skeleton className="h-64" />
                     </div>
+                </div>
+                <div className="xl:col-span-2 space-y-6">
+                    <Skeleton className="h-32" />
                     <Skeleton className="h-full" />
                 </div>
                 <div className="xl:col-span-1">
@@ -65,7 +64,7 @@ export default function TripDetailsPage() {
       <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <VehicleInfoCard truck={selectedTruck} />
             <InformationCard driver={selectedDriver} />
           </div>
@@ -73,11 +72,11 @@ export default function TripDetailsPage() {
 
         {/* Middle Column */}
         <div className="xl:col-span-2 space-y-6 flex flex-col">
-            <div className='grid md:grid-cols-2 gap-6'>
-                <TripInfoCard />
-            </div>
-            <div className="h-[280px] rounded-lg overflow-hidden flex flex-col gap-6">
-                 <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
+            <TripInfoCard />
+            <div className="h-full rounded-lg overflow-hidden flex flex-col gap-6">
+                 <div className="h-[280px]">
+                   <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
+                 </div>
                  <Card>
                   <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2">
