@@ -29,6 +29,7 @@ import { Loader2, User, Building, Truck } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { FileUpload } from '../dashboard/FileUpload';
 
 const shipperSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -59,8 +60,10 @@ export function SignUpForm() {
   const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<'role' | 'form'>('role');
+  const [step, setStep] = useState<'role' | 'form' | 'documents'>('role');
   const [userType, setUserType] = useState<'Shipper' | 'Carrier' | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,13 +78,20 @@ export function SignUpForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  function onFormSubmit(values: z.infer<typeof formSchema>) {
+    setFormData(values);
+    setStep('documents');
+  }
+
+  async function onDocumentsSubmit() {
+    if (!formData) return;
+    
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      const nameParts = values.fullName.trim().split(' ');
+      const nameParts = formData.fullName.trim().split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
@@ -89,9 +99,9 @@ export function SignUpForm() {
         id: user.uid,
         firstName: firstName,
         lastName: lastName,
-        email: values.email,
-        userType: values.userType,
-        phone: values.phone,
+        email: formData.email,
+        userType: formData.userType,
+        phone: formData.phone,
       };
 
       const userDocRef = doc(firestore, 'users', user.uid);
@@ -104,14 +114,13 @@ export function SignUpForm() {
               requestResourceData: userData,
             })
           );
-          // Re-throw to be caught by the outer catch block
           throw error;
       });
 
-      if (values.userType === 'Shipper') {
+      if (formData.userType === 'Shipper') {
         const shipperData = {
           id: user.uid,
-          companyName: values.companyName,
+          companyName: formData.companyName,
         };
         const shipperDocRef = doc(firestore, 'shippers', user.uid);
         await setDoc(shipperDocRef, shipperData).catch(error => {
@@ -125,11 +134,11 @@ export function SignUpForm() {
           );
           throw error;
         });
-      } else if (values.userType === 'Carrier') {
+      } else if (formData.userType === 'Carrier') {
         const carrierData = {
           id: user.uid,
-          companyName: values.companyName,
-          fleetSize: values.fleetSize, 
+          companyName: formData.companyName,
+          fleetSize: formData.fleetSize, 
           premiumMembership: false,
         };
         const carrierDocRef = doc(firestore, 'carriers', user.uid);
@@ -145,6 +154,10 @@ export function SignUpForm() {
           throw error;
         });
       }
+      
+      // In a real app, you'd upload files to storage and save URLs in firestore.
+      // For now, we just log them.
+      console.log("Uploaded files:", files.map(f => f.name));
 
       toast({
         title: 'Account Created',
@@ -158,7 +171,7 @@ export function SignUpForm() {
       let errorMessage = 'An unexpected error occurred. Please try again.';
       if (firebaseError.code === 'auth/email-already-in-use') {
         errorMessage = 'This email is already in use. Please use a different email.';
-      } else if (firebaseError.name === 'FirebaseError') { // Catch Firestore permission errors re-thrown
+      } else if (firebaseError.name === 'FirebaseError') {
         errorMessage = 'Could not save user information. Please contact support.'
       }
 
@@ -195,10 +208,31 @@ export function SignUpForm() {
       </div>
     );
   }
+  
+  if (step === 'documents') {
+    return (
+        <div className="space-y-6 pt-4">
+            <div>
+                <h3 className="font-semibold">Verification Documents</h3>
+                <p className="text-sm text-muted-foreground">Please upload the required documents for verification.</p>
+            </div>
+            <FileUpload onFilesChange={setFiles} />
+            <div className="flex items-center gap-4 pt-4">
+                <Button variant="ghost" onClick={() => setStep('form')} type="button" disabled={isLoading}>
+                    Back
+                </Button>
+                <Button onClick={onDocumentsSubmit} className="w-full" disabled={isLoading || files.length === 0}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Complete Sign Up
+                </Button>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="fullName"
@@ -312,13 +346,12 @@ export function SignUpForm() {
           />
         )}
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pt-4">
           <Button variant="ghost" onClick={() => setStep('role')} type="button">
             Back
           </Button>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+          <Button type="submit" className="w-full">
+            Next: Upload Documents
           </Button>
         </div>
       </form>
