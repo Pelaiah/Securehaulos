@@ -20,8 +20,8 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import {
   SidebarProvider,
   Sidebar,
@@ -52,7 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { documents, trucks as allTrucks, type Truck as TruckType, tripData } from '@/lib/data';
+import { documents, trucks as allTrucks, type Truck as TruckType, tripData, type Load } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -128,8 +128,15 @@ export default function DashboardLayout({
     return doc(firestore, 'shippers', user.uid);
   }, [user, firestore]);
 
+  const loadsCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'loads');
+  }, [firestore]);
+
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const { data: shipperData, isLoading: isShipperDataLoading } = useDoc(shipperDocRef);
+  const { data: loadsData, isLoading: areLoadsLoading } = useCollection<Load>(loadsCollectionRef);
+
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
   
   const carrierNavItems = [
@@ -161,24 +168,27 @@ const secondaryNavItems = [
 ]
 
   useEffect(() => {
-    if (isUserLoading || !user) {
+    if (isUserLoading || !user || areLoadsLoading || !userData) {
       return;
     }
 
-    const checkPendingDocuments = () => {
+    const checkPendingActions = () => {
+      if (userType === 'Shipper') {
+        const hasPendingLoads = loadsData?.some(load => load.status === 'Pending' && load.shipperId === user.uid);
+        if (hasPendingLoads) {
+          setShowVerificationPrompt(true);
+        }
+      } else if (userType === 'Carrier') {
         const hasPendingDocuments = documents.some(doc => doc.status === 'Pending');
         if (hasPendingDocuments) {
             setShowVerificationPrompt(true);
         }
+      }
     };
     
-    checkPendingDocuments();
+    checkPendingActions();
 
-    const intervalId = setInterval(checkPendingDocuments, 60 * 60 * 1000); // 1 hour
-
-    return () => clearInterval(intervalId);
-
-  }, [user, isUserLoading]);
+  }, [user, isUserLoading, userData, userType, loadsData, areLoadsLoading]);
   
   const handleLogout = () => {
     if(auth) {
@@ -189,7 +199,11 @@ const secondaryNavItems = [
 
   const handleGoToVerification = () => {
     setShowVerificationPrompt(false);
-    router.push('/dashboard/documents');
+    if(userType === 'Shipper') {
+        router.push('/dashboard/shipper/my-loads');
+    } else {
+        router.push('/dashboard/documents');
+    }
   }
 
   const isLoading = isUserLoading || isUserDataLoading || (userType === 'Shipper' && isShipperDataLoading);
@@ -218,6 +232,22 @@ const secondaryNavItems = [
   
   const isShipper = userType === 'Shipper';
   const navItems = isShipper ? shipperNavItems : carrierNavItems;
+
+  const alertContent = useMemo(() => {
+    if (userType === 'Shipper') {
+      return {
+        title: 'Pending Load Applications',
+        description: 'You have pending applications from carriers. Please review the documents to approve or reject them.',
+        actionText: 'Review Applications'
+      };
+    }
+    return {
+      title: 'Complete Your Verification',
+      description: 'You have pending documents that require your attention. Please upload the required documents to get your account fully verified.',
+      actionText: 'Go to Documents'
+    };
+  }, [userType]);
+
 
   return (
     <SidebarProvider
@@ -328,15 +358,15 @@ const secondaryNavItems = [
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
                   <ShieldCheck className="w-6 h-6 text-primary" />
               </div>
-              <AlertDialogTitle className="text-center font-headline text-xl">Complete Your Verification</AlertDialogTitle>
+              <AlertDialogTitle className="text-center font-headline text-xl">{alertContent.title}</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
-                You have pending documents that require your attention. Please upload the required documents to get your account fully verified.
+                {alertContent.description}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
               <AlertDialogCancel>Do It Later</AlertDialogCancel>
               <AlertDialogAction onClick={handleGoToVerification}>
-                Go to Documents
+                {alertContent.actionText}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
