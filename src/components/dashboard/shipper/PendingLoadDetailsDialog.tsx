@@ -14,8 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Load, Truck, Driver, Document } from '@/lib/data';
-import { useEffect, useState } from 'react';
+import type { Load, Truck, Driver, Document as CarrierDocument } from '@/lib/data';
+import { useEffect, useMemo, useState } from 'react';
 import {
   FileText,
   Truck as TruckIcon,
@@ -25,11 +25,14 @@ import {
   MapPin as GpsIcon,
   Contact,
   Download,
+  Check,
+  X,
+  BadgeCheck,
 } from 'lucide-react';
 import Image from 'next/image';
 import { drivers, documents as mockCarrierDocs } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, errorEmitter, FirestorePermissionError, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, errorEmitter, FirestorePermissionError, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, doc, updateDoc, writeBatch } from 'firebase/firestore';
 
 
@@ -79,6 +82,11 @@ export function PendingLoadDetailsDialog({
   }, [firestore, load]);
   const { data: submittedDocs, isLoading: isLoadingDocs } = useCollection<SubmittedDocument>(documentsRef);
 
+  const carrierDocRef = useMemoFirebase(() => {
+    if (!firestore || !load?.carrierId) return null;
+    return doc(firestore, 'carriers', load.carrierId);
+  }, [firestore, load]);
+  const { data: carrierData } = useDoc(carrierDocRef);
 
   const handleDecision = async (decision: 'Approved' | 'Rejected') => {
     if (!load || !firestore || !load.assignedTruckId) return;
@@ -93,6 +101,10 @@ export function PendingLoadDetailsDialog({
         if (decision === 'Approved') {
             batch.update(loadRef, { status: 'In Transit' });
             batch.update(truckRef, { status: 'On-time' });
+
+            if (carrierDocRef) {
+              batch.update(carrierDocRef, { verified: true });
+            }
         } else {
             batch.update(loadRef, { status: 'Posted', carrierId: null, assignedTruckId: null });
             batch.update(truckRef, { status: 'Idle' });
@@ -124,7 +136,18 @@ export function PendingLoadDetailsDialog({
     }
   }
 
+  const handleDocumentVerification = (docId: string, status: 'Approved' | 'Rejected') => {
+    // In a real app, you'd update the document status in Firestore
+    console.log(`Document ${docId} ${status}`);
+    toast({
+      title: `Document ${status}`,
+      description: `The document has been marked as ${status.toLowerCase()}.`
+    })
+  }
+
   if (!load || !assignedTruck || !assignedDriver) return null;
+
+  const isVerified = carrierData?.verified;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -143,7 +166,7 @@ export function PendingLoadDetailsDialog({
             <div className='space-y-6'>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-headline"><Contact /> Carrier & Driver Details</CardTitle>
+                        <CardTitle className="flex items-center justify-between font-headline"><span className="flex items-center gap-2"><Contact /> Carrier & Driver Details</span> {isVerified && <Badge variant="outline" className="text-green-500 border-green-500/50 bg-green-500/10"><BadgeCheck className="w-4 h-4 mr-1.5" />Verified</Badge>}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                          <div>
@@ -200,45 +223,78 @@ export function PendingLoadDetailsDialog({
             </div>
             {/* Right Column */}
              <div>
-                <Card className="h-full">
+                <Card className="h-full flex flex-col">
                     <CardHeader>
                         <CardTitle className="font-headline flex items-center gap-2"><FileText /> Submitted Documents</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead>Document Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoadingDocs && (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="text-center">Loading documents...</TableCell>
-                                    </TableRow>
-                                )}
-                                {submittedDocs?.map((doc) => (
-                                <TableRow key={doc.id}>
-                                    <TableCell className="font-medium">{doc.fileName}</TableCell>
-                                    <TableCell>
-                                    <Badge
-                                        variant="outline"
-                                        className={'border-0 text-yellow-400 bg-yellow-500/10'}
-                                    >
-                                        {doc.status}
-                                    </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon">
-                                            <Download className="w-4 h-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                    <CardContent className="flex-grow overflow-y-auto">
+                        <div className="space-y-4">
+                            <div>
+                                <h4 className='text-sm font-semibold mb-2'>Load-Specific Documents</h4>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                        <TableHead>Document Name</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {isLoadingDocs && (
+                                            <TableRow>
+                                                <TableCell colSpan={2} className="text-center">Loading documents...</TableCell>
+                                            </TableRow>
+                                        )}
+                                        {submittedDocs?.map((doc) => (
+                                        <TableRow key={doc.id}>
+                                            <TableCell className="font-medium">{doc.fileName}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon">
+                                                    <Download className="w-4 h-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                             <div>
+                                <h4 className='text-sm font-semibold mb-2'>Carrier Verification Documents</h4>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Document</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {mockCarrierDocs.filter(d => d.type !== 'Registration').map((doc) => (
+                                            <TableRow key={doc.id}>
+                                                <TableCell>
+                                                    <p className='font-medium'>{doc.name}</p>
+                                                    <p className='text-xs text-muted-foreground'>Expires: {doc.expiryDate}</p>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className={cn('border-0', doc.status === 'Approved' ? 'text-green-400 bg-green-500/10' : 'text-yellow-400 bg-yellow-500/10')}>
+                                                        {doc.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                   <div className='flex gap-2 justify-end'>
+                                                        <Button variant="outline" size="icon" className='h-8 w-8' onClick={() => handleDocumentVerification(doc.id, 'Approved')}>
+                                                            <Check className="w-4 h-4" />
+                                                        </Button>
+                                                         <Button variant="outline" size="icon" className='h-8 w-8' onClick={() => handleDocumentVerification(doc.id, 'Rejected')}>
+                                                            <X className="w-4 h-4" />
+                                                        </Button>
+                                                   </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -251,7 +307,7 @@ export function PendingLoadDetailsDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Close
           </Button>
-           <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting || isLoadingDocs || !submittedDocs?.length}>
+           <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting || isLoadingDocs}>
               Approve and Assign Load
           </Button>
         </DialogFooter>
@@ -259,3 +315,5 @@ export function PendingLoadDetailsDialog({
     </Dialog>
   );
 }
+
+    

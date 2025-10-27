@@ -325,11 +325,16 @@
         "equipment": {
           "type": "string",
           "description": "Description of the carrier's equipment."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Indicates whether the carrier's documents have been approved by a shipper."
         }
       },
       "required": [
         "id",
-        "companyName"
+        "companyName",
+        "verified"
       ]
     },
     "FreightManager": {
