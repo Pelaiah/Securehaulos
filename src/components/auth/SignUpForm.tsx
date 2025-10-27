@@ -40,6 +40,7 @@ const shipperSchema = z.object({
   companyReg: z.string().min(1, { message: 'Company registration number is required.' }),
   taxNumber: z.string().min(1, { message: 'Tax/VAT number is required.' }),
   userType: z.literal('Shipper'),
+  fleetSize: z.number(), // Add dummy field to satisfy union
 });
 
 const carrierSchema = z.object({
@@ -50,6 +51,8 @@ const carrierSchema = z.object({
   phone: z.string().min(1, { message: 'Phone number is required.' }),
   fleetSize: z.coerce.number().positive({ message: "Fleet size must be a positive number." }).int(),
   userType: z.literal('Carrier'),
+  companyReg: z.string(), // Add dummy fields to satisfy union
+  taxNumber: z.string(), // Add dummy fields to satisfy union
 });
 
 const formSchema = z.union([shipperSchema, carrierSchema]);
@@ -169,13 +172,14 @@ export function SignUpForm() {
       router.push('/dashboard');
 
     } catch (error) {
-      console.error("Sign up error:", error);
       const firebaseError = error as FirebaseError;
       let errorMessage = 'An unexpected error occurred. Please try again.';
+
       if (firebaseError.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email is already in use. Please use a different email.';
-      } else if (firebaseError.name === 'FirebaseError') {
-        errorMessage = 'Could not save user information. Please contact support.'
+        errorMessage = 'This email is already in use. Please use a different email or log in.';
+      } else if (firebaseError.name === 'FirebaseError' && firebaseError.code.startsWith('firestore')) {
+         // This condition catches Firestore security rule errors specifically.
+        errorMessage = 'Could not save user information due to a database permission issue. Please contact support.';
       }
 
       toast({
