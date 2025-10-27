@@ -59,7 +59,7 @@ export default function ShipperDashboardPage() {
 
         {/* Middle Column */}
         <div className="xl:col-span-2 space-y-6 flex flex-col">
-            <div className="h-64 rounded-lg overflow-hidden">
+            <div className="h-[280px] rounded-lg overflow-hidden">
                  <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
             </div>
         </div>
