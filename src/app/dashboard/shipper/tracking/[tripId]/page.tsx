@@ -66,29 +66,6 @@ export default function TripDetailsPage() {
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
           <VehicleInfoCard truck={selectedTruck} />
-           <Card className='flex-grow'>
-              <CardContent className="p-4 grid grid-cols-2 gap-4 text-sm">
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Timer className="w-5 h-5" />
-                        <p>Trip Time</p>
-                    </div>
-                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <Fuel className="w-5 h-5" />
-                        <p>Fuel consumption</p>
-                    </div>
-                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <Weight className="w-5 h-5" />
-                        <p>Load Weight</p>
-                    </div>
-                </div>
-                 <div className="space-y-4 text-right">
-                    <p className="font-semibold">1h 10m</p>
-                    <p className="font-semibold">12 liters</p>
-                    <p className="font-semibold">15,500 kg</p>
-                </div>
-              </CardContent>
-          </Card>
         </div>
 
         {/* Middle Column */}
@@ -100,6 +77,31 @@ export default function TripDetailsPage() {
             <div className="h-[280px] rounded-lg overflow-hidden">
                  <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
             </div>
+             <Card>
+              <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                    <Timer className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                        <p className='text-muted-foreground'>Trip Time</p>
+                        <p className="font-semibold">1h 10m</p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Fuel className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                        <p className='text-muted-foreground'>Fuel consumption</p>
+                        <p className="font-semibold">12 liters</p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Weight className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                        <p className='text-muted-foreground'>Load Weight</p>
+                        <p className="font-semibold">15,500 kg</p>
+                    </div>
+                </div>
+              </CardContent>
+          </Card>
         </div>
 
         {/* Right Column */}
