@@ -14,7 +14,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
-import { FileUpload } from './FileUpload';
 import { useFirestore, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
 import { doc, updateDoc, writeBatch } from 'firebase/firestore';
 
@@ -37,7 +36,6 @@ export function AssignLoadDialog({
   const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTruckId, setSelectedTruckId] = useState<string | undefined>();
-  const [files, setFiles] = useState<File[]>([]);
 
   const handleAssignLoad = async () => {
     if (!load || !firestore || !selectedTruckId || !user) return;
@@ -47,15 +45,6 @@ export function AssignLoadDialog({
         variant: 'destructive',
         title: 'No Truck Selected',
         description: 'Please select a truck to assign this load to.',
-      });
-      return;
-    }
-
-    if (files.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Documents Required',
-        description: 'Please upload the required documents.',
       });
       return;
     }
@@ -73,25 +62,9 @@ export function AssignLoadDialog({
     batch.update(loadRef, loadUpdateData);
     batch.update(truckRef, truckUpdateData);
     
-    // In a real app, you would upload files to Firebase Storage and get URLs.
-    // For this demo, we'll just create document references with mock data.
-    files.forEach((file) => {
-        const docRef = doc(firestore, 'loads', load.id, 'submitted_documents', file.name.replace(/[^a-zA-Z0-9]/g, ''));
-        const docData = {
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size,
-            status: 'Submitted',
-            submittedAt: new Date().toISOString(),
-            // In a real app, this would be a gs:// or https:// URL from Firebase Storage.
-            fileUrl: 'https://example.com/placeholder.pdf',
-        };
-        batch.set(docRef, docData);
-    });
-    
     batch.commit().then(() => {
         toast({
-            title: 'Documents Submitted for Review',
+            title: 'Load Assigned for Review',
             description: `The shipper will now review your application for load #${load.id}.`,
         });
         onOpenChange(false);
@@ -105,7 +78,6 @@ export function AssignLoadDialog({
             requestResourceData: {
                 loadUpdate: loadUpdateData,
                 truckUpdate: truckUpdateData,
-                files: files.map(f => f.name)
             }
           })
         );
@@ -124,7 +96,7 @@ export function AssignLoadDialog({
             Assign Load
           </DialogTitle>
           <DialogDescription>
-            Assign a truck and upload documents for Load ID:{' '}
+            Assign a truck for Load ID:{' '}
             <span className="font-semibold text-foreground">{load.id}</span>
           </DialogDescription>
         </DialogHeader>
@@ -156,10 +128,6 @@ export function AssignLoadDialog({
                 No idle trucks available.
               </p>
             )}
-          </div>
-          <div>
-            <label className="text-sm font-medium">Required Documents</label>
-            <FileUpload onFilesChange={setFiles} />
           </div>
         </div>
         <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-4 border-t mt-auto">

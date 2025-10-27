@@ -13,13 +13,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
@@ -29,7 +22,6 @@ import { Loader2, User, Building, Truck } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { FileUpload } from '../dashboard/FileUpload';
 
 const shipperSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -37,8 +29,6 @@ const shipperSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
-  companyReg: z.string().min(1, { message: 'Company registration number is required.' }),
-  taxNumber: z.string().min(1, { message: 'Tax/VAT number is required.' }),
   userType: z.literal('Shipper'),
   fleetSize: z.number(), // Add dummy field to satisfy union
 });
@@ -51,8 +41,6 @@ const carrierSchema = z.object({
   phone: z.string().min(1, { message: 'Phone number is required.' }),
   fleetSize: z.coerce.number().positive({ message: "Fleet size must be a positive number." }).int(),
   userType: z.literal('Carrier'),
-  companyReg: z.string(), // Add dummy fields to satisfy union
-  taxNumber: z.string(), // Add dummy fields to satisfy union
 });
 
 const formSchema = z.union([shipperSchema, carrierSchema]);
@@ -63,10 +51,8 @@ export function SignUpForm() {
   const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<'role' | 'form' | 'documents'>('role');
+  const [step, setStep] = useState<'role' | 'form'>('role');
   const [userType, setUserType] = useState<'Shipper' | 'Carrier' | null>(null);
-  const [files, setFiles] = useState<File[]>([]);
-  const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,22 +62,12 @@ export function SignUpForm() {
       email: '',
       password: '',
       phone: '',
-      // Shipper fields
-      companyReg: '',
-      taxNumber: '',
       // Carrier fields
       fleetSize: 0,
     },
   });
 
-  function onFormSubmit(values: z.infer<typeof formSchema>) {
-    setFormData(values);
-    setStep('documents');
-  }
-
-  async function onDocumentsSubmit() {
-    if (!formData) return;
-    
+  async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
@@ -146,6 +122,7 @@ export function SignUpForm() {
           companyName: formData.companyName,
           fleetSize: formData.fleetSize, 
           premiumMembership: false,
+          verified: false,
         };
         const carrierDocRef = doc(firestore, 'carriers', user.uid);
         await setDoc(carrierDocRef, carrierData).catch(error => {
@@ -161,10 +138,6 @@ export function SignUpForm() {
         });
       }
       
-      // In a real app, you'd upload files to storage and save URLs in firestore.
-      // For now, we just log them.
-      console.log("Uploaded files:", files.map(f => f.name));
-
       toast({
         title: 'Account Created',
         description: "You've been successfully signed up. Redirecting to your dashboard...",
@@ -178,7 +151,6 @@ export function SignUpForm() {
       if (firebaseError.code === 'auth/email-already-in-use') {
         errorMessage = 'This email is already in use. Please use a different email or log in.';
       } else if (firebaseError.name === 'FirebaseError' && firebaseError.code.startsWith('firestore')) {
-         // This condition catches Firestore security rule errors specifically.
         errorMessage = 'Could not save user information due to a database permission issue. Please contact support.';
       }
 
@@ -213,27 +185,6 @@ export function SignUpForm() {
           </Button>
         </div>
       </div>
-    );
-  }
-  
-  if (step === 'documents') {
-    return (
-        <div className="space-y-6 pt-4">
-            <div>
-                <h3 className="font-semibold">Verification Documents</h3>
-                <p className="text-sm text-muted-foreground">Please upload the required documents for verification.</p>
-            </div>
-            <FileUpload onFilesChange={setFiles} />
-            <div className="flex items-center gap-4 pt-4">
-                <Button variant="ghost" onClick={() => setStep('form')} type="button" disabled={isLoading}>
-                    Back
-                </Button>
-                <Button onClick={onDocumentsSubmit} className="w-full" disabled={isLoading || files.length === 0}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Complete Sign Up
-                </Button>
-            </div>
-        </div>
     );
   }
 
@@ -306,37 +257,6 @@ export function SignUpForm() {
           )}
         />
 
-        {userType === 'Shipper' && (
-          <>
-            <FormField
-              control={form.control}
-              name="companyReg"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Registration Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter registration number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="taxNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tax/VAT Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter tax/vat number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        )}
-
         {userType === 'Carrier' && (
           <FormField
             control={form.control}
@@ -354,11 +274,12 @@ export function SignUpForm() {
         )}
         
         <div className="flex items-center gap-4 pt-4">
-          <Button variant="ghost" onClick={() => setStep('role')} type="button">
+          <Button variant="ghost" onClick={() => setStep('role')} type="button" disabled={isLoading}>
             Back
           </Button>
-          <Button type="submit" className="w-full">
-            Next: Upload Documents
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Complete Sign Up
           </Button>
         </div>
       </form>

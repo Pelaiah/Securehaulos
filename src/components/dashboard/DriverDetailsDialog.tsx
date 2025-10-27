@@ -27,11 +27,10 @@ import {
 } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { FileUpload } from './FileUpload';
 import { cn } from '@/lib/utils';
 import type { Driver, Document } from '@/lib/data';
 import { useState } from 'react';
-import { Calendar as CalendarIcon, FileText, Upload } from 'lucide-react';
+import { Calendar as CalendarIcon, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
@@ -53,8 +52,7 @@ export function DriverDetailsDialog({
       to: driver?.leaveEndDate ? new Date(driver.leaveEndDate) : undefined,
     }
   );
-  const [files, setFiles] = useState<File[]>([]);
-
+  
   const statusColors: { [key: string]: string } = {
     Approved: 'text-green-400 bg-green-500/10',
     Pending: 'text-yellow-400 bg-yellow-500/10',
@@ -88,13 +86,6 @@ export function DriverDetailsDialog({
             </TabsList>
             <TabsContent value="documents" className="mt-4">
               <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Upload New Document</h4>
-                  <FileUpload onFilesChange={setFiles} />
-                  <Button className="mt-2" size="sm" disabled={files.length === 0}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload
-                  </Button>
-                </div>
                 <div>
                   <h4 className="font-medium mb-2">Uploaded Documents</h4>
                   <Table>
