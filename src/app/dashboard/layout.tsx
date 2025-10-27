@@ -360,17 +360,17 @@ const secondaryNavItems = [
       <SidebarInset className={cn('overflow-y-auto', isShipper ? 'bg-card-alt' : 'bg-background p-6')}>
         <main className="flex-1">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
-          <AlertDialogContent>
+          <AlertDialogContent className="p-4">
             <AlertDialogHeader>
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-2">
                   <ShieldCheck className="w-6 h-6 text-primary" />
               </div>
-              <AlertDialogTitle className="text-center font-headline text-xl">{alertContent.title}</AlertDialogTitle>
-              <AlertDialogDescription className="text-center">
+              <AlertDialogTitle className="text-center font-headline text-lg">{alertContent.title}</AlertDialogTitle>
+              <AlertDialogDescription className="text-center text-sm">
                 {alertContent.description}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-2">
               <AlertDialogCancel>Do It Later</AlertDialogCancel>
               <AlertDialogAction onClick={handleGoToVerification}>
                 {alertContent.actionText}
@@ -382,3 +382,5 @@ const secondaryNavItems = [
     </SidebarProvider>
   );
 }
+
+    
