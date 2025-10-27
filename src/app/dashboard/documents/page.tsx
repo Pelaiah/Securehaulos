@@ -20,13 +20,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMemo } from 'react';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useMemo, useState } from 'react';
+import { useCollection, useFirestore, useUser, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { UploadDocumentDialog } from '@/components/dashboard/UploadDocumentDialog';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DocumentsPage() {
-   const { user } = useUser();
+  const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const documentsCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -34,6 +38,46 @@ export default function DocumentsPage() {
   }, [firestore, user]);
 
   const { data: documents, isLoading } = useCollection<Document>(documentsCollectionRef);
+  
+  const handleUploadDocument = async (values: { name: string, type: Document['type'], expiryDate?: Date, files: File[] }) => {
+    if (!documentsCollectionRef) return;
+    
+    const file = values.files[0];
+    // In a real app, you'd upload the file to Firebase Storage here and get a URL.
+    // For now, we'll use a placeholder URL and focus on the Firestore write.
+    const fileUrl = `uploads/${user?.uid}/${file.name}`;
+    
+    const newDocumentData = {
+      name: values.name,
+      type: values.type,
+      status: 'Pending' as const,
+      expiryDate: values.expiryDate ? values.expiryDate.toISOString().split('T')[0] : null,
+      uploadDate: new Date().toISOString().split('T')[0],
+      fileUrl: fileUrl,
+    };
+
+    try {
+      await addDoc(documentsCollectionRef, newDocumentData);
+      toast({
+        title: "Document Uploaded",
+        description: `${values.name} is now pending approval.`
+      });
+      setIsUploadModalOpen(false);
+    } catch (error) {
+        const permissionError = new FirestorePermissionError({
+          path: documentsCollectionRef.path,
+          operation: 'create',
+          requestResourceData: newDocumentData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        toast({
+            variant: 'destructive',
+            title: 'Upload Failed',
+            description: 'Could not save the document. Please check permissions.'
+        });
+    }
+  };
+
 
   const statusColors = {
     Approved: 'text-green-400 bg-green-500/10',
@@ -62,13 +106,14 @@ export default function DocumentsPage() {
   }
 
   return (
+    <>
      <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold font-headline">Company Documents</h2>
           <p className="text-muted-foreground">Manage and organize your company's verification documents.</p>
         </div>
-        <Button>
+        <Button onClick={() => setIsUploadModalOpen(true)}>
           <Upload className="mr-2 h-4 w-4" />
           Upload New Document
         </Button>
@@ -155,5 +200,11 @@ export default function DocumentsPage() {
         ))}
       </div>
     </div>
+    <UploadDocumentDialog
+        isOpen={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+        onUpload={handleUploadDocument}
+      />
+    </>
   );
 }
