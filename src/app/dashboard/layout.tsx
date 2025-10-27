@@ -52,7 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { documents, trucks as allTrucks, type Truck as TruckType, tripData, type Load } from '@/lib/data';
+import { documents, trucks as allTrucks, type Truck as TruckType, tripData, type Load, type Document } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -132,10 +132,17 @@ export default function DashboardLayout({
     if (!firestore) return null;
     return collection(firestore, 'loads');
   }, [firestore]);
+  
+  const carrierDocsCollectionRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'users', user.uid, 'verification_documents');
+  }, [firestore, user]);
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const { data: shipperData, isLoading: isShipperDataLoading } = useDoc(shipperDocRef);
   const { data: loadsData, isLoading: areLoadsLoading } = useCollection<Load>(loadsCollectionRef);
+  const { data: carrierDocs, isLoading: areCarrierDocsLoading } = useCollection<Document>(carrierDocsCollectionRef);
+
 
   const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
   
@@ -168,7 +175,7 @@ const secondaryNavItems = [
 ]
 
   useEffect(() => {
-    if (isUserLoading || !user || areLoadsLoading || !userData) {
+    if (isUserLoading || !user || areLoadsLoading || !userData || areCarrierDocsLoading) {
       return;
     }
 
@@ -179,8 +186,9 @@ const secondaryNavItems = [
           setShowVerificationPrompt(true);
         }
       } else if (userType === 'Carrier') {
-        const hasPendingDocuments = documents.some(doc => doc.status === 'Pending');
-        if (hasPendingDocuments) {
+        const hasPendingDocuments = carrierDocs?.some(doc => doc.status === 'Pending');
+        const hasNoDocuments = !carrierDocs || carrierDocs.length === 0;
+        if (hasPendingDocuments || hasNoDocuments) {
             setShowVerificationPrompt(true);
         }
       }
@@ -188,7 +196,7 @@ const secondaryNavItems = [
     
     checkPendingActions();
 
-  }, [user, isUserLoading, userData, userType, loadsData, areLoadsLoading]);
+  }, [user, isUserLoading, userData, userType, loadsData, areLoadsLoading, carrierDocs, areCarrierDocsLoading]);
   
   const handleLogout = () => {
     if(auth) {
