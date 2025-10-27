@@ -222,17 +222,6 @@ const secondaryNavItems = [
     return child;
   });
   
-  if (isLoading) {
-    return (
-        <div className="flex items-center justify-center h-screen bg-background">
-            <Skeleton className="h-full w-full" />
-        </div>
-    );
-  }
-  
-  const isShipper = userType === 'Shipper';
-  const navItems = isShipper ? shipperNavItems : carrierNavItems;
-
   const alertContent = useMemo(() => {
     if (userType === 'Shipper') {
       return {
@@ -248,6 +237,16 @@ const secondaryNavItems = [
     };
   }, [userType]);
 
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-screen bg-background">
+            <Skeleton className="h-full w-full" />
+        </div>
+    );
+  }
+  
+  const isShipper = userType === 'Shipper';
+  const navItems = isShipper ? shipperNavItems : carrierNavItems;
 
   return (
     <SidebarProvider
