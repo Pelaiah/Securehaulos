@@ -1,3 +1,5 @@
+
+'use client';
 import {
   Table,
   TableBody,
@@ -8,8 +10,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { documents } from '@/lib/data';
-import { MoreHorizontal, Upload, FileText } from 'lucide-react';
+import { documents, Document } from '@/lib/data';
+import { MoreHorizontal, Upload, FileText, Folder, Building, FileBadge, ShieldCheck } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMemo } from 'react';
 
 export default function DocumentsPage() {
   const statusColors = {
@@ -27,68 +30,97 @@ export default function DocumentsPage() {
     Expired: 'text-gray-400 bg-gray-500/10',
   };
 
+  const groupedDocuments = useMemo(() => {
+    return documents.reduce((acc, doc) => {
+      if (!acc[doc.type]) {
+        acc[doc.type] = [];
+      }
+      acc[doc.type].push(doc);
+      return acc;
+    }, {} as Record<Document['type'], Document[]>);
+  }, []);
+  
+  const categoryIcons = {
+      'Registration': <Folder className="w-5 h-5" />,
+      'Tax': <FileBadge className="w-5 h-5" />,
+      'Insurance': <ShieldCheck className="w-5 h-5" />,
+      'License': <Building className="w-5 h-5" />,
+      'Certification': <FileText className="w-5 h-5" />,
+  }
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+     <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <CardTitle className="font-headline">Company Documents</CardTitle>
-          <CardDescription>Manage your company's verification documents.</CardDescription>
+          <h2 className="text-3xl font-bold font-headline">Company Documents</h2>
+          <p className="text-muted-foreground">Manage and organize your company's verification documents.</p>
         </div>
         <Button>
           <Upload className="mr-2 h-4 w-4" />
-          Upload Document
+          Upload New Document
         </Button>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Document Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Expires</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {documents.map((doc) => (
-              <TableRow key={doc.id}>
-                <TableCell className="font-medium flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-muted-foreground" />
-                  {doc.name}
-                </TableCell>
-                <TableCell>{doc.type}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn('border-0', statusColors[doc.status])}
-                  >
-                    {doc.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{doc.expiryDate || 'N/A'}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View</DropdownMenuItem>
-                      <DropdownMenuItem>Replace</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+      </div>
+    
+      <div className="grid grid-cols-1 gap-6">
+        {Object.entries(groupedDocuments).map(([category, docs]) => (
+            <Card key={category}>
+                <CardHeader>
+                    <CardTitle className='font-headline flex items-center gap-2'>
+                        {categoryIcons[category as keyof typeof categoryIcons]}
+                        {category} Documents
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                            <TableHead>Document Name</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Expires</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {docs.map((doc) => (
+                            <TableRow key={doc.id}>
+                                <TableCell className="font-medium flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-muted-foreground" />
+                                {doc.name}
+                                </TableCell>
+                                <TableCell>
+                                <Badge
+                                    variant="outline"
+                                    className={cn('border-0', statusColors[doc.status])}
+                                >
+                                    {doc.status}
+                                </Badge>
+                                </TableCell>
+                                <TableCell>{doc.expiryDate || 'N/A'}</TableCell>
+                                <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuItem>View</DropdownMenuItem>
+                                    <DropdownMenuItem>Replace</DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive">
+                                        Delete
+                                    </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        ))}
+      </div>
+    </div>
   );
 }
