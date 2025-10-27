@@ -65,8 +65,10 @@ export default function TripDetailsPage() {
       <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 flex flex-col">
-          <VehicleInfoCard truck={selectedTruck} />
-          <InformationCard driver={selectedDriver} />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
+            <VehicleInfoCard truck={selectedTruck} />
+            <InformationCard driver={selectedDriver} />
+          </div>
         </div>
 
         {/* Middle Column */}
