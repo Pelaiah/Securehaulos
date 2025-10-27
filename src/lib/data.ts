@@ -115,35 +115,7 @@ export type Document = {
   uploadDate?: string;
 };
 
-export const documents: Document[] = [
-  {
-    id: 'DOC-SH-01',
-    name: 'Company Registration',
-    type: 'Registration',
-    status: 'Approved',
-    expiryDate: '2028-11-20',
-  },
-  {
-    id: 'DOC-SH-02',
-    name: 'Tax Clearance Certificate',
-    type: 'Tax',
-    status: 'Pending',
-  },
-  {
-    id: 'DOC-SH-03',
-    name: 'General Liability Insurance',
-    type: 'Insurance',
-    status: 'Approved',
-    expiryDate: '2025-06-30',
-  },
-  {
-    id: 'DOC-SH-04',
-    name: 'Business License',
-    type: 'Registration',
-    status: 'Expired',
-    expiryDate: '2024-03-15',
-  },
-];
+export const documents: Document[] = [];
 
 
 export const subscriptionPlans = {
@@ -221,10 +193,7 @@ export const drivers: Driver[] = [
     truck: 'TR-002',
     status: 'On-time',
     onLeave: false,
-    documents: [
-      { id: 'DOC-AW-01', name: "Driver's License", type: 'License', status: 'Approved', expiryDate: '2026-10-15', uploadDate: '2023-10-10'},
-      { id: 'DOC-AW-02', name: "HAZMAT Certification", type: 'Certification', status: 'Approved', expiryDate: '2025-01-20', uploadDate: '2023-01-15'},
-    ]
+    documents: []
   },
   {
     id: 'DRV-002',
@@ -236,9 +205,7 @@ export const drivers: Driver[] = [
     onLeave: true,
     leaveStartDate: '2024-07-20',
     leaveEndDate: '2024-08-05',
-    documents: [
-      { id: 'DOC-MB-01', name: "Driver's License", type: 'License', status: 'Approved', expiryDate: '2027-05-22', uploadDate: '2023-05-18'},
-    ]
+    documents: []
   },
   {
     id: 'DRV-003',
@@ -248,10 +215,7 @@ export const drivers: Driver[] = [
     truck: 'TR-001',
     status: 'Alert',
     onLeave: false,
-    documents: [
-       { id: 'DOC-HJ-01', name: "Driver's License", type: 'License', status: 'Pending', uploadDate: '2024-07-15'},
-       { id: 'DOC-HJ-02', name: "Medical Certificate", type: 'Certification', status: 'Expired', expiryDate: '2024-06-30', uploadDate: '2022-06-25'},
-    ]
+    documents: []
   },
   {
     id: 'DRV-004',
@@ -261,8 +225,6 @@ export const drivers: Driver[] = [
     truck: 'N/A',
     status: 'Idle',
     onLeave: false,
-    documents: [
-       { id: 'DOC-AM-01', name: "Driver's License", type: 'License', status: 'Approved', expiryDate: '2028-02-10', uploadDate: '2024-02-01'},
-    ]
+    documents: []
   },
 ];

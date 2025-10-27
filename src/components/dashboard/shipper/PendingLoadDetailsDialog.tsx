@@ -30,7 +30,7 @@ import {
   BadgeCheck,
 } from 'lucide-react';
 import Image from 'next/image';
-import { drivers, documents as mockCarrierDocs } from '@/lib/data';
+import { drivers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, errorEmitter, FirestorePermissionError, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, doc, updateDoc, writeBatch } from 'firebase/firestore';
@@ -87,6 +87,13 @@ export function PendingLoadDetailsDialog({
     return doc(firestore, 'carriers', load.carrierId);
   }, [firestore, load]);
   const { data: carrierData } = useDoc(carrierDocRef);
+
+   const carrierDocsRef = useMemoFirebase(() => {
+    if (!firestore || !load?.carrierId) return null;
+    return collection(firestore, 'users', load.carrierId, 'verification_documents');
+  }, [firestore, load]);
+  const { data: carrierDocs, isLoading: areCarrierDocsLoading } = useCollection<CarrierDocument>(carrierDocsRef);
+
 
   const handleDecision = async (decision: 'Approved' | 'Rejected') => {
     if (!load || !firestore || !load.assignedTruckId) return;
@@ -254,6 +261,11 @@ export function PendingLoadDetailsDialog({
                                             </TableCell>
                                         </TableRow>
                                         ))}
+                                         {submittedDocs?.length === 0 && !isLoadingDocs && (
+                                            <TableRow>
+                                                <TableCell colSpan={2} className="text-center text-muted-foreground">No load-specific documents submitted.</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -268,7 +280,12 @@ export function PendingLoadDetailsDialog({
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {mockCarrierDocs.filter(d => d.type !== 'Registration').map((doc) => (
+                                        {areCarrierDocsLoading && (
+                                             <TableRow>
+                                                <TableCell colSpan={3} className="text-center">Loading documents...</TableCell>
+                                            </TableRow>
+                                        )}
+                                        {carrierDocs?.map((doc) => (
                                             <TableRow key={doc.id}>
                                                 <TableCell>
                                                     <p className='font-medium'>{doc.name}</p>
@@ -291,6 +308,11 @@ export function PendingLoadDetailsDialog({
                                                 </TableCell>
                                             </TableRow>
                                         ))}
+                                        {carrierDocs?.length === 0 && !areCarrierDocsLoading && (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="text-center text-muted-foreground">No carrier documents found.</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -315,5 +337,3 @@ export function PendingLoadDetailsDialog({
     </Dialog>
   );
 }
-
-    

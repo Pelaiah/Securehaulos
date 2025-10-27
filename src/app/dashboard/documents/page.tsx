@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { documents, Document } from '@/lib/data';
+import { Document } from '@/lib/data';
 import { MoreHorizontal, Upload, FileText, Folder, Building, FileBadge, ShieldCheck } from 'lucide-react';
 import {
   DropdownMenu,
@@ -21,8 +21,20 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMemo } from 'react';
+import { useCollection, useFirestore, useUser } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export default function DocumentsPage() {
+   const { user } = useUser();
+  const firestore = useFirestore();
+
+  const documentsCollectionRef = useMemo(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'users', user.uid, 'verification_documents');
+  }, [firestore, user]);
+
+  const { data: documents, isLoading } = useCollection<Document>(documentsCollectionRef);
+
   const statusColors = {
     Approved: 'text-green-400 bg-green-500/10',
     Pending: 'text-yellow-400 bg-yellow-500/10',
@@ -31,6 +43,7 @@ export default function DocumentsPage() {
   };
 
   const groupedDocuments = useMemo(() => {
+    if (!documents) return {};
     return documents.reduce((acc, doc) => {
       if (!acc[doc.type]) {
         acc[doc.type] = [];
@@ -38,7 +51,7 @@ export default function DocumentsPage() {
       acc[doc.type].push(doc);
       return acc;
     }, {} as Record<Document['type'], Document[]>);
-  }, []);
+  }, [documents]);
   
   const categoryIcons = {
       'Registration': <Folder className="w-5 h-5" />,
@@ -62,6 +75,26 @@ export default function DocumentsPage() {
       </div>
     
       <div className="grid grid-cols-1 gap-6">
+        {isLoading && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Loading documents...</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>Please wait while we fetch your documents.</p>
+                </CardContent>
+            </Card>
+        )}
+        {!isLoading && Object.keys(groupedDocuments).length === 0 && (
+             <Card>
+                <CardHeader>
+                    <CardTitle>No Documents Found</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>Get started by uploading your first company document.</p>
+                </CardContent>
+            </Card>
+        )}
         {Object.entries(groupedDocuments).map(([category, docs]) => (
             <Card key={category}>
                 <CardHeader>
