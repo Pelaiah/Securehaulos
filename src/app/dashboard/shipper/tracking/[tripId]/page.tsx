@@ -97,7 +97,7 @@ export default function TripDetailsPage() {
                 <InformationCard driver={selectedDriver} />
                 <TripInfoCard />
             </div>
-            <div className="flex-grow rounded-lg overflow-hidden">
+            <div className="h-64 rounded-lg overflow-hidden">
                  <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
             </div>
         </div>
