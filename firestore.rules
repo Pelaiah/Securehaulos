@@ -2,358 +2,266 @@
  * @fileoverview Firestore Security Rules for SecureHaul application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for personal data
- * (e.g., verification documents, subscriptions), and a combination of
- * ownership and role-based access for shared resources like loads and bids.
- * The rules prioritize security and prevent unauthorized data access by
- * leveraging Firebase Authentication and carefully structured data paths.
+ * This ruleset enforces a strict user-ownership model for personal data and
+ * a public-read with owner-write model for shared resources like loads.
+ * Access is granted based on verified identity and path-based ownership.
  *
  * Data Structure:
- * - Users: /users/{userId} (User profiles)
- *   - Verification Documents: /users/{userId}/verification_documents/{documentId}
- *   - Subscriptions: /users/{userId}/subscriptions/{subscriptionId}
- * - Drivers: /drivers/{driverId} (Driver profiles)
- *   - Trucks: /drivers/{driverId}/trucks/{truckId}
- * - Loads: /loads/{loadId} (Load postings)
- *   - Bids: /loads/{loadId}/bids/{bidId}
- * - Trucks: /trucks/{truckId}
- *   - Emergency Alerts: /trucks/{truckId}/emergency_alerts/{alertId}
- * - Shippers: /shippers/{shipperId} (Shipper profiles)
- * - Carriers: /carriers/{carrierId} (Carrier profiles)
- * - Freight Managers: /freight_managers/{freightManagerId} (Freight Manager profiles)
+ * - /users/{userId}: Stores user profiles, with subcollections for private data.
+ * - /drivers/{driverId}: Stores driver profiles.
+ * - /drivers/{driverId}/trucks/{truckId}: Stores truck data owned by drivers.
+ * - /loads/{loadId}: Stores load postings.
+ * - /loads/{loadId}/bids/{bidId}: Stores bids for each load.
+ * - /shippers/{shipperId}: Stores shipper profiles.
+ * - /carriers/{carrierId}: Stores carrier profiles.
+ * - /freight_managers/{freightManagerId}: Stores freight manager profiles.
  *
  * Key Security Decisions:
- * - User data is strictly controlled by the user themselves.
- * - Listing of user documents is disallowed for privacy.
- * - Loads are accessible based on shipper and carrier roles.
- * - All write operations require authentication.
- * - Data validation is minimized for prototyping, focusing on ownership and relational integrity.
+ * - Users can only read/write their own profile and associated subcollections.
+ * - Loads are publicly readable, but only the owner (shipper) can modify them.
+ * - Bid data is secured via owner-only access by the Carrier.
  *
  * Denormalization for Authorization:
- * - Loads: Contains `shipperId` to allow shippers to manage their loads without extra `get()` calls.
- * - Bids: Contains `carrierId` and `loadId` to allow carriers to manage their bids without extra `get()` calls.
+ * - Loads store the shipperId to enable independent authorization.
+ * - Bids store the carrierId and loadId to enable independent authorization.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces user-ownership for user profiles.
-     * @path /users/{userId}
-     * @allow (create) - User with UID 'user123' can create their profile at /users/user123.
-     * @allow (get) - User with UID 'user123' can read their profile at /users/user123.
-     * @allow (update) - User with UID 'user123' can update their profile at /users/user123.
-     * @allow (delete) - User with UID 'user123' can delete their profile at /users/user123.
-     * @deny (create) - User with UID 'user456' cannot create a profile at /users/user123.
-     * @deny (get) - User with UID 'user456' cannot read the profile at /users/user123.
-     * @deny (update) - User with UID 'user456' cannot update the profile at /users/user123.
-     * @deny (delete) - User with UID 'user456' cannot delete the profile at /users/user123.
-     * @principle Enforces document ownership for all operations.
+     * @description: Allows users to manage their own profile data.
+     * @path: /users/{userId}
+     * @allow: (create) User 'user_abc' can create their profile if request.auth.uid == 'user_abc'.
+     * @allow: (update) User 'user_abc' can update their profile if request.auth.uid == 'user_abc'.
+     * @allow: (get) User 'user_abc' can read their profile if request.auth.uid == 'user_abc'.
+     * @deny: (create) User 'user_xyz' cannot create a profile with ID 'user_abc'.
+     * @deny: (update) User 'user_xyz' cannot update profile 'user_abc'.
+     * @principle: Enforces user-ownership for profile data.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
 
-      allow get: if isSignedIn() && isOwner(userId);
+      allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && resource.data.id == userId;
+      allow delete: if false;
     }
 
     /**
-     * @description Enforces user-ownership for verification documents.
-     * @path /users/{userId}/verification_documents/{documentId}
-     * @allow (create) - User with UID 'user123' can create a verification document at /users/user123/verification_documents/doc123.
-     * @allow (get) - User with UID 'user123' can read a verification document at /users/user123/verification_documents/doc123.
-     * @allow (update) - User with UID 'user123' can update a verification document at /users/user123/verification_documents/doc123.
-     * @allow (delete) - User with UID 'user123' can delete a verification document at /users/user123/verification_documents/doc123.
-     * @deny (create) - User with UID 'user456' cannot create a verification document at /users/user123/verification_documents/doc123.
-     * @deny (get) - User with UID 'user456' cannot read the verification document at /users/user123/verification_documents/doc123.
-     * @deny (update) - User with UID 'user456' cannot update the verification document at /users/user123/verification_documents/doc123.
-     * @deny (delete) - User with UID 'user456' cannot delete the verification document at /users/user123/verification_documents/doc123.
-     * @principle Restricts access to a user's own verification documents.
+     * @description: Allows users to manage their own verification documents.
+     * @path: /users/{userId}/verification_documents/{documentId}
+     * @allow: (create) User 'user_abc' can create a document under their ID.
+     * @allow: (update) User 'user_abc' can update a document under their ID.
+     * @allow: (get) User 'user_abc' can read a document under their ID.
+     * @deny: (create) User 'user_xyz' cannot create a document under user 'user_abc'.
+     * @deny: (update) User 'user_xyz' cannot update a document under user 'user_abc'.
+     * @principle: Enforces path-based ownership for user documents.
      */
     match /users/{userId}/verification_documents/{documentId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Enforces user-ownership for subscriptions.
-     * @path /users/{userId}/subscriptions/{subscriptionId}
-     * @allow (create) - User with UID 'user123' can create a subscription at /users/user123/subscriptions/sub123.
-     * @allow (get) - User with UID 'user123' can read a subscription at /users/user123/subscriptions/sub123.
-     * @allow (update) - User with UID 'user123' can update a subscription at /users/user123/subscriptions/sub123.
-     * @allow (delete) - User with UID 'user123' can delete a subscription at /users/user123/subscriptions/sub123.
-     * @deny (create) - User with UID 'user456' cannot create a subscription at /users/user123/subscriptions/sub123.
-     * @deny (get) - User with UID 'user456' cannot read the subscription at /users/user123/subscriptions/sub123.
-     * @deny (update) - User with UID 'user456' cannot update the subscription at /users/user123/subscriptions/sub123.
-     * @deny (delete) - User with UID 'user456' cannot delete the subscription at /users/user123/subscriptions/sub123.
-     * @principle Restricts access to a user's own subscription information.
+     * @description: Allows users to manage their own subscription information.
+     * @path: /users/{userId}/subscriptions/{subscriptionId}
+     * @allow: (create) User 'user_abc' can create a subscription under their ID.
+     * @allow: (update) User 'user_abc' can update a subscription under their ID.
+     * @allow: (get) User 'user_abc' can read a subscription under their ID.
+     * @deny: (create) User 'user_xyz' cannot create a subscription under user 'user_abc'.
+     * @deny: (update) User 'user_xyz' cannot update a subscription under user 'user_abc'.
+     * @principle: Enforces path-based ownership for user subscriptions.
      */
     match /users/{userId}/subscriptions/{subscriptionId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
 
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Enforces driver-ownership for driver profiles.
-     * @path /drivers/{driverId}
-     * @allow (create) - User with UID 'driver123' can create a driver profile at /drivers/driver123.
-     * @allow (get) - User with UID 'driver123' can read their driver profile at /drivers/driver123.
-     * @allow (update) - User with UID 'driver123' can update their driver profile at /drivers/driver123.
-     * @allow (delete) - User with UID 'driver123' can delete their driver profile at /drivers/driver123.
-     * @deny (create) - User with UID 'user456' cannot create a driver profile at /drivers/driver123.
-     * @deny (get) - User with UID 'user456' cannot read the driver profile at /drivers/driver123.
-     * @deny (update) - User with UID 'user456' cannot update the driver profile at /drivers/driver123.
-     * @deny (delete) - User with UID 'user456' cannot delete the driver profile at /drivers/driver123.
-     * @principle Enforces document ownership for all operations.
+     * @description: Allows drivers to manage their own profile data.
+     * @path: /drivers/{driverId}
+     * @allow: (create) Driver 'driver_abc' can create their profile if request.auth.uid == 'driver_abc'.
+     * @allow: (update) Driver 'driver_abc' can update their profile if request.auth.uid == 'driver_abc'.
+     * @allow: (get) Driver 'driver_abc' can read their profile if request.auth.uid == 'driver_abc'.
+     * @deny: (create) User 'user_xyz' cannot create a driver profile with ID 'driver_abc'.
+     * @deny: (update) User 'user_xyz' cannot update driver profile 'driver_abc'.
+     * @principle: Enforces user-ownership for driver profile data.
      */
     match /drivers/{driverId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(driverId) {
         return request.auth.uid == driverId;
       }
-
-      allow get: if isSignedIn() && isOwner(driverId);
+      
+      allow get: if isOwner(driverId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(driverId);
-      allow update: if isSignedIn() && isOwner(driverId);
-      allow delete: if isSignedIn() && isOwner(driverId);
+      allow create: if isOwner(driverId);
+      allow update: if isOwner(driverId);
+      allow delete: if isOwner(driverId);
     }
 
     /**
-     * @description Enforces driver-ownership for trucks associated with a driver.
-     * @path /drivers/{driverId}/trucks/{truckId}
-     * @allow (create) - Driver with UID 'driver123' can create a truck at /drivers/driver123/trucks/truck123.
-     * @allow (get) - Driver with UID 'driver123' can read their truck at /drivers/driver123/trucks/truck123.
-     * @allow (update) - Driver with UID 'driver123' can update their truck at /drivers/driver123/trucks/truck123.
-     * @allow (delete) - Driver with UID 'driver123' can delete their truck at /drivers/driver123/trucks/truck123.
-     * @deny (create) - User with UID 'user456' cannot create a truck at /drivers/driver123/trucks/truck123.
-     * @deny (get) - User with UID 'user456' cannot read the truck at /drivers/driver123/trucks/truck123.
-     * @deny (update) - User with UID 'user456' cannot update the truck at /drivers/driver123/trucks/truck123.
-     * @deny (delete) - User with UID 'user456' cannot delete the truck at /drivers/driver123/trucks/truck123.
-     * @principle Restricts access to trucks owned by a specific driver.
+     * @description: Allows drivers to manage their own truck data.
+     * @path: /drivers/{driverId}/trucks/{truckId}
+     * @allow: (create) Driver 'driver_abc' can create a truck under their ID.
+     * @allow: (update) Driver 'driver_abc' can update a truck under their ID.
+     * @allow: (get) Driver 'driver_abc' can read a truck under their ID.
+     * @deny: (create) User 'user_xyz' cannot create a truck under driver 'driver_abc'.
+     * @deny: (update) User 'user_xyz' cannot update a truck under driver 'driver_abc'.
+     * @principle: Enforces path-based ownership for truck data.
      */
     match /drivers/{driverId}/trucks/{truckId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(driverId) {
         return request.auth.uid == driverId;
       }
-
-      allow get: if isSignedIn() && isOwner(driverId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(driverId);
-      allow update: if isSignedIn() && isOwner(driverId);
-      allow delete: if isSignedIn() && isOwner(driverId);
+      
+      allow get: if isOwner(driverId);
+      allow list: if isOwner(driverId);
+      allow create: if isOwner(driverId);
+      allow update: if isOwner(driverId);
+      allow delete: if isOwner(driverId);
     }
 
     /**
-     * @description Allows public read access to loads, but restricts write access to the shipper who owns the load.
-     * @path /loads/{loadId}
-     * @allow (get) - Any user can read a load at /loads/load123.
-     * @allow (list) - Any user can list loads in the /loads collection.
-     * @allow (create) - Shipper with UID 'shipper123' can create a load at /loads/load123 if request.resource.data.shipperId == 'shipper123'.
-     * @allow (update) - Shipper with UID 'shipper123' can update a load at /loads/load123 if resource.data.shipperId == 'shipper123'.
-     * @allow (delete) - Shipper with UID 'shipper123' can delete a load at /loads/load123 if resource.data.shipperId == 'shipper123'.
-     * @deny (create) - Shipper with UID 'shipper456' cannot create a load at /loads/load123.
-     * @deny (update) - User with UID 'user456' cannot update a load at /loads/load123 that belongs to shipper123.
-     * @deny (delete) - User with UID 'user456' cannot delete a load at /loads/load123 that belongs to shipper123.
-     * @principle Allows public read access but restricts write access to the load owner.
+     * @description: Allows any user to read load data, but only the owner (shipper) to modify it.
+     * @path: /loads/{loadId}
+     * @allow: (get) Any user can read load 'load_123'.
+     * @allow: (list) Any user can list loads.
+     * @allow: (create) Shipper 'shipper_abc' can create a load with shipperId == 'shipper_abc'.
+     * @allow: (update) Shipper 'shipper_abc' can update load 'load_123' if resource.data.shipperId == 'shipper_abc'.
+     * @deny: (create) Shipper 'shipper_xyz' cannot create a load with shipperId != 'shipper_xyz'.
+     * @deny: (update) Shipper 'shipper_xyz' cannot update load 'load_123' owned by 'shipper_abc'.
+     * @principle: Enforces public-read, owner-write for loads. Denormalizes shipperId for authorization.
      */
     match /loads/{loadId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.shipperId;
-      allow update: if isSignedIn() && request.auth.uid == resource.data.shipperId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.shipperId;
+        function isOwner(shipperId) {
+            return request.auth.uid == shipperId;
+        }
+        
+        allow get, list: if true;
+        allow create: if isOwner(request.resource.data.shipperId);
+        allow update: if isOwner(resource.data.shipperId);
+        allow delete: if isOwner(resource.data.shipperId);
     }
 
     /**
-     * @description Enforces carrier-ownership for bids placed on a load.
-     * @path /loads/{loadId}/bids/{bidId}
-     * @allow (create) - Carrier with UID 'carrier123' can create a bid at /loads/load123/bids/bid123 if request.resource.data.carrierId == 'carrier123' and request.resource.data.loadId == 'load123'.
-     * @allow (get) - Carrier with UID 'carrier123' can read their bid at /loads/load123/bids/bid123 if resource.data.carrierId == 'carrier123'.
-     * @allow (update) - Carrier with UID 'carrier123' can update their bid at /loads/load123/bids/bid123 if resource.data.carrierId == 'carrier123'.
-     * @allow (delete) - Carrier with UID 'carrier123' can delete their bid at /loads/load123/bids/bid123 if resource.data.carrierId == 'carrier123'.
-     * @deny (create) - Carrier with UID 'carrier456' cannot create a bid at /loads/load123/bids/bid123.
-     * @deny (get) - User with UID 'user456' cannot read the bid at /loads/load123/bids/bid123 that belongs to carrier123.
-     * @deny (update) - User with UID 'user456' cannot update the bid at /loads/load123/bids/bid123 that belongs to carrier123.
-     * @deny (delete) - User with UID 'user456' cannot delete the bid at /loads/load123/bids/bid123 that belongs to carrier123.
-     * @principle Restricts access to bids owned by a specific carrier and ensures correct loadId.
+     * @description: Allows the carrier who created the bid to manage it.
+     * @path: /loads/{loadId}/bids/{bidId}
+     * @allow: (create) Carrier 'carrier_abc' can create a bid for load 'load_123' if request.auth.uid == 'carrier_abc'.
+     * @allow: (update) Carrier 'carrier_abc' can update bid 'bid_456' if resource.data.carrierId == 'carrier_abc'.
+     * @allow: (get) Carrier 'carrier_abc' can read bid 'bid_456' if resource.data.carrierId == 'carrier_abc'.
+     * @deny: (create) Carrier 'carrier_xyz' cannot create a bid for load 'load_123' using 'carrier_abc's identity.
+     * @deny: (update) Carrier 'carrier_xyz' cannot update bid 'bid_456' owned by 'carrier_abc'.
+     * @principle: Enforces owner-only access for bids, denormalizing carrierId for authorization.
      */
     match /loads/{loadId}/bids/{bidId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(carrierId) {
         return request.auth.uid == carrierId;
       }
 
-      allow get: if isSignedIn() && request.auth.uid == resource.data.carrierId;
+      allow get: if isOwner(resource.data.carrierId);
       allow list: if false;
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.carrierId && loadId == request.resource.data.loadId;
-      allow update: if isSignedIn() && request.auth.uid == resource.data.carrierId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.carrierId;
+      allow create: if isOwner(request.resource.data.carrierId);
+      allow update: if isOwner(resource.data.carrierId);
+      allow delete: if isOwner(resource.data.carrierId);
     }
 
     /**
-     * @description Enforces truck-ownership for emergency alerts.
-     * @path /trucks/{truckId}/emergency_alerts/{alertId}
-     * @allow (create) - User with UID 'owner123' can create an emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @allow (get) - User with UID 'owner123' can read an emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @allow (update) - User with UID 'owner123' can update an emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @allow (delete) - User with UID 'owner123' can delete an emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @deny (create) - User with UID 'user456' cannot create an emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @deny (get) - User with UID 'user456' cannot read the emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @deny (update) - User with UID 'user456' cannot update the emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @deny (delete) - User with UID 'user456' cannot delete the emergency alert at /trucks/truck123/emergency_alerts/alert123.
-     * @principle Restricts access to emergency alerts related to a specific truck.
+     * @description: Allows access to emergency alerts for a specific truck.
+     * @path: /trucks/{truckId}/emergency_alerts/{alertId}
+     * @allow: TODO: Define which roles/users are permitted to access emergency alerts
+     * @deny: No access currently defined.
+     * @principle: Enforces ... (Define the access control principle)
      */
     match /trucks/{truckId}/emergency_alerts/{alertId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Assuming that the truck document has an ownerId field
-      // or is associated with a driver who is the owner.
-      // In this case, the logic uses the truckId to find the Driver and then matches the request.auth.uid
-      // TODO: Implement this function according to how truck ownership is determined.
-      function isTruckOwner(truckId) {
-          return exists(/databases/$(database)/documents/drivers/$(truckId));
-      }
-
-      allow get: if isSignedIn() && isTruckOwner(truckId);
+      allow get: if false; // TODO: Define which roles/users are permitted to access emergency alerts
       allow list: if false;
-      allow create: if isSignedIn() && isTruckOwner(truckId);
-      allow update: if isSignedIn() && isTruckOwner(truckId);
-      allow delete: if isSignedIn() && isTruckOwner(truckId);
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Enforces shipper-ownership for shipper profiles.
-     * @path /shippers/{shipperId}
-     * @allow (create) - User with UID 'shipper123' can create a shipper profile at /shippers/shipper123.
-     * @allow (get) - User with UID 'shipper123' can read their shipper profile at /shippers/shipper123.
-     * @allow (update) - User with UID 'shipper123' can update their shipper profile at /shippers/shipper123.
-     * @allow (delete) - User with UID 'shipper123' can delete their shipper profile at /shippers/shipper123.
-     * @deny (create) - User with UID 'user456' cannot create a shipper profile at /shippers/shipper123.
-     * @deny (get) - User with UID 'user456' cannot read the shipper profile at /shippers/shipper123.
-     * @deny (update) - User with UID 'user456' cannot update the shipper profile at /shippers/shipper123.
-     * @deny (delete) - User with UID 'user456' cannot delete the shipper profile at /shippers/shipper123.
-     * @principle Enforces document ownership for all operations.
+     * @description: Allows shippers to manage their own profile data.
+     * @path: /shippers/{shipperId}
+     * @allow: (create) Shipper 'shipper_abc' can create their profile if request.auth.uid == 'shipper_abc'.
+     * @allow: (update) Shipper 'shipper_abc' can update their profile if request.auth.uid == 'shipper_abc'.
+     * @allow: (get) Shipper 'shipper_abc' can read their profile if request.auth.uid == 'shipper_abc'.
+     * @deny: (create) User 'user_xyz' cannot create a shipper profile with ID 'shipper_abc'.
+     * @deny: (update) User 'user_xyz' cannot update shipper profile 'shipper_abc'.
+     * @principle: Enforces user-ownership for shipper profile data.
      */
     match /shippers/{shipperId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(shipperId) {
         return request.auth.uid == shipperId;
       }
 
-      allow get: if isSignedIn() && isOwner(shipperId);
+      allow get: if isOwner(shipperId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(shipperId);
-      allow update: if isSignedIn() && isOwner(shipperId);
-      allow delete: if isSignedIn() && isOwner(shipperId);
+      allow create: if isOwner(shipperId);
+      allow update: if isOwner(shipperId);
+      allow delete: if isOwner(shipperId);
     }
 
     /**
-     * @description Enforces carrier-ownership for carrier profiles.
-     * @path /carriers/{carrierId}
-     * @allow (create) - User with UID 'carrier123' can create a carrier profile at /carriers/carrier123.
-     * @allow (get) - User with UID 'carrier123' can read their carrier profile at /carriers/carrier123.
-     * @allow (update) - User with UID 'carrier123' can update their carrier profile at /carriers/carrier123.
-     * @allow (delete) - User with UID 'carrier123' can delete their carrier profile at /carriers/carrier123.
-     * @deny (create) - User with UID 'user456' cannot create a carrier profile at /carriers/carrier123.
-     * @deny (get) - User with UID 'user456' cannot read the carrier profile at /carriers/carrier123.
-     * @deny (update) - User with UID 'user456' cannot update the carrier profile at /carriers/carrier123.
-     * @deny (delete) - User with UID 'user456' cannot delete the carrier profile at /carriers/carrier123.
-     * @principle Enforces document ownership for all operations.
+     * @description: Allows carriers to manage their own profile data.
+     * @path: /carriers/{carrierId}
+     * @allow: (create) Carrier 'carrier_abc' can create their profile if request.auth.uid == 'carrier_abc'.
+     * @allow: (update) Carrier 'carrier_abc' can update their profile if request.auth.uid == 'carrier_abc'.
+     * @allow: (get) Carrier 'carrier_abc' can read their profile if request.auth.uid == 'carrier_abc'.
+     * @deny: (create) User 'user_xyz' cannot create a carrier profile with ID 'carrier_abc'.
+     * @deny: (update) User 'user_xyz' cannot update carrier profile 'carrier_abc'.
+     * @principle: Enforces user-ownership for carrier profile data.
      */
     match /carriers/{carrierId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(carrierId) {
         return request.auth.uid == carrierId;
       }
 
-      allow get: if isSignedIn() && isOwner(carrierId);
+      allow get: if isOwner(carrierId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(carrierId);
-      allow update: if isSignedIn() && isOwner(carrierId);
-      allow delete: if isSignedIn() && isOwner(carrierId);
+      allow create: if isOwner(carrierId);
+      allow update: if isOwner(carrierId);
+      allow delete: if isOwner(carrierId);
     }
 
     /**
-     * @description Enforces freight manager-ownership for freight manager profiles.
-     * @path /freight_managers/{freightManagerId}
-     * @allow (create) - User with UID 'freightManager123' can create a freight manager profile at /freight_managers/freightManager123.
-     * @allow (get) - User with UID 'freightManager123' can read their freight manager profile at /freight_managers/freightManager123.
-     * @allow (update) - User with UID 'freightManager123' can update their freight manager profile at /freight_managers/freightManager123.
-     * @allow (delete) - User with UID 'freightManager123' can delete their freight manager profile at /freight_managers/freightManager123.
-     * @deny (create) - User with UID 'user456' cannot create a freight manager profile at /freight_managers/freightManager123.
-     * @deny (get) - User with UID 'user456' cannot read the freight manager profile at /freight_managers/freightManager123.
-     * @deny (update) - User with UID 'user456' cannot update the freight manager profile at /freight_managers/freightManager123.
-     * @deny (delete) - User with UID 'user456' cannot delete the freight manager profile at /freight_managers/freightManager123.
-     * @principle Enforces document ownership for all operations.
+     * @description: Allows freight managers to manage their own profile data.
+     * @path: /freight_managers/{freightManagerId}
+     * @allow: (create) FreightManager 'freight_manager_abc' can create their profile if request.auth.uid == 'freight_manager_abc'.
+     * @allow: (update) FreightManager 'freight_manager_abc' can update their profile if request.auth.uid == 'freight_manager_abc'.
+     * @allow: (get) FreightManager 'freight_manager_abc' can read their profile if request.auth.uid == 'freight_manager_abc'.
+     * @deny: (create) User 'user_xyz' cannot create a freight manager profile with ID 'freight_manager_abc'.
+     * @deny: (update) User 'user_xyz' cannot update freight manager profile 'freight_manager_abc'.
+     * @principle: Enforces user-ownership for freight manager profile data.
      */
     match /freight_managers/{freightManagerId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(freightManagerId) {
         return request.auth.uid == freightManagerId;
       }
 
-      allow get: if isSignedIn() && isOwner(freightManagerId);
+      allow get: if isOwner(freightManagerId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(freightManagerId);
-      allow update: if isSignedIn() && isOwner(freightManagerId);
-      allow delete: if isSignedIn() && isOwner(freightManagerId);
+      allow create: if isOwner(freightManagerId);
+      allow update: if isOwner(freightManagerId);
+      allow delete: if isOwner(freightManagerId);
     }
   }
 }
