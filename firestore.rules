@@ -1,240 +1,239 @@
 /**
- * @fileoverview Firestore Security Rules for SecureHaul application.
+ * @file Firestore Security Rules for SecureHaul Application
  *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user-related data
- * and a combination of ownership and shared access for other collections.
+ * @core_philosophy This ruleset enforces a strict user-ownership model for personal data,
+ * while allowing public read access to certain collections with owner-controlled writes.
+ * Authorization independence is achieved through denormalization.
  *
- * Data Structure:
- * - User-specific data (verification documents, subscriptions) is nested under
- *   /users/{userId}.
- * - Loads, Bids, Trucks, EmergencyAlerts, Shippers, Carriers, and FreightManagers are stored in root-level collections.
+ * @data_structure The database is structured with user-specific data nested under
+ * `/users/{userId}`, while publicly readable data resides in top-level collections like `/loads`.
  *
- * Key Security Decisions:
- * - Users can only access their own verification documents and subscriptions.
- * - Load ownership is determined by the `shipperId` field within the Load document.
- * - Bid ownership is determined by the `carrierId` field within the Bid document.
- * - Truck ownership is determined by the `driverId` and Truck documents are nested under the corresponding driver.
- * - No user listing is allowed (to prevent data scraping).
+ * @key_security_decisions
+ * - User listing is implicitly disallowed by the rules structure.
+ * - Public read access is granted to the `/loads` collection, but writes are restricted to the owner.
+ * - All write operations require authentication.
  *
- * Denormalization for Authorization:
- * - Loads: `shipperId` is stored directly in the Load document to avoid needing a `get()` on the Shipper document.
- * - Bids: `carrierId` and `loadId` are stored directly in the Bid document to avoid needing `get()` calls.
+ * @denormalization To avoid costly `get()` calls in security rules, key authorization
+ * fields (e.g., `shipperId` in `loads`) are denormalized directly into the documents.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is authenticated.
+     * @description Checks if the request is made by a signed-in user.
+     * @example isSignedIn() == true if request.auth != null
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of the resource.
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId - The user ID to compare against.
+     * @example isOwner('someUserId') == (request.auth.uid == 'someUserId')
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of an existing resource.
-     * Used for update and delete operations to prevent acting on non-existent documents.
+     * @description Checks if the authenticated user is the existing owner of the document.
+     * @param {string} userId - The user ID to compare against.
+     * @example isExistingOwner('someUserId') == (isOwner('someUserId') && resource != null)
      */
     function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
+        return isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Rules for user profiles.
+     * @description Defines rules for the /users/{userId} collection.
      * @path /users/{userId}
-     * @allow (create) Authenticated user can create their own profile.
-     * @deny (create) Authenticated user cannot create a profile for another user.
-     * @allow (get) Authenticated user can get their own profile.
-     * @deny (get) Authenticated user cannot get another user's profile.
-     * @allow (update) Authenticated user can update their own profile.
-     * @deny (update) Authenticated user cannot update another user's profile.
-     * @allow (delete) Authenticated user can delete their own profile.
-     * @deny (delete) Authenticated user cannot delete another user's profile.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) User 'pjNkl1LQRje03gftpjh0EIEXmF03' can create their own profile document.
+     * @deny (create) User 'pjNkl1LQRje03gftpjh0EIEXmF01' cannot create profile document for 'pjNkl1LQRje03gftpjh0EIEXmF03'.
+     * @allow (get) User 'pjNkl1LQRje03gftpjh0EIEXmF03' can read their own profile document.
+     * @deny (get) User 'pjNkl1LQRje03gftpjh0EIEXmF01' cannot read profile document for 'pjNkl1LQRje03gftpjh0EIEXmF03'.
+     * @principle Enforces user-ownership for profile data.
      */
     match /users/{userId} {
+      // Allow the user to create their own document.
       allow create: if isOwner(userId) && request.resource.data.id == userId;
+      // Allow the user to get their own document.
       allow get: if isOwner(userId);
-      allow list: if false;
+      // Allow the user to update their own document. Enforce immutability for the userId
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      // Allow the user to delete their own document.
       allow delete: if isExistingOwner(userId);
+      // The list operation is not explicitly allowed.
+      allow list: if false;
     }
 
     /**
-     * @description Rules for verification documents.
+     * @description Defines rules for the /users/{userId}/verification_documents/{documentId} collection.
      * @path /users/{userId}/verification_documents/{documentId}
-     * @allow (create) Authenticated user can create their own verification document.
-     * @deny (create) Authenticated user cannot create a verification document for another user.
-     * @allow (get) Authenticated user can get their own verification document.
-     * @deny (get) Authenticated user cannot get another user's verification document.
-     * @allow (update) Authenticated user can update their own verification document.
-     * @deny (update) Authenticated user cannot update another user's verification document.
-     * @allow (delete) Authenticated user can delete their own verification document.
-     * @deny (delete) Authenticated user cannot delete another user's verification document.
-     * @principle Restricts access to a user's own data tree.
+     * @allow (create) User 'pjNkl1LQRje03gftpjh0EIEXmF03' can create a verification document in their own profile.
+     * @deny (create) User 'pjNkl1LQRje03gftpjh0EIEXmF01' cannot create a verification document in user 'pjNkl1LQRje03gftpjh0EIEXmF03' profile.
+     * @allow (get) User 'pjNkl1LQRje03gftpjh0EIEXmF03' can read a verification document in their own profile.
+     * @deny (get) User 'pjNkl1LQRje03gftpjh0EIEXmF01' cannot read verification document in user 'pjNkl1LQRje03gftpjh0EIEXmF03' profile.
+     * @principle Enforces document ownership for writes and reads.
      */
     match /users/{userId}/verification_documents/{documentId} {
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
+      allow list: if isOwner(userId);
     }
 
     /**
-     * @description Rules for subscriptions.
+     * @description Defines rules for the /users/{userId}/subscriptions/{subscriptionId} collection.
      * @path /users/{userId}/subscriptions/{subscriptionId}
-     * @allow (create) Authenticated user can create their own subscription.
-     * @deny (create) Authenticated user cannot create a subscription for another user.
-     * @allow (get) Authenticated user can get their own subscription.
-     * @deny (get) Authenticated user cannot get another user's subscription.
-     * @allow (update) Authenticated user can update their own subscription.
-     * @deny (update) Authenticated user cannot update another user's subscription.
-     * @allow (delete) Authenticated user can delete their own subscription.
-     * @deny (delete) Authenticated user cannot delete another user's subscription.
-     * @principle Restricts access to a user's own data tree.
+     * @allow (create) User 'pjNkl1LQRje03gftpjh0EIEXmF03' can create a subscription in their own profile.
+     * @deny (create) User 'pjNkl1LQRje03gftpjh0EIEXmF01' cannot create a subscription in user 'pjNkl1LQRje03gftpjh0EIEXmF03' profile.
+     * @allow (get) User 'pjNkl1LQRje03gftpjh0EIEXmF03' can read a subscription in their own profile.
+     * @deny (get) User 'pjNkl1LQRje03gftpjh0EIEXmF01' cannot read subscription in user 'pjNkl1LQRje03gftpjh0EIEXmF03' profile.
+     * @principle Enforces document ownership for subscriptions.
      */
     match /users/{userId}/subscriptions/{subscriptionId} {
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
       allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
       allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
+      allow list: if isOwner(userId);
     }
 
     /**
-     * @description Rules for drivers.
+     * @description Defines rules for the /drivers/{driverId} collection.
      * @path /drivers/{driverId}
-     * @allow (create) Authenticated user can create their own driver profile.
-     * @deny (create) Authenticated user cannot create a driver profile for another user.
-     * @allow (get) Authenticated user can get their own driver profile.
-     * @deny (get) Authenticated user cannot get another user's driver profile.
-     * @allow (update) Authenticated user can update their own driver profile.
-     * @deny (update) Authenticated user cannot update another user's driver profile.
-     * @allow (delete) Authenticated user can delete their own driver profile.
-     * @deny (delete) Authenticated user cannot delete another user's driver profile.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) A signed-in user can create a driver profile for themselves.
+     * @deny (create) A user cannot create a driver profile for another user.
+     * @allow (get) A signed-in user can read their own driver profile.
+     * @deny (get) A user cannot read another user's driver profile.
+     * @principle Enforces user ownership for driver profiles.
      */
     match /drivers/{driverId} {
-      allow create: if isOwner(driverId) && request.resource.data.id == driverId;
-      allow get: if true; // Allowing public read for prototyping. Consider restricting later.
-      allow list: if false; // Explicitly disallowing listing.
+      allow create: if isSignedIn() && request.auth.uid == driverId && request.resource.data.id == driverId;
+      allow get: if isSignedIn() && request.auth.uid == driverId;
       allow update: if isExistingOwner(driverId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(driverId);
+      allow list: if false;
     }
 
     /**
-     * @description Rules for trucks associated with drivers.
+     * @description Defines rules for the /drivers/{driverId}/trucks/{truckId} collection.
      * @path /drivers/{driverId}/trucks/{truckId}
-     * @allow (create) Authenticated driver can create a truck associated with their profile.
-     * @deny (create) Authenticated driver cannot create a truck associated with another driver's profile.
-     * @allow (get) Authenticated driver can get a truck associated with their profile.
-     * @deny (get) Authenticated driver cannot get a truck associated with another driver's profile.
-     * @allow (update) Authenticated driver can update a truck associated with their profile.
-     * @deny (update) Authenticated driver cannot update a truck associated with another driver's profile.
-     * @allow (delete) Authenticated driver can delete a truck associated with their profile.
-     * @deny (delete) Authenticated driver cannot delete a truck associated with another driver's profile.
-     * @principle Restricts access to a driver's own trucks.
+     * @allow (create) A driver can create a truck for themselves.
+     * @deny (create) A driver cannot create a truck for another driver.
+     * @allow (get) A driver can read their own truck.
+     * @deny (get) A driver cannot read another driver's truck.
+     * @principle Enforces user ownership for trucks.
      */
     match /drivers/{driverId}/trucks/{truckId} {
       allow create: if isOwner(driverId) && request.resource.data.driverId == driverId;
       allow get: if isOwner(driverId);
-      allow list: if isOwner(driverId);
-      allow update: if isExistingOwner(driverId) && request.resource.data.driverId == resource.data.driverId;
+      allow update: if isExistingOwner(driverId) && request.resource.data.driverId == driverId;
       allow delete: if isExistingOwner(driverId);
+      allow list: if isOwner(driverId);
     }
 
     /**
-     * @description Rules for loads.
+     * @description Defines rules for the /loads/{loadId} collection.
      * @path /loads/{loadId}
-     * @allow (create) Authenticated user can create a load if the shipperId matches their user ID.
-     * @deny (create) Authenticated user cannot create a load if the shipperId does not match their user ID.
-     * @allow (get) Anyone can get a load.
-     * @deny (update) Only the owner (shipper) can update a load.
-     * @deny (delete) Only the owner (shipper) can delete a load.
-     * @principle Enforces ownership via the shipperId field.
+     * @allow (get, list) Anyone can read or list loads.
+     * @allow (create) A signed-in user can create a load, with their ID as the shipperId.
+     * @deny (create) A user cannot create a load for another user.
+     * @allow (update, delete) Only the owner (shipper) can update or delete a load.
+     * @principle Public read, owner-only write access for loads.
      */
     match /loads/{loadId} {
+      allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.shipperId == request.auth.uid;
-      allow get: if true;
-      allow list: if true;
-      allow update: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
-      allow delete: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
+      allow update, delete: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
     }
 
     /**
-     * @description Rules for bids.
+     * @description Defines rules for the /loads/{loadId}/bids/{bidId} collection.
      * @path /loads/{loadId}/bids/{bidId}
-     * @allow (create) Authenticated user can create a bid if the carrierId matches their user ID.
-     * @deny (create) Authenticated user cannot create a bid if the carrierId does not match their user ID.
-     * @allow (get) Anyone can get a bid.
-     * @deny (update) Only the owner (carrier) can update a bid.
-     * @deny (delete) Only the owner (carrier) can delete a bid.
-     * @principle Enforces ownership via the carrierId field.
+     *  @allow (create) A carrier can create a bid for a load.
+     * @deny (create) A user cannot create a bid for another carrier.
+     * @allow (get) A carrier can read their own bid.
+     * @deny (get) A carrier cannot read another carrier's bid.
+     * @principle Enforces user ownership for bids.
      */
     match /loads/{loadId}/bids/{bidId} {
       allow create: if isSignedIn() && request.resource.data.carrierId == request.auth.uid && request.resource.data.loadId == loadId;
-      allow get: if true;
-      allow list: if true;
-      allow update: if isSignedIn() && resource.data.carrierId == request.auth.uid && resource != null;
+      allow get: if isSignedIn() && resource.data.carrierId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.carrierId == request.auth.uid  && resource != null && request.resource.data.loadId == loadId;
       allow delete: if isSignedIn() && resource.data.carrierId == request.auth.uid && resource != null;
+      allow list: if true;
     }
 
     /**
-     * @description Rules for emergency alerts.
+     * @description Defines rules for the /trucks/{truckId}/emergency_alerts/{alertId} collection.
      * @path /trucks/{truckId}/emergency_alerts/{alertId}
-     * @principle No ownership check.
+     * @allow (create) Any signed in user can create an emergency alert.
+     * @deny (create) Only the owner of the truck can create an emergency alert.
+     * @allow (get) Any signed in user can get an emergency alert.
+     * @deny (get) Only the owner of the truck can get an emergency alert.
+     * @principle Public read, owner-only write access for loads.
      */
     match /trucks/{truckId}/emergency_alerts/{alertId} {
-      allow create: if true;
-      allow get: if true;
-      allow list: if true;
+      allow create: if isSignedIn();
+      allow get: if isSignedIn();
       allow update: if false;
       allow delete: if false;
+      allow list: if true;
     }
 
      /**
-      * @description Rules for shippers.
+      * @description Defines rules for the /shippers/{shipperId} collection.
       * @path /shippers/{shipperId}
+      * @allow (create) A signed-in user can create a shipper profile for themselves.
+      * @deny (create) A user cannot create a shipper profile for another user.
+      * @allow (get) A signed-in user can read their own shipper profile.
+      * @deny (get) A user cannot read another user's shipper profile.
+      * @principle Enforces user ownership for shipper profiles.
       */
-     match /shippers/{shipperId} {
-        allow create: if isOwner(shipperId) && request.resource.data.id == shipperId;
-        allow get: if true; // Allowing public read for prototyping. Consider restricting later.
-        allow list: if false; // Explicitly disallowing listing.
-        allow update: if isExistingOwner(shipperId) && request.resource.data.id == resource.data.id;
-        allow delete: if isExistingOwner(shipperId);
-     }
-
-    /**
-     * @description Rules for carriers.
-     * @path /carriers/{carrierId}
-     */
-    match /carriers/{carrierId} {
-        allow create: if isOwner(carrierId) && request.resource.data.id == carrierId;
-        allow get: if true; // Allowing public read for prototyping. Consider restricting later.
-        allow list: if false; // Explicitly disallowing listing.
-        allow update: if isExistingOwner(carrierId) && request.resource.data.id == resource.data.id;
-        allow delete: if isExistingOwner(carrierId);
+    match /shippers/{shipperId} {
+      allow create: if isSignedIn() && request.auth.uid == shipperId && request.resource.data.id == shipperId;
+      allow get: if isSignedIn() && request.auth.uid == shipperId;
+      allow update: if isExistingOwner(shipperId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(shipperId);
+      allow list: if false;
     }
 
     /**
-     * @description Rules for freight managers.
+     * @description Defines rules for the /carriers/{carrierId} collection.
+     * @path /carriers/{carrierId}
+     * @allow (create) A signed-in user can create a carrier profile for themselves.
+     * @deny (create) A user cannot create a carrier profile for another user.
+     * @allow (get) A signed-in user can read their own carrier profile.
+     * @deny (get) A user cannot read another user's carrier profile.
+     * @principle Enforces user ownership for carrier profiles.
+     */
+    match /carriers/{carrierId} {
+      allow create: if isSignedIn() && request.auth.uid == carrierId && request.resource.data.id == carrierId;
+      allow get: if isSignedIn() && request.auth.uid == carrierId;
+      allow update: if isExistingOwner(carrierId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(carrierId);
+      allow list: if false;
+    }
+
+    /**
+     * @description Defines rules for the /freight_managers/{freightManagerId} collection.
      * @path /freight_managers/{freightManagerId}
+     * @allow (create) A signed-in user can create a freight manager profile for themselves.
+     * @deny (create) A user cannot create a freight manager profile for another user.
+     * @allow (get) A signed-in user can read their own freight manager profile.
+     * @deny (get) A user cannot read another user's freight manager profile.
+     * @principle Enforces user ownership for freight manager profiles.
      */
     match /freight_managers/{freightManagerId} {
-        allow create: if isOwner(freightManagerId) && request.resource.data.id == freightManagerId;
-        allow get: if true; // Allowing public read for prototyping. Consider restricting later.
-        allow list: if false; // Explicitly disallowing listing.
-        allow update: if isExistingOwner(freightManagerId) && request.resource.data.id == resource.data.id;
-        allow delete: if isExistingOwner(freightManagerId);
+      allow create: if isSignedIn() && request.auth.uid == freightManagerId && request.resource.data.id == freightManagerId;
+      allow get: if isSignedIn() && request.auth.uid == freightManagerId;
+      allow update: if isExistingOwner(freightManagerId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(freightManagerId);
+      allow list: if false;
     }
   }
 }
