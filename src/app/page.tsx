@@ -37,7 +37,7 @@ export default function Home() {
             <Link href="/dashboard/subscription">View Trucker Benefits</Link>
           </Button>
           <SignUpModal>
-            <Button>Post Your First Load</Button>
+            <Button>Get Your First Load</Button>
           </SignUpModal>
         </div>
       </header>
@@ -54,7 +54,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row items-start justify-start gap-4">
                 <SignUpModal>
                   <Button size="lg" className="w-full sm:w-auto">
-                    Post Your First Load <ArrowRight className="ml-2 h-5 w-5" />
+                    Get Your First Load <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </SignUpModal>
               </div>
