@@ -12,7 +12,19 @@ export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
   
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="relative flex flex-col min-h-screen bg-background text-foreground">
+      {heroImage && (
+        <Image
+          src={heroImage.imageUrl}
+          alt={heroImage.description}
+          fill
+          className="object-cover object-center opacity-30"
+          data-ai-hint={heroImage.imageHint}
+          priority
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
+      
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-20">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold font-headline">
@@ -29,21 +41,8 @@ export default function Home() {
         </div>
       </header>
       
-      <main className="flex-grow">
-        <section className="relative h-[calc(100vh_-_theme(spacing.16))] -mt-16 flex items-center">
-          {heroImage && (
-            <Image
-              src={heroImage.imageUrl}
-              alt={heroImage.description}
-              fill
-              className="object-cover object-center opacity-30"
-              data-ai-hint={heroImage.imageHint}
-              priority
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
-          
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <main className="flex-grow flex items-center relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-xl">
               <h2 className="text-5xl md:text-7xl font-bold font-headline text-foreground mb-4">
                 Where freight<br/>meets <span className="text-primary">focus.</span>
@@ -60,7 +59,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
       </main>
     </div>
   );
