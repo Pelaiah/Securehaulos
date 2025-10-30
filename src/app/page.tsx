@@ -19,7 +19,7 @@ export default function Home() {
           alt={heroImage.description}
           fill
           className="object-cover object-center opacity-50"
-          style={{ objectPosition: '65% 50%' }}
+          style={{ objectPosition: '80% 50%' }}
           data-ai-hint={heroImage.imageHint}
           priority
         />
