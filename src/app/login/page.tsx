@@ -16,7 +16,7 @@ export default function LoginPage() {
       <div className="flex items-center gap-2 mb-6">
         <ShieldCheck className="w-8 h-8 text-primary" />
         <h1 className="text-2xl font-bold font-headline text-foreground">
-          Suboor loadboard
+          Suboor Loads
         </h1>
       </div>
       <Card className="w-full max-w-md">
