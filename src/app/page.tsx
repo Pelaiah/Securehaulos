@@ -15,9 +15,36 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { AnimatedText } from '@/components/AnimatedText';
+import { useLayoutEffect, useRef } from 'react';
+import { gsap } from '@/lib/gsap';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
+  const featureCardsRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!featureCardsRef.current) return;
+    const cards = featureCardsRef.current.children;
+
+    const ctx = gsap.context(() => {
+        gsap.from(cards, {
+            y: 50,
+            opacity: 0,
+            stagger: 0.1,
+            ease: 'power3.out',
+            duration: 1,
+            scrollTrigger: {
+                trigger: featureCardsRef.current,
+                start: 'top bottom-=150',
+                end: 'bottom center',
+                scrub: true,
+            }
+        });
+    }, featureCardsRef);
+
+    return () => ctx.revert();
+
+  }, []);
   
   return (
     <div className="relative text-foreground">
@@ -97,7 +124,7 @@ export default function Home() {
             delay={0.2}
           />
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
+        <div ref={featureCardsRef} className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
           <Card className="bg-card/50 backdrop-blur-sm">
             <CardHeader className="items-center text-center">
               <div className="p-3 rounded-full bg-primary/10 border border-primary/20 mb-2">
