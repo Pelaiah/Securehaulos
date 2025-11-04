@@ -46,9 +46,9 @@ export default function Home() {
           <Button variant="ghost" asChild>
             <Link href="#get-started">Learn How It Works</Link>
           </Button>
-          <SignUpModal>
-            <Button>Get Your First Load</Button>
-          </SignUpModal>
+          <Button asChild>
+            <Link href="/login">Login</Link>
+          </Button>
         </div>
       </header>
       
