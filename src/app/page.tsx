@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ArrowRight, Ship, Truck, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Ship, Truck, ShieldCheck, UserPlus, Search, ThumbsUp } from 'lucide-react';
 import { SignUpModal } from '@/components/auth/SignUpModal';
 import { cn } from '@/lib/utils';
 import {
@@ -107,6 +107,53 @@ export default function Home() {
           </Card>
         </div>
       </section>
+
+      <section className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold font-headline">Simple Steps to Get Started</h2>
+          <p className="text-muted-foreground text-lg mt-2 max-w-2xl mx-auto">
+            Join our network in just a few clicks and start moving freight securely.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl w-full">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20">
+              <UserPlus className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold">1. Create Account</h3>
+            <p className="text-muted-foreground">Sign up as a shipper or carrier and complete your profile verification in minutes.</p>
+          </div>
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20">
+              <Search className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold">2. Find or Post Loads</h3>
+            <p className="text-muted-foreground">Carriers can browse our exclusive load board, while shippers can post their freight for our verified network.</p>
+          </div>
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20">
+              <ThumbsUp className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold">3. Haul Securely</h3>
+            <p className="text-muted-foreground">Utilize our advanced tracking and security features to ensure every load is safe and on time.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
+        <div className="text-center max-w-2xl">
+          <h2 className="text-5xl font-bold font-headline mb-4">Ready to Secure Your Shipments?</h2>
+          <p className="text-muted-foreground text-xl mb-8">
+            Join Suboor Loads today and experience the future of logistics. Fast, secure, and reliable.
+          </p>
+          <SignUpModal>
+            <Button size="lg" className="w-full sm:w-auto">
+              Sign Up Now <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </SignUpModal>
+        </div>
+      </section>
+
     </div>
   );
 }
