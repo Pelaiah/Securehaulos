@@ -113,7 +113,7 @@ export default function Home() {
                 <Truck className="w-8 h-8 text-primary" />
               </div>
               <CardTitle className="font-headline text-2xl">For Carriers</CardTitle>
-              <CardDescription>Access a board of quality loads, get paid faster, and benefit from our premium membership perks.</CardDescription>
+              <CardDescription>Access a board of quality loads, get paid faster, and benefit from instant booking and streamlined communication.</CardDescription>
             </CardHeader>
           </Card>
           <Card className="bg-card/50 backdrop-blur-sm">
