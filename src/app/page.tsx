@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost" asChild>
-            <Link href="/dashboard/subscription">View Trucker Benefits</Link>
+            <Link href="#get-started">Learn How It Works</Link>
           </Button>
           <SignUpModal>
             <Button>Get Your First Load</Button>
@@ -127,7 +128,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
+      <section id="get-started" className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold font-headline">Simple Steps to Get Started</h2>
           <p className="text-muted-foreground text-lg mt-2 max-w-2xl mx-auto">
