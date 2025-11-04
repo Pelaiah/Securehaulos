@@ -20,6 +20,7 @@ import {
   FileText,
   Check,
   CheckCheck,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -117,7 +118,12 @@ export default function ChatsPage() {
       {/* Conversation List */}
       <div className="flex flex-col border-r bg-card-alt">
         <div className="p-4 border-b">
-          <h2 className="text-xl font-bold font-headline">Messages</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold font-headline">Messages</h2>
+                 <Button variant="ghost" size="icon">
+                    <Plus className="h-5 w-5" />
+                </Button>
+            </div>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search messages..." className="pl-9 bg-background" />
@@ -249,4 +255,3 @@ export default function ChatsPage() {
     </div>
   );
 }
-
