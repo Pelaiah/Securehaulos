@@ -22,6 +22,8 @@ export function AnimatedText({
   const root = useRef<HTMLHeadingElement>(null);
 
   useLayoutEffect(() => {
+    if (!root.current) return;
+
     const ctx = gsap.context(() => {
       if (typeof text === 'string') {
         gsap.from(root.current, {
@@ -32,13 +34,14 @@ export function AnimatedText({
           duration: 1.5,
           scrollTrigger: {
             trigger: root.current,
-            start: 'top bottom-=100', // start when the top of the element hits 100px from the bottom of the viewport
+            start: 'top bottom-=100',
+            end: 'bottom top+=100', // Make sure it animates through the viewport
             scrub: true,
           },
         });
       } else {
         const words = root.current?.querySelectorAll('.word');
-        if (words) {
+        if (words && words.length > 0) {
           gsap.from(words, {
             y: '100%',
             opacity: 0,
@@ -49,6 +52,7 @@ export function AnimatedText({
             scrollTrigger: {
               trigger: root.current,
               start: 'top bottom-=100',
+              end: 'bottom center', // Adjust end point for a more natural feel
               scrub: true,
             },
           });
@@ -64,7 +68,7 @@ export function AnimatedText({
   }
 
   return (
-    <Wrapper ref={root} className={cn('overflow-hidden', className)}>
+    <Wrapper ref={root} className={cn(className)}>
       {text.map((item, index) => (
         <span key={index} className="inline-block overflow-hidden">
           <span className={cn('inline-block word', item.className)}>{item.text}&nbsp;</span>
