@@ -28,6 +28,7 @@ import {
   Check,
   X,
   BadgeCheck,
+  Loader2,
 } from 'lucide-react';
 import Image from 'next/image';
 import { drivers } from '@/lib/data';
@@ -138,6 +139,16 @@ export function PendingLoadDetailsDialog({
             description: error.message || 'An unexpected error occurred. Please check security rules.',
             variant: 'destructive',
         });
+        const permissionError = new FirestorePermissionError({
+            path: `batch write for load ${load.id}`,
+            operation: 'write',
+            requestResourceData: { 
+                decision,
+                loadId: load.id,
+                truckId: load.assignedTruckId,
+            },
+        });
+        errorEmitter.emit('permission-error', permissionError);
     } finally {
         setIsSubmitting(false);
     }
@@ -324,12 +335,14 @@ export function PendingLoadDetailsDialog({
 
         <DialogFooter className="pt-4 border-t mt-auto flex-col-reverse sm:flex-row gap-2">
           <Button variant="destructive" onClick={() => handleDecision('Rejected')} disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Reject Application
           </Button>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Close
           </Button>
            <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting || isLoadingDocs}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Approve and Assign Load
           </Button>
         </DialogFooter>

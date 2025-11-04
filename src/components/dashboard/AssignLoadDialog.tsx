@@ -51,39 +51,45 @@ export function AssignLoadDialog({
 
     setIsSubmitting(true);
     
-    const batch = writeBatch(firestore);
+    try {
+        const batch = writeBatch(firestore);
+        
+        const loadRef = doc(firestore, 'loads', load.id);
+        const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-    const loadRef = doc(firestore, 'loads', load.id);
-    const truckRef = doc(firestore, 'trucks', selectedTruckId);
+        // Update load to 'Pending' and assign carrier & truck
+        batch.update(loadRef, { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId });
 
-    const loadUpdateData = { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId };
-    const truckUpdateData = { status: 'Pending' };
+        // Update truck status to 'Pending'
+        batch.update(truckRef, { status: 'Pending' });
+        
+        await batch.commit();
 
-    batch.update(loadRef, loadUpdateData);
-    batch.update(truckRef, truckUpdateData);
-    
-    batch.commit().then(() => {
         toast({
             title: 'Load Assigned for Review',
             description: `The shipper will now review your application for load #${load.id}.`,
         });
         onOpenChange(false);
         router.push('/dashboard/my-trucks');
-    }).catch(error => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: `batch write for load ${load.id}`,
+
+    } catch (error: any) {
+        toast({
+            title: 'Assignment Failed',
+            description: error.message || 'An unexpected error occurred. Please check security rules.',
+            variant: 'destructive',
+        });
+        const permissionError = new FirestorePermissionError({
+            path: `batch write for load ${load.id} and truck ${selectedTruckId}`,
             operation: 'write',
-            requestResourceData: {
-                loadUpdate: loadUpdateData,
-                truckUpdate: truckUpdateData,
-            }
-          })
-        );
-    }).finally(() => {
+            requestResourceData: { 
+                loadUpdate: { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId },
+                truckUpdate: { status: 'Pending' }
+            },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    } finally {
         setIsSubmitting(false);
-    });
+    }
   };
 
   if (!load) return null;
@@ -144,7 +150,7 @@ export function AssignLoadDialog({
             className="w-full sm:w-auto"
           >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Assign and Confirm
+            Assign and Submit for Review
           </Button>
         </DialogFooter>
       </DialogContent>
