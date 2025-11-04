@@ -26,7 +26,7 @@ export default function Home() {
             src={heroImage.imageUrl}
             alt={heroImage.description}
             fill
-            className="object-cover object-center opacity-50"
+            className="object-cover object-center opacity-30"
             style={{ objectPosition: '65% 50%' }}
             data-ai-hint={heroImage.imageHint}
             priority
@@ -84,10 +84,17 @@ export default function Home() {
 
        <section className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold font-headline">Built for a Secure Supply Chain</h2>
-          <p className="text-muted-foreground text-lg mt-2 max-w-2xl mx-auto">
-            A unified platform with specialized tools for every link in the logistics chain.
-          </p>
+          <AnimatedText 
+            el="h2"
+            text="Built for a Secure Supply Chain"
+            className="text-4xl font-bold font-headline"
+          />
+          <AnimatedText
+            el="p"
+            text="A unified platform with specialized tools for every link in the logistics chain."
+            className="text-muted-foreground text-lg mt-2 max-w-2xl mx-auto"
+            delay={0.2}
+          />
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
           <Card className="bg-card/50 backdrop-blur-sm">
