@@ -119,11 +119,16 @@ export default function ChatsPage() {
   };
   
   const handleNewChat = () => {
-    const newId = Math.max(...conversations.map(c => c.id)) + 1;
+    const name = window.prompt("Enter the name of the new contact:");
+    if (!name || name.trim() === '') {
+      return; // Do nothing if the user cancels or enters an empty name
+    }
+
+    const newId = conversations.length > 0 ? Math.max(...conversations.map(c => c.id)) + 1 : 1;
     const newConversation: Conversation = {
       id: newId,
-      name: `New Contact ${newId}`,
-      avatar: `https://i.pravatar.cc/150?u=new${newId}`,
+      name: name,
+      avatar: `https://i.pravatar.cc/150?u=${name.replace(/\s/g, '')}`,
       lastMessage: 'Start a conversation!',
       lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       unread: 0,
