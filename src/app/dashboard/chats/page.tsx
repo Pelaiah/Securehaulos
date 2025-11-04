@@ -119,7 +119,7 @@ export default function ChatsPage() {
   };
   
   const handleNewChat = () => {
-    const name = window.prompt("Enter the name of the new contact:");
+    const name = window.prompt("Enter the name or number of the new contact:");
     if (!name || name.trim() === '') {
       return; // Do nothing if the user cancels or enters an empty name
     }
