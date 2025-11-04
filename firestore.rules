@@ -144,7 +144,10 @@ service cloud.firestore {
     match /loads/{loadId} {
       allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.shipperId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
+      allow update: if isSignedIn() && (
+        (resource.data.shipperId == request.auth.uid) || 
+        (request.resource.data.status == 'Pending' && request.resource.data.carrierId == request.auth.uid)
+      ) && resource != null;
       allow delete: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
     }
 
@@ -162,6 +165,17 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.carrierId == request.auth.uid;
       allow update: if isSignedIn() && resource.data.carrierId == request.auth.uid && resource != null;
       allow delete: if isSignedIn() && resource.data.carrierId == request.auth.uid && resource != null;
+    }
+
+    /**
+     * @description Rules for the /trucks/{truckId} collection.
+     * @path /trucks/{truckId}
+     * @allow (update) - Authenticated users can update a truck's status.
+     * This is a simplified rule for the prototype. In a real app, you'd want to check
+     * if the user is the driver/carrier who owns this truck.
+     */
+    match /trucks/{truckId} {
+      allow update: if isSignedIn();
     }
 
     /**
@@ -226,3 +240,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
