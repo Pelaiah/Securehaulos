@@ -33,7 +33,7 @@ export function AnimatedText({
           scrollTrigger: {
             trigger: root.current,
             start: 'top bottom-=100', // start when the top of the element hits 100px from the bottom of the viewport
-            toggleActions: 'play resume resume resume',
+            scrub: true,
           },
         });
       } else {
@@ -49,7 +49,7 @@ export function AnimatedText({
             scrollTrigger: {
               trigger: root.current,
               start: 'top bottom-=100',
-              toggleActions: 'play resume resume resume',
+              scrub: true,
             },
           });
         }
