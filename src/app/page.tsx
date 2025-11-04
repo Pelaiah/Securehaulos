@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { AnimatedText } from '@/components/AnimatedText';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
@@ -53,12 +54,23 @@ export default function Home() {
       <main className="min-h-screen flex items-center relative z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-xl">
-              <h2 className="text-5xl md:text-7xl font-bold font-headline text-foreground mb-4">
-                Where freight<br/>meets <span className="text-primary">focus.</span>
-              </h2>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8">
-                The intelligent loadboard connecting shippers and carriers with live tracking, unparalleled cargo security, and a network of verified professionals.
-              </p>
+              <AnimatedText 
+                el="h2"
+                text={[
+                  { text: 'Where' },
+                  { text: 'freight' },
+                  { text: 'meets' },
+                  { text: 'focus.', className: 'text-primary' },
+                ]}
+                className="text-5xl md:text-7xl font-bold font-headline text-foreground mb-4"
+                stagger={0.1}
+              />
+              <AnimatedText 
+                el="p"
+                text="The intelligent loadboard connecting shippers and carriers with live tracking, unparalleled cargo security, and a network of verified professionals."
+                className="text-lg md:text-xl text-muted-foreground mb-8"
+                delay={0.5}
+              />
               <div className="flex flex-col sm:flex-row items-start justify-start gap-4">
                 <SignUpModal>
                   <Button size="lg" className="w-full sm:w-auto">
