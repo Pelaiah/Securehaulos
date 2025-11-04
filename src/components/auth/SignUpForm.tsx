@@ -18,10 +18,12 @@ import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
-import { Loader2, User, Building, Truck } from 'lucide-react';
+import { Loader2, User, Building, Truck, CheckCircle } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Card } from '../ui/card';
+import { cn } from '@/lib/utils';
 
 const shipperSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -52,7 +54,7 @@ export function SignUpForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'role' | 'form'>('role');
-  const [userType, setUserType] = useState<'Shipper' | 'Carrier' | null>(null);
+  const [userType, setUserType] = useState<'Shipper' | 'Carrier'>('Carrier');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,10 +64,20 @@ export function SignUpForm() {
       email: '',
       password: '',
       phone: '',
+      userType: 'Carrier',
       // Carrier fields
-      fleetSize: 0,
+      fleetSize: 1,
     },
   });
+  
+  const handleRoleSelect = (role: 'Shipper' | 'Carrier') => {
+    setUserType(role);
+  };
+
+  const handleRoleSubmit = () => {
+    form.setValue('userType', userType);
+    setStep('form');
+  }
 
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -163,27 +175,52 @@ export function SignUpForm() {
       setIsLoading(false);
     }
   }
-  
-  const handleRoleSelect = (role: 'Shipper' | 'Carrier') => {
-    setUserType(role);
-    form.setValue('userType', role);
-    setStep('form');
-  };
 
   if (step === 'role') {
     return (
       <div className="space-y-4 pt-4">
         <h3 className="text-center font-medium">Select your role to get started</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => handleRoleSelect('Shipper')}>
-            <Building className="w-8 h-8" />
-            <span>Company (Shipper)</span>
-          </Button>
-          <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => handleRoleSelect('Carrier')}>
-            <Truck className="w-8 h-8" />
-            <span>Carrier (Driver)</span>
-          </Button>
+        <Card
+          onClick={() => handleRoleSelect('Carrier')}
+          className={cn(
+            'p-4 cursor-pointer border-2 transition-all relative',
+            userType === 'Carrier' ? 'border-primary' : 'border-border'
+          )}
+        >
+          {userType === 'Carrier' && <CheckCircle className="w-5 h-5 text-primary absolute top-2 right-2" />}
+          <div className="flex items-center gap-4">
+            <Truck className="w-10 h-10 text-primary" />
+            <div>
+              <h4 className="font-semibold">Carrier / Owner-Operator</h4>
+              <p className="text-sm text-muted-foreground">Find loads, manage your trucks, and grow your business.</p>
+            </div>
+          </div>
+        </Card>
+        
+        <div className="flex items-center gap-4">
+          <div className="flex-grow border-t border-border"></div>
+          <span className="text-xs text-muted-foreground">OR</span>
+          <div className="flex-grow border-t border-border"></div>
         </div>
+
+        <Card
+          onClick={() => handleRoleSelect('Shipper')}
+          className={cn(
+            'p-3 cursor-pointer border-2 transition-all relative',
+            userType === 'Shipper' ? 'border-primary' : 'border-border'
+          )}
+        >
+           {userType === 'Shipper' && <CheckCircle className="w-4 h-4 text-primary absolute top-2 right-2" />}
+          <div className="flex items-center gap-3">
+            <Building className="w-6 h-6 text-primary" />
+            <div>
+              <h4 className="font-semibold text-sm">Shipper</h4>
+              <p className="text-xs text-muted-foreground">Post and manage your loads.</p>
+            </div>
+          </div>
+        </Card>
+
+        <Button onClick={handleRoleSubmit} className="w-full mt-4">Continue</Button>
       </div>
     );
   }
