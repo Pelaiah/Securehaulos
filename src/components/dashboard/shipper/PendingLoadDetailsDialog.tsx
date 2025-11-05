@@ -59,12 +59,6 @@ const getDriverForTruck = (truckId?: string) => {
     return drivers.find(d => d.truck === truckId) || drivers[0];
 }
 
-const getTruckForLoad = (load: Load | null, allTrucks: Truck[]) => {
-    if (!load?.assignedTruckId) return undefined;
-    return allTrucks.find(t => t.id === load.assignedTruckId);
-}
-
-
 export function PendingLoadDetailsDialog({
   load,
   isOpen,
@@ -215,7 +209,7 @@ export function PendingLoadDetailsDialog({
                         <CardTitle className="flex items-center gap-2 font-headline"><TruckIcon /> Assigned Truck & Sensors</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {isLoadingTruck ? <p>Loading truck details...</p> : assignedTruck ? (
+                        {isLoadingTruck ? <div className="flex items-center justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div> : assignedTruck ? (
                             <>
                                 <div className='relative aspect-video'>
                                    <Image src={assignedTruck.imageUrl} alt={assignedTruck.name} fill className="object-contain" data-ai-hint="truck side view" />
@@ -223,29 +217,29 @@ export function PendingLoadDetailsDialog({
                                <p className="font-semibold text-center">{assignedTruck.name}</p>
                                <div className="grid grid-cols-3 gap-4 text-center text-xs">
                                    <div className="flex flex-col items-center gap-1">
-                                        {assignedTruck.sensors.door ? <ShieldCheck className="w-6 h-6 text-green-500" /> : <ShieldAlert className="w-6 h-6 text-yellow-500" />}
+                                        {assignedTruck?.sensors?.door ? <ShieldCheck className="w-6 h-6 text-green-500" /> : <ShieldAlert className="w-6 h-6 text-yellow-500" />}
                                         <p>Door Sensor</p>
-                                        <Badge variant={assignedTruck.sensors.door ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.door && 'border-green-500/50 text-green-500')}>
-                                          {assignedTruck.sensors.door ? 'Equipped' : 'Not Present'}
+                                        <Badge variant={assignedTruck?.sensors?.door ? 'outline' : 'secondary'} className={cn(assignedTruck?.sensors?.door && 'border-green-500/50 text-green-500')}>
+                                          {assignedTruck?.sensors?.door ? 'Equipped' : 'Not Present'}
                                         </Badge>
                                    </div>
                                     <div className="flex flex-col items-center gap-1">
-                                        {assignedTruck.sensors.temperature ? <Thermometer className="w-6 h-6 text-green-500" /> : <Thermometer className="w-6 h-6 text-muted-foreground" />}
+                                        {assignedTruck?.sensors?.temperature ? <Thermometer className="w-6 h-6 text-green-500" /> : <Thermometer className="w-6 h-6 text-muted-foreground" />}
                                         <p>Temp. Sensor</p>
-                                        <Badge variant={assignedTruck.sensors.temperature ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.temperature && 'border-green-500/50 text-green-500')}>
-                                          {assignedTruck.sensors.temperature ? 'Equipped' : 'Not Present'}
+                                        <Badge variant={assignedTruck?.sensors?.temperature ? 'outline' : 'secondary'} className={cn(assignedTruck?.sensors?.temperature && 'border-green-500/50 text-green-500')}>
+                                          {assignedTruck?.sensors?.temperature ? 'Equipped' : 'Not Present'}
                                         </Badge>
                                    </div>
                                     <div className="flex flex-col items-center gap-1">
-                                        {assignedTruck.sensors.gps ? <GpsIcon className="w-6 h-6 text-green-500" /> : <GpsIcon className="w-6 h-6 text-muted-foreground" />}
+                                        {assignedTruck?.sensors?.gps ? <GpsIcon className="w-6 h-6 text-green-500" /> : <GpsIcon className="w-6 h-6 text-muted-foreground" />}
                                         <p>GPS Tracking</p>
-                                        <Badge variant={assignedTruck.sensors.gps ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.gps && 'border-green-500/50 text-green-500')}>
-                                          {assignedTruck.sensors.gps ? 'Active' : 'Inactive'}
+                                        <Badge variant={assignedTruck?.sensors?.gps ? 'outline' : 'secondary'} className={cn(assignedTruck?.sensors?.gps && 'border-green-500/50 text-green-500')}>
+                                          {assignedTruck?.sensors?.gps ? 'Active' : 'Inactive'}
                                         </Badge>
                                    </div>
                                </div>
                             </>
-                        ) : <p className='text-muted-foreground text-center'>No truck assigned.</p>}
+                        ) : <p className='text-muted-foreground text-center py-8'>No truck assigned.</p>}
                     </CardContent>
                 </Card>
             </div>
@@ -310,7 +304,7 @@ export function PendingLoadDetailsDialog({
                                             <TableRow key={doc.id}>
                                                 <TableCell>
                                                     <p className='font-medium'>{doc.name}</p>
-                                                    <p className='text-xs text-muted-foreground'>Expires: {doc.expiryDate}</p>
+                                                    <p className='text-xs text-muted-foreground'>Expires: {doc.expiryDate || 'N/A'}</p>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant="outline" className={cn('border-0', doc.status === 'Approved' ? 'text-green-400 bg-green-500/10' : 'text-yellow-400 bg-yellow-500/10')}>
