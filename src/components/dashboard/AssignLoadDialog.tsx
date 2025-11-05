@@ -51,45 +51,43 @@ export function AssignLoadDialog({
 
     setIsSubmitting(true);
     
-    try {
-        const batch = writeBatch(firestore);
-        
-        const loadRef = doc(firestore, 'loads', load.id);
-        const truckRef = doc(firestore, 'trucks', selectedTruckId);
+    const batch = writeBatch(firestore);
+    
+    const loadRef = doc(firestore, 'loads', load.id);
+    const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-        // Update load to 'Pending' and assign carrier & truck
-        batch.update(loadRef, { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId });
+    // Update load to 'Pending' and assign carrier & truck
+    batch.update(loadRef, { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId });
 
-        // Update truck status to 'Pending'
-        batch.update(truckRef, { status: 'Pending' });
-        
-        await batch.commit();
-
-        toast({
-            title: 'Load Assigned for Review',
-            description: `The shipper will now review your application for load #${load.id}.`,
-        });
-        onOpenChange(false);
-        router.push('/dashboard/my-trucks');
-
-    } catch (error: any) {
-        toast({
-            title: 'Assignment Failed',
-            description: error.message || 'An unexpected error occurred. Please check security rules.',
-            variant: 'destructive',
-        });
-        const permissionError = new FirestorePermissionError({
-            path: `batch write for load ${load.id} and truck ${selectedTruckId}`,
-            operation: 'write',
-            requestResourceData: { 
-                loadUpdate: { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId },
-                truckUpdate: { status: 'Pending' }
-            },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
-        setIsSubmitting(false);
+    // Use set with merge to create the truck doc if it doesn't exist, or update it if it does.
+    const selectedTruck = availableTrucks.find(t => t.id === selectedTruckId);
+    if (selectedTruck) {
+        const truckData = {
+            id: selectedTruck.id,
+            name: selectedTruck.name,
+            equipmentType: selectedTruck.equipmentType,
+            location: selectedTruck.location,
+            status: 'Pending',
+            fuelLevel: selectedTruck.fuelLevel,
+            idleTime: selectedTruck.idleTime,
+            loadWeight: selectedTruck.loadWeight,
+            cargoIntegrity: selectedTruck.cargoIntegrity,
+            unauthorizedDoorOpening: selectedTruck.unauthorizedDoorOpening,
+            driverId: user.uid,
+        };
+        batch.set(truckRef, truckData, { merge: true });
     }
+    
+    await batch.commit();
+
+    toast({
+        title: 'Load Assigned for Review',
+        description: `The shipper will now review your application for load #${load.id}.`,
+    });
+    onOpenChange(false);
+    router.push('/dashboard/my-trucks');
+
+    setIsSubmitting(false);
   };
 
   if (!load) return null;
