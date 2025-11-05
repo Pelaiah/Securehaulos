@@ -74,22 +74,38 @@ export function AssignLoadDialog({
             cargoIntegrity: selectedTruck.cargoIntegrity,
             unauthorizedDoorOpening: selectedTruck.unauthorizedDoorOpening,
             driverId: user.uid,
-            imageUrl: selectedTruck.imageUrl,
+            imageUrl: selectedTruck.imageUrl || "https://i.imgur.com/gJt3wGk.png",
             sensors: selectedTruck.sensors || { door: true, temperature: true, gps: true } // Ensure sensors object exists
         };
         batch.set(truckRef, truckData, { merge: true });
     }
     
-    await batch.commit();
-
-    toast({
-        title: 'Load Assigned for Review',
-        description: `The shipper will now review your application for load #${load.id}.`,
+    batch.commit().catch((error) => {
+        setIsSubmitting(false);
+        toast({
+            title: 'Assignment Failed',
+            description: 'Could not assign the load. Please check permissions and try again.',
+            variant: 'destructive',
+        });
+        const permissionError = new FirestorePermissionError({
+            path: `Batch write failed. Load: ${load.id}, Truck: ${selectedTruckId}`,
+            operation: 'write',
+            requestResourceData: { 
+                loadUpdate: { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId },
+                truckUpdate: { status: 'Pending' }
+            },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    }).then(() => {
+        if (!isSubmitting) return; // In case of error, don't proceed
+        toast({
+            title: 'Load Assigned for Review',
+            description: `The shipper will now review your application for load #${load.id}.`,
+        });
+        onOpenChange(false);
+        router.push('/dashboard/my-trucks');
+        setIsSubmitting(false);
     });
-    onOpenChange(false);
-    router.push('/dashboard/my-trucks');
-
-    setIsSubmitting(false);
   };
 
   if (!load) return null;

@@ -212,7 +212,7 @@ export function PendingLoadDetailsDialog({
                         {isLoadingTruck ? <div className="flex items-center justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div> : assignedTruck ? (
                             <>
                                 <div className='relative aspect-video'>
-                                   <Image src={assignedTruck.imageUrl} alt={assignedTruck.name} fill className="object-contain" data-ai-hint="truck side view" />
+                                   {assignedTruck.imageUrl && <Image src={assignedTruck.imageUrl} alt={assignedTruck.name} fill className="object-contain" data-ai-hint="truck side view" />}
                                </div>
                                <p className="font-semibold text-center">{assignedTruck.name}</p>
                                <div className="grid grid-cols-3 gap-4 text-center text-xs">
