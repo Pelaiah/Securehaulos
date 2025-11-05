@@ -8,13 +8,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { LoginForm } from '@/components/auth/LoginForm';
-import { ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-background p-4">
       <div className="flex items-center gap-2 mb-6">
-        <ShieldCheck className="w-8 h-8 text-primary" />
+        <Image src="https://i.imgur.com/97msenJ.png" alt="Suboor Loads Logo" width={40} height={40} data-ai-hint="logo" />
         <h1 className="text-2xl font-bold font-headline text-foreground">
           Suboor Loads
         </h1>

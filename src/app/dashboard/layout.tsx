@@ -64,6 +64,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Image from 'next/image';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -186,7 +187,7 @@ const secondaryNavItems = [
           setShowVerificationPrompt(true);
         }
       } else if (userType === 'Carrier') {
-        const hasPendingDocuments = carrierDocs?.some(doc => doc.status === 'Pending');
+        const hasPendingDocuments = carrierDocs?.some(doc => doc.status === 'Uploaded');
         const hasNoDocuments = !carrierDocs || carrierDocs.length === 0;
         if (hasPendingDocuments || hasNoDocuments) {
             setShowVerificationPrompt(true);
@@ -266,7 +267,7 @@ const secondaryNavItems = [
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="shrink-0" asChild>
                     <Link href="/">
-                        <ShieldCheck className="w-6 h-6 text-primary" />
+                        <Image src="https://i.imgur.com/97msenJ.png" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
                     </Link>
                 </Button>
                 <div className='group-data-[collapsible=icon]:hidden'>
@@ -382,5 +383,3 @@ const secondaryNavItems = [
     </SidebarProvider>
   );
 }
-
-    
