@@ -59,6 +59,8 @@ export function LoadDetailsDialog({
   };
 
   if (!load) return null;
+  
+  const isLoadAvailable = load.status === 'Posted';
 
   return (
     <>
@@ -165,7 +167,9 @@ export function LoadDetailsDialog({
         </div>
         <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-            <Button className="w-full" onClick={handleAcceptLoad}>Accept Load</Button>
+            <Button className="w-full" onClick={handleAcceptLoad} disabled={!isLoadAvailable}>
+              {isLoadAvailable ? 'Accept Load' : `Already ${load.status}`}
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
