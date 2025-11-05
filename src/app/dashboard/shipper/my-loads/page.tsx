@@ -41,9 +41,9 @@ export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPag
   const { user } = useUser();
 
   const loadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !user) return null;
     return collection(firestore, 'loads');
-  }, [firestore]);
+  }, [firestore, user]);
 
   const { data: loads } = useCollection<Load>(loadsCollectionRef);
 

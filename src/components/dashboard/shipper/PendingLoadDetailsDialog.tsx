@@ -74,7 +74,12 @@ export function PendingLoadDetailsDialog({
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const assignedTruck = getTruckForLoad(load, drivers.map(d => ({...d, ...d.truck && {truck: d.truck}} as any))); // This is messy, needs fixing
+  const assignedTruckRef = useMemoFirebase(() => {
+    if (!firestore || !load?.assignedTruckId) return null;
+    return doc(firestore, 'trucks', load.assignedTruckId);
+  }, [firestore, load]);
+
+  const { data: assignedTruck, isLoading: isLoadingTruck } = useDoc<Truck>(assignedTruckRef);
   const assignedDriver = getDriverForTruck(assignedTruck?.id);
   
   const documentsRef = useMemoFirebase(() => {
@@ -163,9 +168,10 @@ export function PendingLoadDetailsDialog({
     })
   }
 
-  if (!load || !assignedTruck || !assignedDriver) return null;
+  if (!load) return null;
 
   const isVerified = carrierData?.verified;
+  const isLoading = isLoadingTruck || areCarrierDocsLoading;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -174,9 +180,9 @@ export function PendingLoadDetailsDialog({
           <DialogTitle className="font-headline text-2xl">
             Review Application for Load #{load.id}
           </DialogTitle>
-          <DialogDescription>
-            Carrier <span className="font-semibold">{assignedTruck.name}</span> has applied for this load. Review their details and documents below.
-          </DialogDescription>
+           {carrierData && <DialogDescription>
+            Carrier <span className="font-semibold">{carrierData.companyName}</span> has applied for this load. Review their details and documents below.
+          </DialogDescription>}
         </DialogHeader>
 
         <div className="grid md:grid-cols-2 gap-6 flex-grow overflow-y-auto pr-2 -mx-6 px-6">
@@ -189,7 +195,7 @@ export function PendingLoadDetailsDialog({
                     <CardContent className="space-y-4">
                          <div>
                             <p className="text-sm text-muted-foreground">Carrier Company</p>
-                            <p className="font-semibold">{assignedTruck.name}</p>
+                            <p className="font-semibold">{carrierData?.companyName || 'Loading...'}</p>
                         </div>
                         <Separator />
                         <div className="flex items-center gap-4">
@@ -209,33 +215,37 @@ export function PendingLoadDetailsDialog({
                         <CardTitle className="flex items-center gap-2 font-headline"><TruckIcon /> Assigned Truck & Sensors</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                       <div className='relative aspect-video'>
-                           <Image src={assignedTruck.imageUrl} alt={assignedTruck.name} fill className="object-contain" data-ai-hint="truck side view" />
-                       </div>
-                       <p className="font-semibold text-center">{assignedTruck.name}</p>
-                       <div className="grid grid-cols-3 gap-4 text-center text-xs">
-                           <div className="flex flex-col items-center gap-1">
-                                {assignedTruck.sensors.door ? <ShieldCheck className="w-6 h-6 text-green-500" /> : <ShieldAlert className="w-6 h-6 text-yellow-500" />}
-                                <p>Door Sensor</p>
-                                <Badge variant={assignedTruck.sensors.door ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.door && 'border-green-500/50 text-green-500')}>
-                                  {assignedTruck.sensors.door ? 'Equipped' : 'Not Present'}
-                                </Badge>
-                           </div>
-                            <div className="flex flex-col items-center gap-1">
-                                {assignedTruck.sensors.temperature ? <Thermometer className="w-6 h-6 text-green-500" /> : <Thermometer className="w-6 h-6 text-muted-foreground" />}
-                                <p>Temp. Sensor</p>
-                                <Badge variant={assignedTruck.sensors.temperature ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.temperature && 'border-green-500/50 text-green-500')}>
-                                  {assignedTruck.sensors.temperature ? 'Equipped' : 'Not Present'}
-                                </Badge>
-                           </div>
-                            <div className="flex flex-col items-center gap-1">
-                                {assignedTruck.sensors.gps ? <GpsIcon className="w-6 h-6 text-green-500" /> : <GpsIcon className="w-6 h-6 text-muted-foreground" />}
-                                <p>GPS Tracking</p>
-                                <Badge variant={assignedTruck.sensors.gps ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.gps && 'border-green-500/50 text-green-500')}>
-                                  {assignedTruck.sensors.gps ? 'Active' : 'Inactive'}
-                                </Badge>
-                           </div>
-                       </div>
+                        {isLoadingTruck ? <p>Loading truck details...</p> : assignedTruck ? (
+                            <>
+                                <div className='relative aspect-video'>
+                                   <Image src={assignedTruck.imageUrl} alt={assignedTruck.name} fill className="object-contain" data-ai-hint="truck side view" />
+                               </div>
+                               <p className="font-semibold text-center">{assignedTruck.name}</p>
+                               <div className="grid grid-cols-3 gap-4 text-center text-xs">
+                                   <div className="flex flex-col items-center gap-1">
+                                        {assignedTruck.sensors.door ? <ShieldCheck className="w-6 h-6 text-green-500" /> : <ShieldAlert className="w-6 h-6 text-yellow-500" />}
+                                        <p>Door Sensor</p>
+                                        <Badge variant={assignedTruck.sensors.door ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.door && 'border-green-500/50 text-green-500')}>
+                                          {assignedTruck.sensors.door ? 'Equipped' : 'Not Present'}
+                                        </Badge>
+                                   </div>
+                                    <div className="flex flex-col items-center gap-1">
+                                        {assignedTruck.sensors.temperature ? <Thermometer className="w-6 h-6 text-green-500" /> : <Thermometer className="w-6 h-6 text-muted-foreground" />}
+                                        <p>Temp. Sensor</p>
+                                        <Badge variant={assignedTruck.sensors.temperature ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.temperature && 'border-green-500/50 text-green-500')}>
+                                          {assignedTruck.sensors.temperature ? 'Equipped' : 'Not Present'}
+                                        </Badge>
+                                   </div>
+                                    <div className="flex flex-col items-center gap-1">
+                                        {assignedTruck.sensors.gps ? <GpsIcon className="w-6 h-6 text-green-500" /> : <GpsIcon className="w-6 h-6 text-muted-foreground" />}
+                                        <p>GPS Tracking</p>
+                                        <Badge variant={assignedTruck.sensors.gps ? 'outline' : 'secondary'} className={cn(assignedTruck.sensors.gps && 'border-green-500/50 text-green-500')}>
+                                          {assignedTruck.sensors.gps ? 'Active' : 'Inactive'}
+                                        </Badge>
+                                   </div>
+                               </div>
+                            </>
+                        ) : <p className='text-muted-foreground text-center'>No truck assigned.</p>}
                     </CardContent>
                 </Card>
             </div>
@@ -341,7 +351,7 @@ export function PendingLoadDetailsDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Close
           </Button>
-           <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting || isLoadingDocs}>
+           <Button onClick={() => handleDecision('Approved')} disabled={isSubmitting || isLoading}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Approve and Assign Load
           </Button>
