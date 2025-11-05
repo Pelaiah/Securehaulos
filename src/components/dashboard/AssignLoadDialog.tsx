@@ -74,6 +74,8 @@ export function AssignLoadDialog({
             cargoIntegrity: selectedTruck.cargoIntegrity,
             unauthorizedDoorOpening: selectedTruck.unauthorizedDoorOpening,
             driverId: user.uid,
+            imageUrl: selectedTruck.imageUrl,
+            sensors: selectedTruck.sensors || { door: true, temperature: true, gps: true } // Ensure sensors object exists
         };
         batch.set(truckRef, truckData, { merge: true });
     }
