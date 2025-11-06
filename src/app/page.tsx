@@ -17,6 +17,7 @@ import {
 import { AnimatedText } from '@/components/AnimatedText';
 import { useLayoutEffect, useRef } from 'react';
 import { gsap, CustomEase, CustomWiggle, ScrollTrigger } from '@/lib/gsap';
+import ParallaxWrapper from '@/components/ParallaxWrapper';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
@@ -106,6 +107,7 @@ export default function Home() {
     <div className="relative text-foreground">
        {heroImage && (
         <div className="fixed h-screen w-screen top-0 left-0 z-0">
+          <ParallaxWrapper>
             <Image
             src={heroImage.imageUrl}
             alt={heroImage.description}
@@ -115,6 +117,7 @@ export default function Home() {
             data-ai-hint={heroImage.imageHint}
             priority
             />
+          </ParallaxWrapper>
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
         </div>
       )}
