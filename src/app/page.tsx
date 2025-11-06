@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card';
 import { AnimatedText } from '@/components/AnimatedText';
 import { useLayoutEffect, useRef } from 'react';
-import { gsap, CustomEase, CustomWiggle } from '@/lib/gsap';
+import { gsap, CustomEase, CustomWiggle, ScrollTrigger } from '@/lib/gsap';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
@@ -52,7 +52,6 @@ export default function Home() {
     if (!getStartedRef.current) return;
 
     const ctx = gsap.context(() => {
-      gsap.registerPlugin(CustomEase, CustomWiggle);
       const types = [
         { name: 'easeOut', duration: 1.5, property: 'y', value: 30 },
         { name: 'easeInOut', duration: 1.5, property: 'rotation', value: 30 },
