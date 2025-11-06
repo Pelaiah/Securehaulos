@@ -183,7 +183,7 @@ export default function DocumentsPage() {
                                     </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>View</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => window.open(doc.fileUrl, '_blank')}>View</DropdownMenuItem>
                                     <DropdownMenuItem>Replace</DropdownMenuItem>
                                     <DropdownMenuItem className="text-destructive">
                                         Delete

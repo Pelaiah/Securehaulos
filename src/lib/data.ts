@@ -113,6 +113,7 @@ export type Document = {
   status: 'Approved' | 'Pending' | 'Rejected' | 'Expired';
   expiryDate?: string;
   uploadDate?: string;
+  fileUrl: string;
 };
 
 export const documents: Document[] = [];
