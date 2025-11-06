@@ -16,11 +16,13 @@ import {
 } from '@/components/ui/card';
 import { AnimatedText } from '@/components/AnimatedText';
 import { useLayoutEffect, useRef } from 'react';
-import { gsap } from '@/lib/gsap';
+import { gsap, CustomEase, CustomWiggle } from '@/lib/gsap';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
   const featureCardsRef = useRef<HTMLDivElement>(null);
+  const getStartedRef = useRef<HTMLElement>(null);
+
 
   useLayoutEffect(() => {
     if (!featureCardsRef.current) return;
@@ -44,6 +46,61 @@ export default function Home() {
 
     return () => ctx.revert();
 
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!getStartedRef.current) return;
+
+    const ctx = gsap.context(() => {
+      gsap.registerPlugin(CustomEase, CustomWiggle);
+      const types = [
+        { name: 'easeOut', duration: 1.5, property: 'y', value: 30 },
+        { name: 'easeInOut', duration: 1.5, property: 'rotation', value: 30 },
+        { name: 'anticipate', duration: 3, property: 'y', value: -30 },
+      ];
+      const wiggles = 10;
+      const flairs = gsap.utils.toArray('.flair');
+      const tl = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 1 });
+
+      types.forEach((type) => {
+        CustomWiggle.create('Wiggle.' + type.name, {
+          wiggles: wiggles,
+          type: type.name,
+        });
+      });
+
+      flairs.forEach((flair, i) => {
+        const wiggle = types[i];
+        if (wiggle) {
+          tl.to(
+            flair,
+            {
+              [wiggle.property]: wiggle.value,
+              duration: wiggle.duration,
+              ease: 'Wiggle.' + wiggle.name,
+            },
+            0
+          ); // Start all animations at the same time
+        }
+      });
+
+      const st = ScrollTrigger.create({
+        trigger: getStartedRef.current,
+        start: 'top center',
+        end: 'bottom center',
+        onEnter: () => tl.restart(),
+        onLeave: () => tl.pause(),
+        onEnterBack: () => tl.restart(),
+        onLeaveBack: () => tl.pause(),
+      });
+
+      return () => {
+        st.kill();
+        tl.kill();
+      };
+    }, getStartedRef);
+
+    return () => ctx.revert();
   }, []);
   
   return (
@@ -156,7 +213,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="get-started" className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
+      <section id="get-started" ref={getStartedRef} className="min-h-screen flex flex-col items-center justify-center relative z-10 bg-background py-20 px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold font-headline">Simple Steps to Get Started</h2>
           <p className="text-muted-foreground text-lg mt-2 max-w-2xl mx-auto">
@@ -165,21 +222,21 @@ export default function Home() {
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl w-full">
           <div className="flex flex-col items-center text-center gap-4">
-            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20">
+            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20 flair">
               <UserPlus className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-xl font-semibold">1. Create Account</h3>
             <p className="text-muted-foreground">Sign up as a shipper or carrier and complete your profile verification in minutes.</p>
           </div>
           <div className="flex flex-col items-center text-center gap-4">
-            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20">
+            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20 flair">
               <Search className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-xl font-semibold">2. Find or Post Loads</h3>
             <p className="text-muted-foreground">Carriers can browse our exclusive load board, while shippers can post their freight for our verified network.</p>
           </div>
           <div className="flex flex-col items-center text-center gap-4">
-            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20">
+            <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20 flair">
               <ThumbsUp className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-xl font-semibold">3. Haul Securely</h3>

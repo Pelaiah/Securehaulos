@@ -1,11 +1,14 @@
+
 // Import the core GSAP library
 import { gsap } from "gsap";
 
-// Import the plugins you need (e.g., ScrollTrigger for your portfolio's ParallaxWrapper)
+// Import the plugins you need
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { CustomEase } from "gsap/CustomEase";
+import { CustomWiggle } from "gsap/CustomWiggle";
 
 // Register the plugins with GSAP
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, CustomEase, CustomWiggle);
 
-// Optional: You can export the GSAP instance for use in other files
-export { gsap, ScrollTrigger };
+// Optional: You can export the GSAP instance and plugins for use in other files
+export { gsap, ScrollTrigger, CustomEase, CustomWiggle };
