@@ -153,13 +153,30 @@ export function PendingLoadDetailsDialog({
     }
   }
 
-  const handleDocumentVerification = (docId: string, status: 'Approved' | 'Rejected') => {
-    // In a real app, you'd update the document status in Firestore
-    console.log(`Document ${docId} ${status}`);
-    toast({
-      title: `Document ${status}`,
-      description: `The document has been marked as ${status.toLowerCase()}.`
-    })
+  const handleDocumentVerification = async (docId: string, status: 'Approved' | 'Rejected') => {
+    if (!load?.carrierId || !firestore) return;
+
+    try {
+        const docRef = doc(firestore, 'users', load.carrierId, 'verification_documents', docId);
+        await updateDoc(docRef, { status: status });
+
+        toast({
+            title: `Document ${status}`,
+            description: `The document has been marked as ${status.toLowerCase()}.`
+        });
+    } catch (error: any) {
+        toast({
+            title: 'Verification Failed',
+            description: 'Could not update the document status. Please check permissions.',
+            variant: 'destructive'
+        });
+        const permissionError = new FirestorePermissionError({
+            path: `users/${load.carrierId}/verification_documents/${docId}`,
+            operation: 'update',
+            requestResourceData: { status },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    }
   }
 
   if (!load) return null;
@@ -270,8 +287,10 @@ export function PendingLoadDetailsDialog({
                                         <TableRow key={doc.id}>
                                             <TableCell className="font-medium">{doc.fileName}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="icon">
-                                                    <Download className="w-4 h-4" />
+                                                <Button variant="ghost" size="icon" asChild>
+                                                   <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                                                        <Download className="w-4 h-4" />
+                                                    </a>
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -303,7 +322,10 @@ export function PendingLoadDetailsDialog({
                                         {carrierDocs?.map((doc) => (
                                             <TableRow key={doc.id}>
                                                 <TableCell>
-                                                    <p className='font-medium'>{doc.name}</p>
+                                                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline flex items-center gap-2">
+                                                        <Download className="w-3 h-3 text-muted-foreground"/>
+                                                        <span>{doc.name}</span>
+                                                    </a>
                                                     <p className='text-xs text-muted-foreground'>Expires: {doc.expiryDate || 'N/A'}</p>
                                                 </TableCell>
                                                 <TableCell>
@@ -313,10 +335,10 @@ export function PendingLoadDetailsDialog({
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                    <div className='flex gap-2 justify-end'>
-                                                        <Button variant="outline" size="icon" className='h-8 w-8' onClick={() => handleDocumentVerification(doc.id, 'Approved')}>
+                                                        <Button variant="outline" size="icon" className='h-8 w-8' onClick={() => handleDocumentVerification(doc.id, 'Approved')} disabled={doc.status === 'Approved'}>
                                                             <Check className="w-4 h-4" />
                                                         </Button>
-                                                         <Button variant="outline" size="icon" className='h-8 w-8' onClick={() => handleDocumentVerification(doc.id, 'Rejected')}>
+                                                         <Button variant="outline" size="icon" className='h-8 w-8' onClick={() => handleDocumentVerification(doc.id, 'Rejected')} disabled={doc.status === 'Rejected'}>
                                                             <X className="w-4 h-4" />
                                                         </Button>
                                                    </div>
