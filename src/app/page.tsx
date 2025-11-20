@@ -185,15 +185,6 @@ export default function Home() {
           />
         </div>
         <div ref={featureCardsRef} className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
-          <Card className="bg-card/50 backdrop-blur-sm">
-            <CardHeader className="items-center text-center">
-              <div className="p-3 rounded-full bg-primary/10 border border-primary/20 mb-2">
-                <Ship className="w-8 h-8 text-primary" />
-              </div>
-              <CardTitle className="font-headline text-2xl">For Shippers</CardTitle>
-              <CardDescription>Post loads, find verified carriers, and track your cargo in real-time with unparalleled visibility.</CardDescription>
-            </CardHeader>
-          </Card>
           <Card className="bg-card/50 backdrop-blur-sm border-primary/50 border-2">
             <CardHeader className="items-center text-center">
               <div className="p-3 rounded-full bg-primary/10 border border-primary/20 mb-2">
@@ -201,6 +192,15 @@ export default function Home() {
               </div>
               <CardTitle className="font-headline text-2xl">For Carriers</CardTitle>
               <CardDescription>Access a board of quality loads, get paid faster, and benefit from instant booking and streamlined communication.</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="bg-card/50 backdrop-blur-sm">
+            <CardHeader className="items-center text-center">
+              <div className="p-3 rounded-full bg-primary/10 border border-primary/20 mb-2">
+                <Ship className="w-8 h-8 text-primary" />
+              </div>
+              <CardTitle className="font-headline text-2xl">For Shippers</CardTitle>
+              <CardDescription>Post loads, find verified carriers, and track your cargo in real-time with unparalleled visibility.</CardDescription>
             </CardHeader>
           </Card>
           <Card className="bg-card/50 backdrop-blur-sm">
