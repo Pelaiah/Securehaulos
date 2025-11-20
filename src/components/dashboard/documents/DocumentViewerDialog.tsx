@@ -42,16 +42,18 @@ export function DocumentViewerDialog({
           <DialogTitle className="font-headline text-xl">
             {document.name}
           </DialogTitle>
-          <DialogDescription className="flex items-center gap-4">
-            <span>Type: {document.type}</span>
-            <span>|</span>
-            <span>Expires: {document.expiryDate || 'N/A'}</span>
-            <Badge
-              variant="outline"
-              className={cn('border-0 ml-auto', statusColors[document.status])}
-            >
-              {document.status}
-            </Badge>
+          <DialogDescription asChild>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>Type: {document.type}</span>
+                <span>|</span>
+                <span>Expires: {document.expiryDate || 'N/A'}</span>
+                <Badge
+                    variant="outline"
+                    className={cn('border-0 ml-auto', statusColors[document.status])}
+                >
+                    {document.status}
+                </Badge>
+            </div>
           </DialogDescription>
         </DialogHeader>
 
