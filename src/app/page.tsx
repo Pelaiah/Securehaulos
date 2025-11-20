@@ -161,13 +161,13 @@ export default function Home() {
               />
               <div className="flex flex-col sm:flex-row items-start justify-start gap-4">
                 <Button size="lg" className="w-full sm:w-auto" asChild>
-                  <Link href="/signup-shipper">
-                    Create Shipper Account <ArrowRight className="ml-2 h-5 w-5" />
+                  <Link href="/signup">
+                    Create a Carrier Account <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                  <Link href="/signup">
-                    Sign Up as a Carrier
+                  <Link href="/signup-shipper">
+                    Sign Up as a Shipper
                   </Link>
                 </Button>
               </div>
