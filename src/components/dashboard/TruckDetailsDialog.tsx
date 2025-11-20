@@ -61,7 +61,7 @@ export function TruckDetailsDialog({
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            ID: {truck.id}
+            ID: {truck.id} &bull; License Plate: {truck.licensePlate}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-4">
