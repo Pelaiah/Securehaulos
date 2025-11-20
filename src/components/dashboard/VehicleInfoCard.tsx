@@ -1,59 +1,62 @@
 'use client';
 
 import Image from 'next/image';
-import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Truck } from '@/lib/data';
 
 interface VehicleInfoCardProps {
-    truck?: Truck | null;
+  truck?: Truck | null;
 }
 
 export function VehicleInfoCard({ truck }: VehicleInfoCardProps) {
-    
-    if (!truck) {
-        return (
-            <Card className="bg-primary/90 text-primary-foreground overflow-hidden flex items-center justify-center">
-                <CardContent className="p-6 text-center">
-                    <p>Select a trip to view vehicle details.</p>
-                </CardContent>
-            </Card>
-        )
-    }
-
+  if (!truck) {
     return (
-        <Card className="bg-primary/90 text-primary-foreground overflow-hidden">
-            <CardContent className="p-6">
-                <div className="relative aspect-video mb-4">
-                    <Image
-                        src={truck.imageUrl}
-                        alt={truck.name}
-                        fill
-                        className="object-contain"
-                        data-ai-hint="truck side view"
-                    />
-                </div>
-                <h3 className="text-xl font-bold font-headline">{truck.name}</h3>
-                <div className="flex items-center gap-1 text-yellow-300">
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4 fill-current" />
-                    <Star className="w-4 h-4" />
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p className="text-primary-foreground/70">Fuel Level</p>
-                        <p className="font-semibold">{truck.fuelLevel}%</p>
-                    </div>
-                     <div>
-                        <p className="text-primary-foreground/70">Load Weight</p>
-                        <p className="font-semibold">{truck.loadWeight.toLocaleString()} kg</p>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-medium">Wheeled Robot Trailer</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 text-center">
+          <p>Select a trip to view vehicle details.</p>
+        </CardContent>
+      </Card>
     );
-}
+  }
 
-    
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base font-medium">Wheeled Robot Trailer</CardTitle>
+        <p className="text-sm text-muted-foreground">{truck.id}</p>
+      </CardHeader>
+      <CardContent>
+        <div className="relative aspect-video mb-4">
+          <Image
+            src="https://i.imgur.com/uFLl3cT.png"
+            alt={truck.name}
+            fill
+            className="object-contain"
+            data-ai-hint="futuristic truck"
+          />
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground">Load Weight</p>
+            <p className="font-semibold">{truck.loadWeight.toLocaleString()} lbs</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Volume</p>
+            <p className="font-semibold">70,243 in³</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Cargo Area (L)</p>
+            <p className="font-semibold">24 in</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Cargo Area (W)</p>
+            <p className="font-semibold">12 in</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

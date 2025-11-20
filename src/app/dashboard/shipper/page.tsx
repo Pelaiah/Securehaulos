@@ -1,14 +1,27 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { Map } from '@/components/dashboard/Map';
 import { InformationCard } from '@/components/dashboard/InformationCard';
 import { ShipmentList } from '@/components/dashboard/ShipmentList';
 import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
-import { Card, CardContent } from '@/components/ui/card';
 import { tripData, trucks } from '@/lib/data';
 import { Header } from '@/components/dashboard/Header';
-import { Fuel, Timer, Weight } from 'lucide-react';
-import { TripInfoCard } from '@/components/dashboard/TripInfoCard';
+import {
+  BarChart,
+  DollarSign,
+  Map,
+  Package,
+  Ruler,
+  Users,
+  Weight,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { OrderInfoCard } from '@/components/dashboard/OrderInfoCard';
+import { Map as MapComponent } from '@/components/dashboard/Map';
 
 type Trip = (typeof tripData)[0];
 
@@ -17,7 +30,7 @@ export default function ShipperDashboardPage() {
 
   const selectedTruck = useMemo(() => {
     if (!selectedTrip) return null;
-    return trucks.find(truck => truck.id === selectedTrip.truckId) || null;
+    return trucks.find((truck) => truck.id === selectedTrip.truckId) || null;
   }, [selectedTrip]);
 
   const handleTripSelect = (trip: Trip) => {
@@ -25,60 +38,80 @@ export default function ShipperDashboardPage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <Header title={selectedTrip?.name || "Dashboard"} onLogout={() => {}} />
-      <div className="flex-grow grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
-        
-        <div className="xl:col-span-3 space-y-6">
-            {/* Top row with Vehicle and Driver Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <VehicleInfoCard truck={selectedTruck} />
-                <InformationCard driver={selectedTrip} />
-            </div>
+    <div className="flex flex-col h-full bg-muted/30">
+      <Header title="Dashboard" onLogout={() => {}} />
+      <div className="flex-grow grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6 p-6">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  This Month Order
+                </CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">132</div>
+                <p className="text-xs text-muted-foreground">
+                  +20% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Average Weight
+                </CardTitle>
+                <Weight className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">19,500 lbs</div>
+                <p className="text-xs text-muted-foreground">
+                  -2% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Average Distance
+                </CardTitle>
+                <Ruler className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">872 mi</div>
+                <p className="text-xs text-muted-foreground">
+                  +5% from last month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
-            {/* Bottom row with Map and Trip Info */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 h-[400px] flex flex-col gap-6">
-                    <Map trucks={trucks} selectedTruckId={selectedTruck?.id} />
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <Timer className="w-5 h-5 text-muted-foreground" />
-                                <div>
-                                    <p className='text-muted-foreground'>Trip Time</p>
-                                    <p className="font-semibold">1h 10m</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Fuel className="w-5 h-5 text-muted-foreground" />
-                                <div>
-                                    <p className='text-muted-foreground'>Fuel consumption</p>
-                                    <p className="font-semibold">12 liters</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Weight className="w-5 h-5 text-muted-foreground" />
-                                <div>
-                                    <p className='text-muted-foreground'>Load Weight</p>
-                                    <p className="font-semibold">15,500 kg</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-                 <div className="lg:col-span-1">
-                    <TripInfoCard />
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-6">
+              <InformationCard driver={selectedTrip} />
+              <VehicleInfoCard truck={selectedTruck} />
             </div>
+            <div className="lg:col-span-2 space-y-6">
+              <OrderInfoCard trip={selectedTrip} />
+              <Card className="h-[300px]">
+                <CardHeader>
+                  <CardTitle>Map Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MapComponent trucks={trucks} selectedTruckId={selectedTruck?.id} />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Right Column for Shipment List */}
         <div className="xl:col-span-1 flex flex-col">
-            <ShipmentList 
-              title="Trips"
-              onTripSelect={handleTripSelect}
-              selectedTripId={selectedTrip?.id}
-            />
+          <ShipmentList
+            title="Orders"
+            onTripSelect={handleTripSelect}
+            selectedTripId={selectedTrip?.id}
+          />
         </div>
       </div>
     </div>

@@ -19,6 +19,7 @@ import {
   FilePlus,
   Sun,
   Moon,
+  Map,
 } from 'lucide-react';
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
@@ -160,10 +161,11 @@ export default function DashboardLayout({
 
  const shipperNavItems = [
     { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/dashboard/shipper/my-loads', icon: Package, label: 'My Loads' },
-    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
-    { href: '/dashboard/chats', icon: MessageSquare, label: 'Chats' },
-    { href: '/dashboard/shipper/tracking', icon: Truck, label: 'Tracking' },
+    { href: '/dashboard/shipper/my-loads', icon: Package, label: 'Orders' },
+    { href: '/dashboard/shipper/tracking', icon: Truck, label: 'Shipments' },
+    { href: '/dashboard/documents', icon: Map, label: 'Map Overview' },
+    { href: '/dashboard/chats', icon: MessageSquare, label: 'Messages' },
+    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
 
 const secondaryNavItems = [
@@ -259,9 +261,9 @@ const secondaryNavItems = [
 
   return (
     <SidebarProvider
-        style={ isShipper ? { '--sidebar-width': '10.4rem' } as React.CSSProperties : undefined }
+        style={ isShipper ? { '--sidebar-width': '14rem' } as React.CSSProperties : undefined }
     >
-      <Sidebar variant={isShipper ? "sidebar" : "floating"} collapsible="icon" className="group/sidebar">
+      <Sidebar variant={isShipper ? "sidebar" : "floating"} collapsible="none" className="group/sidebar bg-card">
         <SidebarHeader className='p-4'>
            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -271,8 +273,7 @@ const secondaryNavItems = [
                     </Link>
                 </Button>
                 <div className='group-data-[collapsible=icon]:hidden'>
-                    <h2 className='font-bold text-lg font-headline'>{isShipper ? 'Saboor' : 'Right Direction'}</h2>
-                    <p className='text-xs text-muted-foreground'>{isShipper ? 'Shipper Portal' : 'Carrier Portal'}</p>
+                    <h2 className='font-bold text-lg font-headline'>{isShipper ? 'Dropify' : 'Right Direction'}</h2>
                 </div>
             </div>
             <SidebarToggleButton />
@@ -285,7 +286,7 @@ const secondaryNavItems = [
                 <SidebarMenuButton
                   asChild
                   isActive={pathname.startsWith(item.href)}
-                  className="justify-start"
+                  className={cn("justify-start", pathname.startsWith(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground")}
                   tooltip={item.label}
                 >
                   <Link href={item.href}>
@@ -329,10 +330,17 @@ const secondaryNavItems = [
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
-             <div className="flex items-center justify-center gap-2 p-2">
-                <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                  {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                </Button>
+             <div className={cn("flex items-center justify-center gap-2 p-2", isShipper && "flex-col")}>
+                <div className={cn("rounded-md p-1 flex items-center gap-1", isShipper && "bg-background")}>
+                  <Button variant={theme === 'light' ? 'secondary' : 'ghost'} size="sm" onClick={() => toggleTheme()} className={cn(theme === 'light' && 'text-foreground')}>
+                    <Sun className="w-4 h-4 mr-2" />
+                    Light
+                  </Button>
+                   <Button variant={theme === 'dark' ? 'secondary' : 'ghost'} size="sm" onClick={() => toggleTheme()} className={cn(theme === 'dark' && 'text-foreground')}>
+                    <Moon className="w-4 h-4 mr-2" />
+                    Dark
+                  </Button>
+                </div>
                 <div className='group-data-[collapsible=icon]:hidden flex-1 flex justify-end'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -345,7 +353,6 @@ const secondaryNavItems = [
                             <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
                             <p className="text-xs text-muted-foreground">{userType}</p>
                         </div>
-                        <ChevronDown className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className={isShipper ? "w-[var(--sidebar-width)]" : ""}>
@@ -358,7 +365,7 @@ const secondaryNavItems = [
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className={cn('overflow-y-auto', isShipper ? 'bg-card-alt' : 'bg-background p-6')}>
+      <SidebarInset className={cn('overflow-y-auto', isShipper ? '' : 'bg-background p-6')}>
         <main className="flex-1">{childrenWithProps}</main>
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent className="p-4">
