@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ArrowRight, Ship, Truck, ShieldCheck, UserPlus, Search, ThumbsUp } from 'lucide-react';
+import { ArrowRight, Ship, Truck, ShieldCheck, UserPlus, Search, ThumbsUp,Zap } from 'lucide-react';
 import { SignUpModal } from '@/components/auth/SignUpModal';
 import { cn } from '@/lib/utils';
 import {
@@ -124,7 +124,7 @@ export default function Home() {
       
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center fixed top-0 left-0 right-0 z-20 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="https://i.imgur.com/97msenJ.png" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
+          <Image src="https://imgur.com/97msenJ" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
           <h1 className="text-2xl font-bold font-headline">
             Suboor Loads
           </h1>
@@ -190,17 +190,17 @@ export default function Home() {
               <div className="p-3 rounded-full bg-primary/10 border border-primary/20 mb-2">
                 <Truck className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="font-headline text-2xl">For Carriers</CardTitle>
+              <CardTitle className="font-headline text-2xl">Quality Loads</CardTitle>
               <CardDescription>Access a board of quality loads, get paid faster, and benefit from instant booking and streamlined communication.</CardDescription>
             </CardHeader>
           </Card>
           <Card className="bg-card/50 backdrop-blur-sm">
             <CardHeader className="items-center text-center">
               <div className="p-3 rounded-full bg-primary/10 border border-primary/20 mb-2">
-                <Ship className="w-8 h-8 text-primary" />
+                <Zap className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="font-headline text-2xl">For Shippers</CardTitle>
-              <CardDescription>Post loads, find verified carriers, and track your cargo in real-time with unparalleled visibility.</CardDescription>
+              <CardTitle className="font-headline text-2xl">Instant Booking</CardTitle>
+              <CardDescription>Book loads instantly without lengthy negotiations. See a price you like? Secure it with a single click.</CardDescription>
             </CardHeader>
           </Card>
           <Card className="bg-card/50 backdrop-blur-sm">
