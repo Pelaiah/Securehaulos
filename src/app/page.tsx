@@ -165,11 +165,6 @@ export default function Home() {
                     Create a Carrier Account <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                  <Link href="/signup-shipper">
-                    Sign Up as a Shipper
-                  </Link>
-                </Button>
               </div>
             </div>
           </div>
