@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Map } from "@/components/dashboard/Map";
-import { Phone, MessageSquare, Cog, PlusCircle, MapPin, ArrowRight, Tags, Truck as TruckIcon } from "lucide-react";
+import { Phone, MessageSquare, Cog, PlusCircle, MapPin, ArrowRight, Tags, Truck as TruckIcon, FileText, Download, MoreHorizontal } from "lucide-react";
 import type { Truck } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Progress } from '../ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 
 interface TrackingDetailsProps {
     truck: Truck;
@@ -23,6 +25,14 @@ const statusColors = {
     Idle: 'text-gray-400 border-gray-400/50 bg-gray-500/10',
     Alert: 'text-red-400 border-red-400/50 bg-red-500/10',
 };
+
+const docStatusColors = {
+    Approved: 'text-green-400 bg-green-500/10',
+    Pending: 'text-yellow-400 bg-yellow-500/10',
+    Rejected: 'text-red-400 bg-red-500/10',
+    Expired: 'text-gray-400 bg-gray-500/10',
+};
+
 
 const getStatusForDisplay = (truck: Truck) => {
     if (truck.status === 'On-time') return 'On Route';
@@ -153,8 +163,63 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
                      </Card>
                 </TabsContent>
                  <TabsContent value="documents">
-                      {/* Content for Documents */}
-                     <div className="text-center py-8 text-muted-foreground">Documents will be shown here.</div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline">Truck Documents</CardTitle>
+                            <CardDescription>All legal and operational documents for this vehicle.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Document</TableHead>
+                                        <TableHead>Expires</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {truck.documents && truck.documents.length > 0 ? (
+                                        truck.documents.map((doc) => (
+                                            <TableRow key={doc.id}>
+                                                <TableCell className="font-medium flex items-center gap-2">
+                                                    <FileText className="w-4 h-4 text-muted-foreground" />
+                                                    {doc.name}
+                                                </TableCell>
+                                                <TableCell>{doc.expiryDate || 'N/A'}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className={cn('border-0', docStatusColors[doc.status])}>
+                                                        {doc.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <MoreHorizontal className="w-4 h-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => window.open(doc.fileUrl, '_blank')}>
+                                                                <Download className="mr-2 h-4 w-4" />
+                                                                View/Download
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center h-24">
+                                                No documents uploaded for this truck.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
                  <TabsContent value="company">
                       {/* Content for Company */}

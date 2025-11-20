@@ -18,7 +18,8 @@ export type Truck = {
     door: boolean;
     temperature: boolean;
     gps: boolean;
-  }
+  },
+  documents?: Document[];
 };
 
 export const trucks: Truck[] = [
@@ -26,7 +27,7 @@ export const trucks: Truck[] = [
     id: 'TR-001',
     name: 'Alpha Hauler',
     imageUrl: 'https://i.imgur.com/tVrGgid.png',
-    licensePlate: 'ABC 1234',
+    licensePlate: 'AFG 4321',
     location: { lat: 34.0522, lng: -118.2437 },
     status: 'Alert',
     fuelLevel: 45,
@@ -35,12 +36,16 @@ export const trucks: Truck[] = [
     cargoIntegrity: false,
     unauthorizedDoorOpening: true,
     sensors: { door: true, temperature: false, gps: true },
+    documents: [
+      { id: 'doc-trk-101', name: 'Goods In Transit Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-05-10', fileUrl: '#' },
+      { id: 'doc-trk-102', name: 'ZIMRA License', type: 'License', status: 'Approved', expiryDate: '2024-12-31', fileUrl: '#' },
+    ]
   },
   {
     id: 'TR-002',
     name: 'Beta Freight',
     imageUrl: 'https://i.imgur.com/FImHF98.png',
-    licensePlate: 'DEF 5678',
+    licensePlate: 'BHE 8765',
     location: { lat: 40.7128, lng: -74.006 },
     status: 'On-time',
     fuelLevel: 82,
@@ -49,12 +54,15 @@ export const trucks: Truck[] = [
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
     sensors: { door: true, temperature: true, gps: true },
+    documents: [
+        { id: 'doc-trk-201', name: 'Vehicle Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-02-20', fileUrl: '#' },
+    ]
   },
   {
     id: 'TR-003',
     name: 'Gamma Express',
     imageUrl: 'https://i.imgur.com/WSOJfxZ.png',
-    licensePlate: 'GHI 9012',
+    licensePlate: 'CJI 2109',
     location: { lat: 41.8781, lng: -87.6298 },
     status: 'Idle',
     fuelLevel: 60,
@@ -63,12 +71,13 @@ export const trucks: Truck[] = [
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
     sensors: { door: false, temperature: false, gps: true },
+    documents: []
   },
   {
     id: 'TR-004',
     name: 'Delta Cargo',
     imageUrl: 'https://imgur.com/eljOF7J.png',
-    licensePlate: 'JKL 3456',
+    licensePlate: 'DKL 6543',
     location: { lat: 29.7604, lng: -95.3698 },
     status: 'Pending',
     fuelLevel: 75,
@@ -77,12 +86,15 @@ export const trucks: Truck[] = [
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
     sensors: { door: true, temperature: true, gps: true },
+    documents: [
+      { id: 'doc-trk-401', name: 'Vehicle Registration', type: 'Registration', status: 'Pending', expiryDate: '2024-11-01', fileUrl: '#' },
+    ]
   },
    {
     id: 'SD-752069247',
     name: 'Echo Runner',
     imageUrl: 'https://i.imgur.com/uFLl3cT.png',
-    licensePlate: 'MNO 7890',
+    licensePlate: 'EMN 0987',
     location: { lat: 34.0522, lng: -118.2437 },
     status: 'On-time',
     fuelLevel: 90,
@@ -91,6 +103,11 @@ export const trucks: Truck[] = [
     cargoIntegrity: true,
     unauthorizedDoorOpening: false,
     sensors: { door: true, temperature: true, gps: true },
+    documents: [
+        { id: 'doc-trk-501', name: 'Goods In Transit Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-08-15', fileUrl: '#' },
+        { id: 'doc-trk-502', name: 'ZIMRA License', type: 'License', status: 'Approved', expiryDate: '2024-12-31', fileUrl: '#' },
+        { id: 'doc-trk-503', name: 'Vehicle Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-07-30', fileUrl: '#' },
+    ]
   },
 ];
 
@@ -115,7 +132,7 @@ export type Load = {
 export type Document = {
   id: string;
   name: string;
-  type: 'Tax' | 'Registration' | 'Insurance' | 'License' | 'Certification';
+  type: 'Tax' | 'Registration' | 'Insurance' | 'License' | 'Certification' | 'GIT';
   status: 'Approved' | 'Pending' | 'Rejected' | 'Expired';
   expiryDate?: string;
   uploadDate?: string;
