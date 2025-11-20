@@ -123,12 +123,12 @@ export default function Home() {
       )}
       
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center fixed top-0 left-0 right-0 z-20 bg-transparent">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Image src="https://i.imgur.com/97msenJ.png" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
           <h1 className="text-2xl font-bold font-headline">
             Suboor Loads
           </h1>
-        </div>
+        </Link>
         <div className="flex items-center gap-4">
           <Button variant="ghost" asChild>
             <Link href="#get-started">Learn How It Works</Link>
@@ -160,11 +160,16 @@ export default function Home() {
                 delay={0.5}
               />
               <div className="flex flex-col sm:flex-row items-start justify-start gap-4">
-                <SignUpModal>
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Create Account <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </SignUpModal>
+                <Button size="lg" className="w-full sm:w-auto" asChild>
+                  <Link href="/signup-shipper">
+                    Create Shipper Account <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+                  <Link href="/signup">
+                    Sign Up as a Carrier
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -253,11 +258,11 @@ export default function Home() {
           <p className="text-muted-foreground text-xl mb-8">
             Join Suboor Loads today and experience the future of logistics. Fast, secure, and reliable.
           </p>
-          <SignUpModal>
-            <Button size="lg" className="w-full sm:w-auto">
+          <Button size="lg" className="w-full sm:w-auto" asChild>
+            <Link href="/signup-shipper">
               Sign Up Now <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </SignUpModal>
+            </Link>
+          </Button>
         </div>
       </section>
 

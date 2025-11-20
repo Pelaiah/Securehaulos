@@ -7,10 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { SignUpForm } from '@/components/auth/SignUpForm';
+import { SignUpFormShipper } from '@/components/auth/SignUpFormShipper';
 import Image from 'next/image';
 
-export default function SignUpPage() {
+export default function SignUpShipperPage() {
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-background p-4">
        <div className="flex items-center gap-2 mb-6">
@@ -21,13 +21,13 @@ export default function SignUpPage() {
       </div>
       <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Create a Carrier Account</CardTitle>
+          <CardTitle className="text-2xl font-headline">Create a Shipper Account</CardTitle>
           <CardDescription>
-            Join the Suboor Loads network to find and haul loads securely.
+            Post loads and manage your shipments with our verified carrier network.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SignUpForm />
+          <SignUpFormShipper />
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link href="/login" className="underline">
