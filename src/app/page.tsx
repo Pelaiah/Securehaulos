@@ -124,7 +124,7 @@ export default function Home() {
       
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center fixed top-0 left-0 right-0 z-20 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="https://imgur.com/97msenJ" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
+          <Image src="https://i.imgur.com/97msenJ.png" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
           <h1 className="text-2xl font-bold font-headline">
             Suboor Loads
           </h1>
@@ -228,7 +228,7 @@ export default function Home() {
               <UserPlus className="w-10 h-10 text-primary" />
             </div>
             <h3 className="text-xl font-semibold">1. Create Account</h3>
-            <p className="text-muted-foreground">Sign up as a shipper or carrier and complete your profile verification in minutes.</p>
+            <p className="text-muted-foreground">Sign up as a carrier and complete your profile verification in minutes.</p>
           </div>
           <div className="flex flex-col items-center text-center gap-4">
             <div className="p-4 rounded-full bg-primary/10 border-4 border-primary/20 flair">
