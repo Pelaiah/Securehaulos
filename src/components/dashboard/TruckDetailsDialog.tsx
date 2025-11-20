@@ -24,6 +24,7 @@ import {
   ArrowRight,
   MapPin,
 } from 'lucide-react';
+import Link from 'next/link';
 
 type TruckDetailsDialogProps = {
   truck: Truck | null;
@@ -75,8 +76,10 @@ export function TruckDetailsDialog({
                     </div>
                     <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <div className="flex items-center gap-2 truncate">
-                        <MapPin className="h-4 w-4 text-red-500" />
+                      <Link href={`https://www.google.com/maps?q=${truck.location.lat},${truck.location.lng}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-red-500 hover:underline">
+                        <MapPin className="h-4 w-4" />
                         <span className="truncate">Phoenix, AZ</span>
+                      </Link>
                     </div>
                 </div>
                 <Progress value={65} className="h-2" />
