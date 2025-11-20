@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Map } from "@/components/dashboard/Map";
-import { Phone, MessageSquare, Cog, PlusCircle, MapPin, ArrowRight } from "lucide-react";
+import { Phone, MessageSquare, Cog, PlusCircle, MapPin, ArrowRight, Tags, Truck as TruckIcon } from "lucide-react";
 import type { Truck } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Progress } from '../ui/progress';
@@ -129,8 +129,28 @@ export function TrackingDetails({ truck }: TrackingDetailsProps) {
 
                 </TabsContent>
                  <TabsContent value="vehicle-info">
-                    {/* Content for Vehicle Info */}
-                     <div className="text-center py-8 text-muted-foreground">Vehicle Information will be shown here.</div>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline">Vehicle Information</CardTitle>
+                            <CardDescription>Details about the assigned truck.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid md:grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-3 p-3 bg-muted rounded-md">
+                                <TruckIcon className="w-5 h-5 text-muted-foreground" />
+                                <div>
+                                    <p className="text-muted-foreground">Truck Name</p>
+                                    <p className="font-semibold">{truck.name}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-muted rounded-md">
+                                <Tags className="w-5 h-5 text-muted-foreground" />
+                                <div>
+                                    <p className="text-muted-foreground">License Plate</p>
+                                    <p className="font-semibold">{truck.licensePlate}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                     </Card>
                 </TabsContent>
                  <TabsContent value="documents">
                       {/* Content for Documents */}

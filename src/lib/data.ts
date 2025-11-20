@@ -3,6 +3,7 @@ export type Truck = {
   id: string;
   name: string;
   imageUrl: string;
+  licensePlate: string;
   location: {
     lat: number;
     lng: number;
@@ -25,6 +26,7 @@ export const trucks: Truck[] = [
     id: 'TR-001',
     name: 'Alpha Hauler',
     imageUrl: 'https://i.imgur.com/tVrGgid.png',
+    licensePlate: 'TRK-1A2B',
     location: { lat: 34.0522, lng: -118.2437 },
     status: 'Alert',
     fuelLevel: 45,
@@ -38,6 +40,7 @@ export const trucks: Truck[] = [
     id: 'TR-002',
     name: 'Beta Freight',
     imageUrl: 'https://i.imgur.com/FImHF98.png',
+    licensePlate: 'TRK-3C4D',
     location: { lat: 40.7128, lng: -74.006 },
     status: 'On-time',
     fuelLevel: 82,
@@ -51,6 +54,7 @@ export const trucks: Truck[] = [
     id: 'TR-003',
     name: 'Gamma Express',
     imageUrl: 'https://i.imgur.com/WSOJfxZ.png',
+    licensePlate: 'TRK-5E6F',
     location: { lat: 41.8781, lng: -87.6298 },
     status: 'Idle',
     fuelLevel: 60,
@@ -64,6 +68,7 @@ export const trucks: Truck[] = [
     id: 'TR-004',
     name: 'Delta Cargo',
     imageUrl: 'https://imgur.com/eljOF7J.png',
+    licensePlate: 'TRK-7G8H',
     location: { lat: 29.7604, lng: -95.3698 },
     status: 'Pending',
     fuelLevel: 75,
@@ -77,6 +82,7 @@ export const trucks: Truck[] = [
     id: 'SD-752069247',
     name: 'Echo Runner',
     imageUrl: 'https://i.imgur.com/uFLl3cT.png',
+    licensePlate: 'TRK-9I0J',
     location: { lat: 34.0522, lng: -118.2437 },
     status: 'On-time',
     fuelLevel: 90,
