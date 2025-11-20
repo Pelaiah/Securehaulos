@@ -41,6 +41,14 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
+    
+    /**
+     * @description Checks if the user is a shipper by checking the user's document
+     */
+    function isShipper() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'Shipper';
+    }
+
 
     /**
      * @description Checks if the authenticated user ID matches the provided user ID and the document exists.
@@ -75,17 +83,18 @@ service cloud.firestore {
     /**
      * @description Rules for the /users/{userId}/verification_documents/{documentId} collection.
      * @path /users/{userId}/verification_documents/{documentId}
-     * @allow (create, get, list, update, delete) - Authenticated user with matching user ID can manage their verification documents.
-     * @deny (create, get, list, update, delete) - Authenticated user with a non-matching user ID cannot access another user's verification documents.
-     * @principle Enforces document ownership for all operations.
+     * @allow (get, list) - The owner OR a shipper can view documents.
+     * @allow (create, delete) - Only the owner of the documents can create or delete them.
+     * @allow (update) - The owner OR a shipper can update the status of a document (for verification).
+     * @principle Owner-write, with shipper-read/verification exception.
      */
     match /users/{userId}/verification_documents/{documentId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      allow get, list: if isOwner(userId) || isShipper();
       allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
+      allow update: if (isOwner(userId) || isShipper()) && resource != null;
       allow delete: if isExistingOwner(userId);
     }
+
 
     /**
      * @description Rules for the /users/{userId}/subscriptions/{subscriptionId} collection.
@@ -137,19 +146,25 @@ service cloud.firestore {
      * @path /loads/{loadId}
      * @allow (get, list) - All users can view loads.
      * @allow (create) - Authenticated users can create loads if the shipperId matches their UID.
-     * @allow (update, delete) - Only the owner (shipper) can update or delete the load.
-     * @deny (create, update, delete) - Non-owners cannot modify loads.
-     * @principle Public read with owner-only writes, enforced by the shipperId.
+     * @allow (update) - Only the owner (shipper) can update the load OR a carrier can apply for it.
+     * @allow (delete) - Only the owner (shipper) can delete the load.
+     * @deny (create, update, delete) - Non-owners cannot modify loads except for application.
+     * @principle Public read with owner-only writes, enforced by the shipperId, with an exception for carrier applications.
      */
     match /loads/{loadId} {
       allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.shipperId == request.auth.uid;
-      allow update: if isSignedIn() && (
-        (resource.data.shipperId == request.auth.uid) || 
-        (request.resource.data.status == 'Pending' && request.resource.data.carrierId == request.auth.uid)
-      ) && resource != null;
-      allow delete: if isSignedIn() && resource.data.shipperId == request.auth.uid && resource != null;
+      allow update: if isSignedIn() && resource != null && (
+        // Shipper can always update (including approving a load)
+        resource.data.shipperId == request.auth.uid ||
+        // Carrier can apply if the load is 'Posted'
+        (resource.data.status == 'Posted' && 
+         request.resource.data.status == 'Pending' && 
+         request.resource.data.carrierId == request.auth.uid)
+      );
+      allow delete: if isSignedIn() && resource != null && resource.data.shipperId == request.auth.uid;
     }
+
 
     /**
      * @description Rules for the /loads/{loadId}/bids/{bidId} collection.
@@ -166,16 +181,30 @@ service cloud.firestore {
       allow update: if isSignedIn() && resource.data.carrierId == request.auth.uid && resource != null;
       allow delete: if isSignedIn() && resource.data.carrierId == request.auth.uid && resource != null;
     }
+    
+    /**
+     * @description Rules for the /loads/{loadId}/submitted_documents/{documentId} subcollection.
+     * Shippers need to read these, but only the applying carrier can write them.
+     */
+    match /loads/{loadId}/submitted_documents/{documentId} {
+      // Allow any authenticated user to read documents.
+      allow get, list: if isSignedIn();
+      // Allow only the carrier who applied for the load to write documents.
+      allow create, update, delete: if isSignedIn() && get(/databases/$(database)/documents/loads/$(loadId)).data.carrierId == request.auth.uid;
+    }
 
     /**
      * @description Rules for the /trucks/{truckId} collection.
      * @path /trucks/{truckId}
      * @allow (update) - Authenticated users can update a truck's status.
      * This is a simplified rule for the prototype. In a real app, you'd want to check
-     * if the user is the driver/carrier who owns this truck.
+     * if the user is the driver/carrier who owns this truck by checking a `driverId` or `carrierId` field.
      */
     match /trucks/{truckId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
       allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
@@ -212,17 +241,20 @@ service cloud.firestore {
     /**
      * @description Rules for the /carriers/{carrierId} collection.
      * @path /carriers/{carrierId}
-     * @allow (create, get, list, update, delete) - Authenticated user with matching carrier ID can manage their carrier profile.
-     * @deny (create, get, list, update, delete) - Authenticated user with a non-matching carrier ID cannot access another user's carrier profile.
-     * @principle Enforces document ownership for all operations.
+     * @allow (get, list) - Any authenticated shipper can view a carrier's public profile.
+     * @allow (create, delete) - Only the owner can manage their carrier profile.
+     * @allow (update) - The owner OR a shipper (to update verification status) can update the profile.
+     * @deny (list) - Listing all carriers is allowed for shippers.
+     * @principle Shipper-read, owner-write, with shipper-verification exception.
      */
     match /carriers/{carrierId} {
-      allow get: if isOwner(carrierId);
-      allow list: if false;
+      allow get: if isSignedIn();
+      allow list: if isShipper();
       allow create: if isOwner(carrierId) && request.resource.data.id == carrierId;
-      allow update: if isExistingOwner(carrierId) && isUserIdNotChanged(carrierId);
+      allow update: if isExistingOwner(carrierId) || (isShipper() && resource != null);
       allow delete: if isExistingOwner(carrierId);
     }
+
 
     /**
      * @description Rules for the /freight_managers/{freightManagerId} collection.
@@ -240,5 +272,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

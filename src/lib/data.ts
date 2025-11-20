@@ -127,6 +127,11 @@ export type Load = {
 };
 
 
+export type Carrier = {
+    id: string;
+    companyName: string;
+    verified: boolean;
+}
 
 
 export type Document = {
