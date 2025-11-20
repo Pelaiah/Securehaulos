@@ -163,7 +163,7 @@ export default function DashboardLayout({
     { href: '/dashboard/shipper', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/dashboard/shipper/my-loads', icon: Package, label: 'Loadboard' },
     { href: '/dashboard/shipper/tracking', icon: Truck, label: 'Shipments' },
-    { href: '/dashboard/documents', icon: Map, label: 'Map Overview' },
+    { href: '/dashboard/documents', icon: FileText, label: 'Documents' },
     { href: '/dashboard/chats', icon: MessageSquare, label: 'Messages' },
     { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
