@@ -76,13 +76,15 @@ export function TruckDetailsDialog({
                     </div>
                     <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <div className="flex items-center gap-2 truncate">
-                      <Link href={`https://www.google.com/maps?q=${truck.location.lat},${truck.location.lng}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-red-500 hover:underline">
+                      <Link href={`/dashboard/shipper/tracking/${truck.id}`} className="flex items-center gap-2 text-red-500 hover:underline">
                         <MapPin className="h-4 w-4" />
                         <span className="truncate">Phoenix, AZ</span>
                       </Link>
                     </div>
                 </div>
-                <Progress value={65} className="h-2" />
+                 <Link href={`/dashboard/shipper/tracking/${truck.id}`} className="cursor-pointer">
+                    <Progress value={65} className="h-2" />
+                </Link>
                  <p className="text-xs text-muted-foreground text-right">65% complete</p>
             </div>
 
