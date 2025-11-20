@@ -34,6 +34,10 @@ export function DocumentViewerDialog({
     Rejected: 'text-red-400 bg-red-500/10',
     Expired: 'text-gray-400 bg-gray-500/10',
   };
+  
+  // Use Microsoft Office Online viewer for docx, xlsx, etc. and it also supports PDF.
+  const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(document.fileUrl)}`;
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -59,9 +63,10 @@ export function DocumentViewerDialog({
 
         <div className="flex-grow my-4 border rounded-md overflow-hidden">
           <iframe
-            src={document.fileUrl}
+            src={viewerUrl}
             className="w-full h-full"
             title={document.name}
+            frameBorder="0"
           />
         </div>
 
