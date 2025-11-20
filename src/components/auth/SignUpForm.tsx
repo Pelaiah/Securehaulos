@@ -18,22 +18,10 @@ import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
-import { Loader2, User, Building, Truck, CheckCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { Card } from '../ui/card';
-import { cn } from '@/lib/utils';
-
-const shipperSchema = z.object({
-  fullName: z.string().min(1, { message: 'Full name is required.' }),
-  companyName: z.string().min(1, { message: 'Company name is required.' }),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
-  phone: z.string().min(1, { message: 'Phone number is required.' }),
-  userType: z.literal('Shipper'),
-  fleetSize: z.number(), // Add dummy field to satisfy union
-});
 
 const carrierSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -45,7 +33,7 @@ const carrierSchema = z.object({
   userType: z.literal('Carrier'),
 });
 
-const formSchema = z.union([shipperSchema, carrierSchema]);
+const formSchema = carrierSchema;
 
 export function SignUpForm() {
   const { toast } = useToast();
@@ -53,8 +41,6 @@ export function SignUpForm() {
   const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<'role' | 'form'>('role');
-  const [userType, setUserType] = useState<'Shipper' | 'Carrier'>('Carrier');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,20 +51,10 @@ export function SignUpForm() {
       password: '',
       phone: '',
       userType: 'Carrier',
-      // Carrier fields
       fleetSize: 1,
     },
   });
   
-  const handleRoleSelect = (role: 'Shipper' | 'Carrier') => {
-    setUserType(role);
-  };
-
-  const handleRoleSubmit = () => {
-    form.setValue('userType', userType);
-    setStep('form');
-  }
-
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
@@ -111,44 +87,25 @@ export function SignUpForm() {
           throw error;
       });
 
-      if (formData.userType === 'Shipper') {
-        const shipperData = {
-          id: user.uid,
-          companyName: formData.companyName,
-        };
-        const shipperDocRef = doc(firestore, 'shippers', user.uid);
-        await setDoc(shipperDocRef, shipperData).catch(error => {
-          errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-              path: shipperDocRef.path,
-              operation: 'create',
-              requestResourceData: shipperData,
-            })
-          );
-          throw error;
-        });
-      } else if (formData.userType === 'Carrier') {
-        const carrierData = {
-          id: user.uid,
-          companyName: formData.companyName,
-          fleetSize: formData.fleetSize, 
-          premiumMembership: false,
-          verified: false,
-        };
-        const carrierDocRef = doc(firestore, 'carriers', user.uid);
-        await setDoc(carrierDocRef, carrierData).catch(error => {
-          errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-              path: carrierDocRef.path,
-              operation: 'create',
-              requestResourceData: carrierData,
-            })
-          );
-          throw error;
-        });
-      }
+      const carrierData = {
+        id: user.uid,
+        companyName: formData.companyName,
+        fleetSize: formData.fleetSize, 
+        premiumMembership: false,
+        verified: false,
+      };
+      const carrierDocRef = doc(firestore, 'carriers', user.uid);
+      await setDoc(carrierDocRef, carrierData).catch(error => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: carrierDocRef.path,
+            operation: 'create',
+            requestResourceData: carrierData,
+          })
+        );
+        throw error;
+      });
       
       toast({
         title: 'Account Created',
@@ -176,55 +133,6 @@ export function SignUpForm() {
     }
   }
 
-  if (step === 'role') {
-    return (
-      <div className="space-y-4 pt-4">
-        <h3 className="text-center font-medium">Select your role to get started</h3>
-        <Card
-          onClick={() => handleRoleSelect('Carrier')}
-          className={cn(
-            'p-4 cursor-pointer border-2 transition-all relative',
-            userType === 'Carrier' ? 'border-primary' : 'border-border'
-          )}
-        >
-          {userType === 'Carrier' && <CheckCircle className="w-5 h-5 text-primary absolute top-2 right-2" />}
-          <div className="flex items-center gap-4">
-            <Truck className="w-10 h-10 text-primary" />
-            <div>
-              <h4 className="font-semibold">Carrier / Owner-Operator</h4>
-              <p className="text-sm text-muted-foreground">Find loads, manage your trucks, and grow your business.</p>
-            </div>
-          </div>
-        </Card>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex-grow border-t border-border"></div>
-          <span className="text-xs text-muted-foreground">OR</span>
-          <div className="flex-grow border-t border-border"></div>
-        </div>
-
-        <Card
-          onClick={() => handleRoleSelect('Shipper')}
-          className={cn(
-            'p-3 cursor-pointer border-2 transition-all relative',
-            userType === 'Shipper' ? 'border-primary' : 'border-border'
-          )}
-        >
-           {userType === 'Shipper' && <CheckCircle className="w-4 h-4 text-primary absolute top-2 right-2" />}
-          <div className="flex items-center gap-3">
-            <Building className="w-6 h-6 text-primary" />
-            <div>
-              <h4 className="font-semibold text-sm">Shipper</h4>
-              <p className="text-xs text-muted-foreground">Post and manage your loads.</p>
-            </div>
-          </div>
-        </Card>
-
-        <Button onClick={handleRoleSubmit} className="w-full mt-4">Continue</Button>
-      </div>
-    );
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
@@ -248,7 +156,7 @@ export function SignUpForm() {
             <FormItem>
               <FormLabel>Company Name</FormLabel>
               <FormControl>
-                <Input placeholder={userType === 'Carrier' ? 'e.g. Smith Trucking or Owner-Operator' : 'e.g. National Foods'} {...field} />
+                <Input placeholder={'e.g. Smith Trucking or Owner-Operator'} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -293,9 +201,7 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
-
-        {userType === 'Carrier' && (
-          <FormField
+        <FormField
             control={form.control}
             name="fleetSize"
             render={({ field }) => (
@@ -308,15 +214,11 @@ export function SignUpForm() {
               </FormItem>
             )}
           />
-        )}
         
         <div className="flex items-center gap-4 pt-4">
-          <Button variant="ghost" onClick={() => setStep('role')} type="button" disabled={isLoading}>
-            Back
-          </Button>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Complete Sign Up
+            Create Carrier Account
           </Button>
         </div>
       </form>
