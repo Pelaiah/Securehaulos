@@ -148,6 +148,10 @@
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N VerificationDocument)"
         },
+        "name": {
+          "type": "string",
+          "description": "The user-defined name of the document."
+        },
         "documentType": {
           "type": "string",
           "description": "Type of document (e.g., 'ID', 'Insurance', 'Registration')."
@@ -175,6 +179,7 @@
       "required": [
         "id",
         "userId",
+        "name",
         "documentType",
         "uploadDate",
         "status",
