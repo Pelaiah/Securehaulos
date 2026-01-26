@@ -73,7 +73,6 @@ export function SignUpForm() {
   });
 
   const companySelection = form.watch("companySelection");
-  const isOwnerOperator = companySelection === 'owner-operator';
   
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -88,13 +87,11 @@ export function SignUpForm() {
       let finalCompanyName: string;
       if (formData.companySelection === 'other') {
           finalCompanyName = formData.companyName!;
-      } else if (formData.companySelection === 'owner-operator') {
-          finalCompanyName = `${formData.fullName} (Owner-Operator)`;
       } else {
           finalCompanyName = formData.companySelection;
       }
   
-      const finalFleetSize = isOwnerOperator ? 1 : formData.fleetSize;
+      const finalFleetSize = formData.fleetSize;
 
       const userData: any = {
         id: user.uid,
@@ -189,11 +186,10 @@ export function SignUpForm() {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select your company or role" />
+                    <SelectValue placeholder="Select your company" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="owner-operator">I am an Owner-Operator</SelectItem>
                   {existingCompanies.map((company) => (
                     <SelectItem key={company.id} value={company.name}>
                         {company.name}
@@ -260,7 +256,7 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
-        {!isOwnerOperator && companySelection && (
+        {companySelection && (
             <FormField
                 control={form.control}
                 name="fleetSize"
