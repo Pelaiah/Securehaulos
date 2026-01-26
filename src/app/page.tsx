@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ArrowRight, Ship, Truck, ShieldCheck, UserPlus, Search, ThumbsUp,Zap } from 'lucide-react';
-import { SignUpModal } from '@/components/auth/SignUpModal';
+import { ArrowRight, Ship, Truck, ShieldCheck, UserPlus, Search, ThumbsUp,Zap, User } from 'lucide-react';
+import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog';
 import { cn } from '@/lib/utils';
 import {
   Card,
@@ -160,11 +160,11 @@ export default function Home() {
                 delay={0.5}
               />
               <div className="flex flex-col sm:flex-row items-start justify-start gap-4">
-                <Button size="lg" className="w-full sm:w-auto" asChild>
-                  <Link href="/signup">
+                <RoleSelectionDialog>
+                  <Button size="lg" className="w-full sm:w-auto">
                     Create an account <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                  </Button>
+                </RoleSelectionDialog>
               </div>
             </div>
           </div>
@@ -253,11 +253,11 @@ export default function Home() {
           <p className="text-muted-foreground text-xl mb-8">
             Join Suboor Loads today and experience the future of logistics. Fast, secure, and reliable.
           </p>
-          <Button size="lg" className="w-full sm:w-auto" asChild>
-            <Link href="/signup-shipper">
-              Sign Up Now <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+          <RoleSelectionDialog>
+            <Button size="lg" className="w-full sm:w-auto">
+                Sign Up Now <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </RoleSelectionDialog>
         </div>
       </section>
 
