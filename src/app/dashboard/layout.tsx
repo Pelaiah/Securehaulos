@@ -103,21 +103,30 @@ export default function DashboardLayout({
   const [selectedTruck, setSelectedTruck] = useState<TruckType | null>(shipperTrucks[0]);
   const [selectedDriver, setSelectedDriver] = useState(tripData[2]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     if (savedTheme) {
       setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } else {
+        document.documentElement.classList.add('dark');
     }
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+  const changeTheme = (newTheme: 'light' | 'dark') => {
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   const userDocRef = useMemoFirebase(() => {
@@ -332,11 +341,11 @@ const secondaryNavItems = [
         <SidebarFooter className="group-data-[collapsible=icon]:p-3">
              <div className={cn("flex items-center justify-center gap-2 p-2", isShipper && "flex-col")}>
                 <div className={cn("rounded-md p-1 flex items-center gap-1", isShipper && "bg-background")}>
-                  <Button variant={theme === 'light' ? 'secondary' : 'ghost'} size="sm" onClick={() => toggleTheme()} className={cn(theme === 'light' && 'text-foreground')}>
+                  <Button variant={theme === 'light' ? 'secondary' : 'ghost'} size="sm" onClick={() => changeTheme('light')} className={cn(theme === 'light' && 'text-foreground')}>
                     <Sun className="w-4 h-4 mr-2" />
                     Light
                   </Button>
-                   <Button variant={theme === 'dark' ? 'secondary' : 'ghost'} size="sm" onClick={() => toggleTheme()} className={cn(theme === 'dark' && 'text-foreground')}>
+                   <Button variant={theme === 'dark' ? 'secondary' : 'ghost'} size="sm" onClick={() => changeTheme('dark')} className={cn(theme === 'dark' && 'text-foreground')}>
                     <Moon className="w-4 h-4 mr-2" />
                     Dark
                   </Button>
