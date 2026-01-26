@@ -17,7 +17,7 @@ export function RoleSelectionDialog({ children }: { children: React.ReactNode })
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle className="font-headline text-2xl text-center">Join Our Network</DialogTitle>
+          <DialogTitle className="font-headline text-2xl text-center">Join Today</DialogTitle>
           <DialogDescription className="text-center">
             Choose the account type that best describes you.
           </DialogDescription>
