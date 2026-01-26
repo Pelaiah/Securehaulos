@@ -22,18 +22,26 @@ import { Loader2 } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const carrierSchema = z.object({
+const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
-  companyName: z.string().min(1, { message: 'Company name or "Owner-Operator" is required.' }),
+  companySelection: z.string({ required_error: "Please make a selection."}).min(1, "Please make a selection."),
+  companyName: z.string().optional(),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
   fleetSize: z.coerce.number().positive({ message: "Fleet size must be a positive number." }).int(),
   userType: z.literal('Carrier'),
+}).refine((data) => {
+    if (data.companySelection === 'other') {
+        return data.companyName && data.companyName.length > 0;
+    }
+    return true;
+}, {
+    message: "Please specify your company name.",
+    path: ["companyName"],
 });
-
-const formSchema = carrierSchema;
 
 export function SignUpForm() {
   const { toast } = useToast();
@@ -46,6 +54,7 @@ export function SignUpForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
+      companySelection: '',
       companyName: '',
       email: '',
       password: '',
@@ -54,6 +63,9 @@ export function SignUpForm() {
       fleetSize: 1,
     },
   });
+
+  const companySelection = form.watch("companySelection");
+  const isOwnerOperator = companySelection === 'owner-operator';
   
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -64,6 +76,17 @@ export function SignUpForm() {
       const nameParts = formData.fullName.trim().split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+      
+      let finalCompanyName: string;
+      if (formData.companySelection === 'other') {
+          finalCompanyName = formData.companyName!;
+      } else if (formData.companySelection === 'owner-operator') {
+          finalCompanyName = `${formData.fullName} (Owner-Operator)`;
+      } else {
+          finalCompanyName = formData.companySelection;
+      }
+  
+      const finalFleetSize = isOwnerOperator ? 1 : formData.fleetSize;
 
       const userData: any = {
         id: user.uid,
@@ -89,8 +112,8 @@ export function SignUpForm() {
 
       const carrierData = {
         id: user.uid,
-        companyName: formData.companyName,
-        fleetSize: formData.fleetSize, 
+        companyName: finalCompanyName,
+        fleetSize: finalFleetSize, 
         premiumMembership: false,
         verified: false,
       };
@@ -151,17 +174,40 @@ export function SignUpForm() {
         />
         <FormField
           control={form.control}
-          name="companyName"
+          name="companySelection"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Name</FormLabel>
-              <FormControl>
-                <Input placeholder={'e.g. Smith Trucking or Owner-Operator'} {...field} />
-              </FormControl>
+              <FormLabel>Company</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your company or role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="owner-operator">I am an Owner-Operator</SelectItem>
+                  <SelectItem value="other">Other (Register a New Company)</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
+        {companySelection === 'other' && (
+          <FormField
+            control={form.control}
+            name="companyName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Company Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Your Company Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="email"
@@ -201,19 +247,21 @@ export function SignUpForm() {
             </FormItem>
           )}
         />
-        <FormField
-            control={form.control}
-            name="fleetSize"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Number of Trucks in Fleet</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="e.g. 5" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {!isOwnerOperator && companySelection && (
+            <FormField
+                control={form.control}
+                name="fleetSize"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Number of Trucks in Fleet</FormLabel>
+                    <FormControl>
+                    <Input type="number" placeholder="e.g. 5" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+        )}
         
         <div className="flex items-center gap-4 pt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
