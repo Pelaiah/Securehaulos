@@ -22,6 +22,7 @@ import { Loader2 } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { LogoUpload } from './LogoUpload';
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -31,6 +32,8 @@ const formSchema = z.object({
   phone: z.string().min(1, { message: 'Phone number is required.' }),
   fleetSize: z.coerce.number().positive({ message: "Fleet size must be a positive number." }).int(),
   userType: z.literal('Carrier'),
+  companyLogo: z.instanceof(File).optional(),
+  companyMantra: z.string().optional(),
 });
 
 
@@ -51,12 +54,18 @@ export function SignUpForm() {
       phone: '',
       userType: 'Carrier',
       fleetSize: 1,
+      companyLogo: undefined,
+      companyMantra: '',
     },
   });
   
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      // In a real app, you would upload the file to Firebase Storage
+      // and get the download URL. For this demo, we'll just use an empty string.
+      const companyLogoUrl = '';
+      
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
@@ -92,6 +101,8 @@ export function SignUpForm() {
         fleetSize: formData.fleetSize, 
         premiumMembership: false,
         verified: false,
+        companyLogoUrl,
+        companyMantra: formData.companyMantra,
       };
       const carrierDocRef = doc(firestore, 'carriers', user.uid);
       await setDoc(carrierDocRef, carrierData).catch(error => {
@@ -161,6 +172,32 @@ export function SignUpForm() {
               </FormItem>
             )}
           />
+        <FormField
+          control={form.control}
+          name="companyLogo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Logo</FormLabel>
+              <FormControl>
+                 <LogoUpload onFileChange={field.onChange} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="companyMantra"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Mantra</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. We deliver excellence" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"

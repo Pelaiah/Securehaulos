@@ -336,6 +336,15 @@
           "type": "string",
           "description": "Name of the carrier company."
         },
+        "companyLogoUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the company's logo."
+        },
+        "companyMantra": {
+          "type": "string",
+          "description": "The company's mantra or slogan."
+        },
         "fleetSize": {
           "type": "number",
           "description": "Number of trucks in the carrier's fleet."
