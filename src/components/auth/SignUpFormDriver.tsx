@@ -22,19 +22,36 @@ import { Loader2 } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
-  companyName: z.string().min(1, { message: 'Company name is required.' }),
+  companySelection: z.string({ required_error: "Please make a selection."}).min(1, "Please make a selection."),
+  companyName: z.string().optional(),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
-  fleetSize: z.coerce.number().positive({ message: "Fleet size must be a positive number." }).int(),
-  userType: z.literal('Carrier'),
+  licenseNumber: z.string().min(1, { message: 'Driver\'s license number is required.' }),
+  userType: z.literal('Driver'),
+}).refine((data) => {
+    if (data.companySelection === 'other') {
+        return data.companyName && data.companyName.length > 0;
+    }
+    return true;
+}, {
+    message: "Please specify your company name.",
+    path: ["companyName"],
 });
 
+// Mock list of existing companies. In a real app, this would come from an API.
+const existingCompanies = [
+    { id: 'swift-transport', name: 'Swift Transport' },
+    { id: 'bolt-logistics', name: 'Bolt Logistics' },
+    { id: 'apex-freight', name: 'Apex Freight' },
+];
 
-export function SignUpForm() {
+
+export function SignUpFormDriver() {
   const { toast } = useToast();
   const auth = useAuth();
   const firestore = useFirestore();
@@ -45,14 +62,17 @@ export function SignUpForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
+      companySelection: '',
       companyName: '',
       email: '',
       password: '',
       phone: '',
-      userType: 'Carrier',
-      fleetSize: 1,
+      licenseNumber: '',
+      userType: 'Driver',
     },
   });
+
+  const companySelection = form.watch("companySelection");
   
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -86,21 +106,20 @@ export function SignUpForm() {
           throw error;
       });
 
-      const carrierData = {
+      // Note: Here you might want logic to associate the driver with the selected company.
+      // For this prototype, we'll just create the driver record.
+      const driverData = {
         id: user.uid,
-        companyName: formData.companyName,
-        fleetSize: formData.fleetSize, 
-        premiumMembership: false,
-        verified: false,
+        licenseNumber: formData.licenseNumber,
       };
-      const carrierDocRef = doc(firestore, 'carriers', user.uid);
-      await setDoc(carrierDocRef, carrierData).catch(error => {
+      const driverDocRef = doc(firestore, 'drivers', user.uid);
+      await setDoc(driverDocRef, driverData).catch(error => {
         errorEmitter.emit(
           'permission-error',
           new FirestorePermissionError({
-            path: carrierDocRef.path,
+            path: driverDocRef.path,
             operation: 'create',
-            requestResourceData: carrierData,
+            requestResourceData: driverData,
           })
         );
         throw error;
@@ -108,7 +127,7 @@ export function SignUpForm() {
       
       toast({
         title: 'Account Created',
-        description: "You've been successfully signed up. Redirecting to your dashboard...",
+        description: "You've been successfully signed up as a driver. Redirecting to your dashboard...",
       });
       router.push('/dashboard');
 
@@ -149,11 +168,38 @@ export function SignUpForm() {
           )}
         />
         <FormField
+          control={form.control}
+          name="companySelection"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Are you an Owner-Operator or joining a company?</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="owner-operator">I am an Owner-Operator</SelectItem>
+                  {existingCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.name}>
+                        {company.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="other">My company isn't listed</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {companySelection === 'other' && (
+          <FormField
             control={form.control}
             name="companyName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name</FormLabel>
+                <FormLabel>New Company Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Your Company Name" {...field} />
                 </FormControl>
@@ -161,6 +207,7 @@ export function SignUpForm() {
               </FormItem>
             )}
           />
+        )}
         <FormField
           control={form.control}
           name="email"
@@ -201,23 +248,23 @@ export function SignUpForm() {
           )}
         />
         <FormField
-            control={form.control}
-            name="fleetSize"
-            render={({ field }) => (
+          control={form.control}
+          name="licenseNumber"
+          render={({ field }) => (
             <FormItem>
-                <FormLabel>Number of Trucks in Fleet</FormLabel>
-                <FormControl>
-                <Input type="number" placeholder="e.g. 5" {...field} />
-                </FormControl>
-                <FormMessage />
+              <FormLabel>Driver's License Number</FormLabel>
+              <FormControl>
+                <Input placeholder="D123-456-789" {...field} />
+              </FormControl>
+              <FormMessage />
             </FormItem>
-            )}
+          )}
         />
         
         <div className="flex items-center gap-4 pt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Carrier Account
+            Create Driver Account
           </Button>
         </div>
       </form>

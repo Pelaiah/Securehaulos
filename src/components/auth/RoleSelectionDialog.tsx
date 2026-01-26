@@ -45,7 +45,7 @@ export function RoleSelectionDialog({ children }: { children: React.ReactNode })
                     </CardHeader>
                 </Card>
             </Link>
-             <Link href="/signup">
+             <Link href="/signup-driver">
                 <Card className="text-center p-6 hover:border-primary hover:shadow-lg transition-all cursor-pointer h-full flex flex-col justify-center items-center">
                     <CardHeader>
                         <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
