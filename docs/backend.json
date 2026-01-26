@@ -315,11 +315,16 @@
         "companyField": {
           "type": "string",
           "description": "The industry or field the company operates in."
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the shipper's company."
         }
       },
       "required": [
         "id",
-        "companyName"
+        "companyName",
+        "address"
       ]
     },
     "Carrier": {

@@ -27,6 +27,7 @@ import { LogoUpload } from './LogoUpload';
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
   companyName: z.string().min(1, { message: 'Company name is required.' }),
+  address: z.string().min(1, { message: 'Address is required.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
@@ -47,6 +48,7 @@ export function SignUpFormShipper() {
     defaultValues: {
       fullName: '',
       companyName: '',
+      address: '',
       email: '',
       password: '',
       phone: '',
@@ -98,6 +100,7 @@ export function SignUpFormShipper() {
           companyLogoUrl: companyLogoUrl,
           companyMantra: formData.companyMantra,
           companyField: formData.companyField,
+          address: formData.address,
       };
       const shipperDocRef = doc(firestore, 'shippers', user.uid);
       await setDoc(shipperDocRef, shipperData).catch(error => {
@@ -161,6 +164,19 @@ export function SignUpFormShipper() {
               <FormLabel>Company Name</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Acme Inc." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Address</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. 123 Main St, Anytown, USA" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
