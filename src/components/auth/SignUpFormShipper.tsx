@@ -22,6 +22,7 @@ import { Loader2 } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { LogoUpload } from './LogoUpload';
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -29,7 +30,7 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
-  companyLogoUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  companyLogo: z.instanceof(File).optional(),
   companyMantra: z.string().optional(),
   companyField: z.string().optional(),
 });
@@ -49,7 +50,7 @@ export function SignUpFormShipper() {
       email: '',
       password: '',
       phone: '',
-      companyLogoUrl: '',
+      companyLogo: undefined,
       companyMantra: '',
       companyField: '',
     },
@@ -58,6 +59,10 @@ export function SignUpFormShipper() {
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      // In a real app, you would upload the file to Firebase Storage
+      // and get the download URL. For this demo, we'll just use an empty string.
+      const companyLogoUrl = '';
+
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
@@ -90,7 +95,7 @@ export function SignUpFormShipper() {
       const shipperData = {
           id: user.uid,
           companyName: formData.companyName,
-          companyLogoUrl: formData.companyLogoUrl,
+          companyLogoUrl: companyLogoUrl,
           companyMantra: formData.companyMantra,
           companyField: formData.companyField,
       };
@@ -161,14 +166,14 @@ export function SignUpFormShipper() {
             </FormItem>
           )}
         />
-        <FormField
+         <FormField
           control={form.control}
-          name="companyLogoUrl"
+          name="companyLogo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Logo URL</FormLabel>
+              <FormLabel>Company Logo</FormLabel>
               <FormControl>
-                <Input type="url" placeholder="https://example.com/logo.png" {...field} />
+                 <LogoUpload onFileChange={field.onChange} />
               </FormControl>
               <FormMessage />
             </FormItem>
