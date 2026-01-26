@@ -162,7 +162,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row items-start justify-start gap-4">
                 <Button size="lg" className="w-full sm:w-auto" asChild>
                   <Link href="/signup">
-                    Create a Carrier Account <ArrowRight className="ml-2 h-5 w-5" />
+                    Create an account <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
               </div>
