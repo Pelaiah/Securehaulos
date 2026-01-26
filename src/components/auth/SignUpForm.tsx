@@ -43,6 +43,14 @@ const formSchema = z.object({
     path: ["companyName"],
 });
 
+// Mock list of existing companies. In a real app, this would come from an API.
+const existingCompanies = [
+    { id: 'swift-transport', name: 'Swift Transport' },
+    { id: 'bolt-logistics', name: 'Bolt Logistics' },
+    { id: 'apex-freight', name: 'Apex Freight' },
+];
+
+
 export function SignUpForm() {
   const { toast } = useToast();
   const auth = useAuth();
@@ -186,6 +194,11 @@ export function SignUpForm() {
                 </FormControl>
                 <SelectContent>
                   <SelectItem value="owner-operator">I am an Owner-Operator</SelectItem>
+                  {existingCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.name}>
+                        {company.name}
+                    </SelectItem>
+                  ))}
                   <SelectItem value="other">Other (Register a New Company)</SelectItem>
                 </SelectContent>
               </Select>
