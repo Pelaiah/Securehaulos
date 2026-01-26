@@ -302,6 +302,19 @@
         "companyName": {
           "type": "string",
           "description": "Name of the shipping company."
+        },
+        "companyLogoUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the company's logo."
+        },
+        "companyMantra": {
+          "type": "string",
+          "description": "The company's mantra or slogan."
+        },
+        "companyField": {
+          "type": "string",
+          "description": "The industry or field the company operates in."
         }
       },
       "required": [
@@ -322,6 +335,10 @@
         "companyName": {
           "type": "string",
           "description": "Name of the carrier company."
+        },
+        "fleetSize": {
+          "type": "number",
+          "description": "Number of trucks in the carrier's fleet."
         },
         "premiumMembership": {
           "type": "boolean",
@@ -612,4 +629,3 @@
     "reasoning": "The Firestore structure is designed to provide a secure, scalable, and easily maintainable database for the SecureHaul application. It prioritizes authorization independence by denormalizing access control data, enabling efficient security rules and atomic operations. The structure segregates data based on access requirements, leading to simpler and more secure rules. Consistent access modeling using path-based ownership and membership maps further enhances security and maintainability.\n\nTo achieve Authorization Independence (CRITICAL), the `Load` collection includes the `shipperId` which comes from the User document. The `Bid` collection includes the `carrierId` and the `loadId` which comes from the Carrier and Load document respectively. This eliminates the need for `get()` calls in security rules to check ownership or membership, ensuring atomic operations.\n\nTo achieve QAPs (Rules are not Filters), the data is segregated into collections based on ownership and access patterns. User-owned data like VerificationDocuments and Subscriptions are stored under `/users/{userId}` paths. Loads are directly stored in `/loads` and can be queried based on `shipperId` or `carrierId`.\n\nAccess Modeling:\n- Path-Based Ownership: `/users/{userId}/verification_documents/{documentId}`\n- Membership Map: Not explicitly used, but can be applied to collaborative features in future iterations.\n- Global Roles: No global roles are used.\n\nDenormalization:\n- shipperId inside the Load document.\n- carrierId inside the Bid document.\n- loadId inside the Bid document."
   }
 }
-    

@@ -29,6 +29,9 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
   phone: z.string().min(1, { message: 'Phone number is required.' }),
+  companyLogoUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  companyMantra: z.string().optional(),
+  companyField: z.string().optional(),
 });
 
 export function SignUpFormShipper() {
@@ -46,6 +49,9 @@ export function SignUpFormShipper() {
       email: '',
       password: '',
       phone: '',
+      companyLogoUrl: '',
+      companyMantra: '',
+      companyField: '',
     },
   });
   
@@ -84,6 +90,9 @@ export function SignUpFormShipper() {
       const shipperData = {
           id: user.uid,
           companyName: formData.companyName,
+          companyLogoUrl: formData.companyLogoUrl,
+          companyMantra: formData.companyMantra,
+          companyField: formData.companyField,
       };
       const shipperDocRef = doc(firestore, 'shippers', user.uid);
       await setDoc(shipperDocRef, shipperData).catch(error => {
@@ -147,6 +156,45 @@ export function SignUpFormShipper() {
               <FormLabel>Company Name</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Acme Inc." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="companyLogoUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Logo URL</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="https://example.com/logo.png" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="companyMantra"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Mantra</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. We deliver excellence" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="companyField"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Field of Operation</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Retail, Manufacturing" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
