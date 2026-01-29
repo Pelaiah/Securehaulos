@@ -144,7 +144,25 @@ export type Document = {
   fileUrl: string;
 };
 
-export const documents: Document[] = [];
+export const documents: Document[] = [
+  {
+    id: 'doc-101',
+    name: 'Corporate Tax Return 2023',
+    type: 'Tax',
+    status: 'Approved',
+    uploadDate: '2024-03-10',
+    fileUrl: '#',
+  },
+  {
+    id: 'doc-102',
+    name: 'General Liability Insurance',
+    type: 'Insurance',
+    status: 'Pending',
+    expiryDate: '2025-07-01',
+    uploadDate: '2024-06-15',
+    fileUrl: '#',
+  },
+];
 
 
 export const subscriptionPlans = {
@@ -222,7 +240,10 @@ export const drivers: Driver[] = [
     truck: 'TR-002',
     status: 'On-time',
     onLeave: false,
-    documents: []
+    documents: [
+        { id: 'doc-drv-101', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2026-08-12', fileUrl: '#' },
+        { id: 'doc-drv-102', name: 'Medical Certificate', type: 'Certification', status: 'Approved', expiryDate: '2025-01-20', fileUrl: '#' },
+    ]
   },
   {
     id: 'DRV-002',
@@ -234,7 +255,10 @@ export const drivers: Driver[] = [
     onLeave: true,
     leaveStartDate: '2024-07-20',
     leaveEndDate: '2024-08-05',
-    documents: []
+    documents: [
+        { id: 'doc-drv-201', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2027-03-15', fileUrl: '#' },
+        { id: 'doc-drv-202', name: 'HAZMAT Endorsement', type: 'Certification', status: 'Pending', expiryDate: '2025-11-01', fileUrl: '#' },
+    ]
   },
   {
     id: 'DRV-003',
@@ -244,7 +268,9 @@ export const drivers: Driver[] = [
     truck: 'TR-001',
     status: 'Alert',
     onLeave: false,
-    documents: []
+    documents: [
+         { id: 'doc-drv-301', name: 'Commercial Driver\'s License', type: 'License', status: 'Expired', expiryDate: '2024-06-01', fileUrl: '#' },
+    ]
   },
   {
     id: 'DRV-004',
@@ -254,6 +280,9 @@ export const drivers: Driver[] = [
     truck: 'N/A',
     status: 'Idle',
     onLeave: false,
-    documents: []
+    documents: [
+        { id: 'doc-drv-401', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2025-09-10', fileUrl: '#' },
+        { id: 'doc-drv-402', name: 'TWIC Card', type: 'Certification', status: 'Rejected', fileUrl: '#' },
+    ]
   },
 ];
