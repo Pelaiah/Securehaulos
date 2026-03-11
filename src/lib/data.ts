@@ -37,8 +37,8 @@ export const trucks: Truck[] = [
     unauthorizedDoorOpening: true,
     sensors: { door: true, temperature: false, gps: true },
     documents: [
-      { id: 'doc-trk-101', name: 'Goods In Transit Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-05-10', fileUrl: '#' },
-      { id: 'doc-trk-102', name: 'ZIMRA License', type: 'License', status: 'Approved', expiryDate: '2024-12-31', fileUrl: '#' },
+      { id: 'doc-trk-101', name: 'Goods In Transit Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-05-10', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+      { id: 'doc-trk-102', name: 'ZIMRA License', type: 'License', status: 'Approved', expiryDate: '2024-12-31', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
   {
@@ -55,7 +55,7 @@ export const trucks: Truck[] = [
     unauthorizedDoorOpening: false,
     sensors: { door: true, temperature: true, gps: true },
     documents: [
-        { id: 'doc-trk-201', name: 'Vehicle Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-02-20', fileUrl: '#' },
+        { id: 'doc-trk-201', name: 'Vehicle Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-02-20', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
   {
@@ -87,7 +87,7 @@ export const trucks: Truck[] = [
     unauthorizedDoorOpening: false,
     sensors: { door: true, temperature: true, gps: true },
     documents: [
-      { id: 'doc-trk-401', name: 'Vehicle Registration', type: 'Registration', status: 'Pending', expiryDate: '2024-11-01', fileUrl: '#' },
+      { id: 'doc-trk-401', name: 'Vehicle Registration', type: 'Registration', status: 'Pending', expiryDate: '2024-11-01', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
    {
@@ -104,9 +104,9 @@ export const trucks: Truck[] = [
     unauthorizedDoorOpening: false,
     sensors: { door: true, temperature: true, gps: true },
     documents: [
-        { id: 'doc-trk-501', name: 'Goods In Transit Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-08-15', fileUrl: '#' },
-        { id: 'doc-trk-502', name: 'ZIMRA License', type: 'License', status: 'Approved', expiryDate: '2024-12-31', fileUrl: '#' },
-        { id: 'doc-trk-503', name: 'Vehicle Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-07-30', fileUrl: '#' },
+        { id: 'doc-trk-501', name: 'Goods In Transit Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-08-15', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { id: 'doc-trk-502', name: 'ZIMRA License', type: 'License', status: 'Approved', expiryDate: '2024-12-31', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { id: 'doc-trk-503', name: 'Vehicle Insurance', type: 'Insurance', status: 'Approved', expiryDate: '2025-07-30', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
 ];
@@ -151,7 +151,7 @@ export const documents: Document[] = [
     type: 'Tax',
     status: 'Approved',
     uploadDate: '2024-03-10',
-    fileUrl: '#',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
   },
   {
     id: 'doc-102',
@@ -160,7 +160,40 @@ export const documents: Document[] = [
     status: 'Pending',
     expiryDate: '2025-07-01',
     uploadDate: '2024-06-15',
-    fileUrl: '#',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+  },
+  {
+    id: 'doc-103',
+    name: 'Carrier Authority (MC/DOT)',
+    type: 'License',
+    status: 'Approved',
+    uploadDate: '2024-01-20',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+  },
+  {
+    id: 'doc-104',
+    name: 'W-9 Form',
+    type: 'Tax',
+    status: 'Approved',
+    uploadDate: '2024-02-15',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+  },
+  {
+    id: 'doc-105',
+    name: 'Hazmat Safety Permit',
+    type: 'Certification',
+    status: 'Rejected',
+    uploadDate: '2024-05-20',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+  },
+  {
+    id: 'doc-106',
+    name: 'GIT Insurance Certificate',
+    type: 'GIT',
+    status: 'Expired',
+    expiryDate: '2024-06-01',
+    uploadDate: '2023-06-01',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
   },
 ];
 
@@ -241,8 +274,9 @@ export const drivers: Driver[] = [
     status: 'On-time',
     onLeave: false,
     documents: [
-        { id: 'doc-drv-101', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2026-08-12', fileUrl: '#' },
-        { id: 'doc-drv-102', name: 'Medical Certificate', type: 'Certification', status: 'Approved', expiryDate: '2025-01-20', fileUrl: '#' },
+        { id: 'doc-drv-101', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2026-08-12', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { id: 'doc-drv-102', name: 'Medical Certificate', type: 'Certification', status: 'Approved', expiryDate: '2025-01-20', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { id: 'doc-drv-103', name: 'GIT Insurance', type: 'GIT', status: 'Approved', expiryDate: '2025-05-10', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
   {
@@ -256,8 +290,8 @@ export const drivers: Driver[] = [
     leaveStartDate: '2024-07-20',
     leaveEndDate: '2024-08-05',
     documents: [
-        { id: 'doc-drv-201', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2027-03-15', fileUrl: '#' },
-        { id: 'doc-drv-202', name: 'HAZMAT Endorsement', type: 'Certification', status: 'Pending', expiryDate: '2025-11-01', fileUrl: '#' },
+        { id: 'doc-drv-201', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2027-03-15', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { id: 'doc-drv-202', name: 'HAZMAT Endorsement', type: 'Certification', status: 'Pending', expiryDate: '2025-11-01', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
   {
@@ -269,7 +303,7 @@ export const drivers: Driver[] = [
     status: 'Alert',
     onLeave: false,
     documents: [
-         { id: 'doc-drv-301', name: 'Commercial Driver\'s License', type: 'License', status: 'Expired', expiryDate: '2024-06-01', fileUrl: '#' },
+         { id: 'doc-drv-301', name: 'Commercial Driver\'s License', type: 'License', status: 'Expired', expiryDate: '2024-06-01', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
   {
@@ -281,8 +315,8 @@ export const drivers: Driver[] = [
     status: 'Idle',
     onLeave: false,
     documents: [
-        { id: 'doc-drv-401', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2025-09-10', fileUrl: '#' },
-        { id: 'doc-drv-402', name: 'TWIC Card', type: 'Certification', status: 'Rejected', fileUrl: '#' },
+        { id: 'doc-drv-401', name: 'Commercial Driver\'s License', type: 'License', status: 'Approved', expiryDate: '2025-09-10', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+        { id: 'doc-drv-402', name: 'TWIC Card', type: 'Certification', status: 'Rejected', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
     ]
   },
 ];
