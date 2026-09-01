@@ -4,11 +4,14 @@ export type Truck = {
   name: string;
   imageUrl: string;
   licensePlate: string;
+  truckType?: 'Flatbed' | 'Reefer' | 'Box Truck' | 'Tanker';
+  tonnage?: number;
+  color?: string;
   location: {
     lat: number;
     lng: number;
   };
-  status: 'On-time' | 'Delayed' | 'Idle' | 'Alert' | 'Pending';
+  status: 'On-time' | 'Delayed' | 'Idle' | 'Alert' | 'Pending' | 'Incomplete';
   fuelLevel: number;
   idleTime: string;
   loadWeight: number;
@@ -18,7 +21,7 @@ export type Truck = {
     door: boolean;
     temperature: boolean;
     gps: boolean;
-  },
+  };
   documents?: Document[];
 };
 

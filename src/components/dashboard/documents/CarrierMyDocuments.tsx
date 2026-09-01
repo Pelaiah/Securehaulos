@@ -1,15 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as z from 'zod';
-import {
-  useCollection,
-  useFirestore,
-  useMemoFirebase,
-  useUser,
-  errorEmitter,
-  FirestorePermissionError,
-} from '@/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 import { format } from 'date-fns';
 import { type Document } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
@@ -43,68 +36,59 @@ const uploadFormSchema = z.object({
 });
 
 export function CarrierMyDocuments() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, isLoading: isUserLoading } = useSupabaseAuth();
   const { toast } = useToast();
   const [isUploadOpen, setUploadOpen] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [areDocsLoading, setAreDocsLoading] = useState(true);
 
-  const myDocsCollectionRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return collection(firestore, 'users', user.uid, 'verification_documents');
-  }, [user, firestore]);
-
-  const { data: documents, isLoading: areDocsLoading } =
-    useCollection<Document>(myDocsCollectionRef);
+  useEffect(() => {
+    async function fetchDocs() {
+      if (!user) return;
+      setAreDocsLoading(true);
+      const { data, error } = await supabase
+        .from('verification_documents')
+        .select('*')
+        .eq('user_id', user.id);
+      if (!error && data) setDocuments(data as unknown as Document[]);
+      setAreDocsLoading(false);
+    }
+    fetchDocs();
+  }, [user]);
 
   const handleUpload = async (values: z.infer<typeof uploadFormSchema>) => {
-    if (!user || !firestore || !myDocsCollectionRef) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'User not authenticated. Please log in again.',
-      });
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated. Please log in again.' });
       return;
     }
 
-    // In a real app, you would upload the file to Firebase Storage here
-    // and get the download URL. For this demo, we'll use a placeholder.
     const file = values.files[0];
-    const placeholderUrl = `https://storage.googleapis.com/your-bucket/uploads/${
-      user.uid
-    }/${Date.now()}-${file.name}`;
+    const placeholderUrl = `https://storage.googleapis.com/your-bucket/uploads/${user.id}/${Date.now()}-${file.name}`;
 
     try {
       const docData = {
-        userId: user.uid,
+        user_id: user.id,
         name: values.name,
-        documentType: values.type,
-        uploadDate: new Date().toISOString(),
-        expiryDate: values.expiryDate
-          ? format(values.expiryDate, 'yyyy-MM-dd')
-          : null,
+        document_type: values.type,
+        upload_date: new Date().toISOString(),
+        expiry_date: values.expiryDate ? format(values.expiryDate, 'yyyy-MM-dd') : null,
         status: 'Pending',
-        fileUrl: placeholderUrl,
+        file_url: placeholderUrl,
       };
-      
-      await addDoc(myDocsCollectionRef, docData);
 
-      toast({
-        title: 'Document Uploaded',
-        description: `${values.name} has been submitted for verification.`,
-      });
+      const { data, error } = await supabase
+        .from('verification_documents')
+        .insert(docData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (data) setDocuments(prev => [...prev, data as unknown as Document]);
+
+      toast({ title: 'Document Uploaded', description: `${values.name} has been submitted for verification.` });
       setUploadOpen(false);
-    } catch (error) {
-      const fError = new FirestorePermissionError({
-          path: myDocsCollectionRef.path,
-          operation: 'create',
-      });
-      errorEmitter.emit('permission-error', fError);
-      toast({
-        variant: 'destructive',
-        title: 'Upload Failed',
-        description:
-          'Could not submit your document. Please check your permissions and try again.',
-      });
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not submit your document. Please try again.' });
     }
   };
   

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,19 +9,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { Bell, ChevronDown, PlusCircle, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useUser } from '@/firebase';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
 
 type HeaderProps = {
-  title: string;
-  onLogout: () => void;
+  title?: string;
+  onLogout?: () => void;
 };
 
 export function Header({ title, onLogout }: HeaderProps) {
-  const { user } = useUser();
+  const { userProfile, user } = useSupabaseAuth();
+  const displayName = userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : (user?.email || 'User');
+
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-card px-6">
       <div>
-        <h1 className="text-xl font-bold">Welcome back, {user?.displayName || 'Jack'}!</h1>
+        <h1 className="text-xl font-bold">Welcome back, {displayName}!</h1>
         <p className="text-sm text-muted-foreground">You have 5 new delivered parcels.</p>
       </div>
       <div className="ml-auto flex items-center gap-2">

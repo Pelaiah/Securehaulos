@@ -10,28 +10,26 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
-import {
-  useCollection,
-  useFirestore,
-  useMemoFirebase,
-  useUser,
-} from '@/firebase';
-import { type Carrier } from '@/lib/data';
-import { collection } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 import { BadgeCheck, Folder, Loader2 } from 'lucide-react';
 import { CarrierDocuments } from '@/components/dashboard/documents/CarrierDocuments';
 
 export function ShipperDocumentsPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
+  const { user } = useSupabaseAuth();
+  const [carriers, setCarriers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const carriersCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'carriers');
-  }, [firestore]);
-
-  const { data: carriers, isLoading } =
-    useCollection<Carrier>(carriersCollectionRef);
+  useEffect(() => {
+    async function fetchCarriers() {
+      setIsLoading(true);
+      const { data, error } = await supabase.from('carriers').select('*');
+      if (!error && data) setCarriers(data);
+      setIsLoading(false);
+    }
+    fetchCarriers();
+  }, []);
 
   return (
     <div className="space-y-6">

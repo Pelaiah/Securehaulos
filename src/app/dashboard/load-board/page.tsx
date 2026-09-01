@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LoadCard } from '@/components/dashboard/LoadCard';
 import { type Load } from '@/lib/data';
 import { Search, Filter, RefreshCw } from 'lucide-react';
@@ -15,54 +15,45 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadDetailsDialog } from '@/components/dashboard/LoadDetailsDialog';
-import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 import { Truck } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
-interface LoadBoardPageProps {
-  userType?: 'Shipper' | 'Carrier';
-  isLoading: boolean;
-}
-
-export default function LoadBoardPage({ userType, isLoading: isUserLoading }: LoadBoardPageProps) {
+export default function LoadBoardPage() {
+  const { user, userProfile, isLoading: isAuthLoading } = useSupabaseAuth();
+  const userType = userProfile?.user_type;
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { user } = useUser();
-  const firestore = useFirestore();
+  const [loads, setLoads] = useState<Load[]>([]);
+  const [areLoadsLoading, setAreLoadsLoading] = useState(true);
   const { toast } = useToast();
 
-  const loadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'loads');
-  }, [firestore]);
-
-  const { data: loads, isLoading: areLoadsLoading } = useCollection<Load>(loadsCollectionRef);
-
-  const carrierDocRef = useMemoFirebase(() => {
-    if (!user || userType !== 'Carrier') return null;
-    return doc(firestore, 'carriers', user.uid);
-  }, [user, firestore, userType]);
-
-  const { data: carrierData, isLoading: isCarrierLoading } = useDoc(carrierDocRef);
+  useEffect(() => {
+    async function fetchLoads() {
+      setAreLoadsLoading(true);
+      const { data, error } = await supabase.from('loads').select('*');
+      if (!error && data) setLoads(data as unknown as Load[]);
+      setAreLoadsLoading(false);
+    }
+    fetchLoads();
+  }, []);
 
   const carrierFleet = useMemo(() => {
-    // For demo purposes, we'll show 3 idle trucks
     return Array.from({ length: 3 }, (_, i) => ({
       id: `CARR-TR-${100 + i + 1}`,
       name: `Truck #${i + 1}`,
       equipmentType: i % 3 === 0 ? 'Reefer' : i % 2 === 0 ? 'Flatbed' : 'Dry Van',
       location: { lat: 34.0522, lng: -118.2437 },
-      status: 'Idle', // Ensure trucks are available
+      status: 'Idle',
       fuelLevel: Math.floor(Math.random() * 80) + 20,
       idleTime: `0h 0m`,
       loadWeight: 0,
       cargoIntegrity: true,
       unauthorizedDoorOpening: false,
-  })) as (Truck & { equipmentType: string })[];
-
-  }, [carrierData]);
+    })) as (Truck & { equipmentType: string })[];
+  }, []);
 
   const handleGetLoadClick = (load: Load) => {
     setSelectedLoad(load);
@@ -81,7 +72,7 @@ export default function LoadBoardPage({ userType, isLoading: isUserLoading }: Lo
     }, 1000);
   };
 
-  const isLoading = isUserLoading || isRefreshing || areLoadsLoading;
+  const isLoading = isAuthLoading || isRefreshing || areLoadsLoading;
 
   if (isLoading && !isDetailsOpen) {
     return (

@@ -21,8 +21,8 @@ import {
   Moon,
   Map,
 } from 'lucide-react';
-import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 import {
   SidebarProvider,
   Sidebar,
@@ -38,6 +38,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenuSub,
+  SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarMenuSkeleton,
   SidebarInset,
@@ -58,7 +59,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { signOut } from 'firebase/auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +66,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Image from 'next/image';
+
+import { MobileBottomNav } from '@/components/dashboard/MobileBottomNav';
+import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
 
 function SidebarToggleButton() {
     const { state } = useSidebar();
@@ -93,11 +96,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, userProfile, isLoading, signOut } = useSupabaseAuth();
   const router = useRouter();
   const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+  const [isQuickPostOpen, setIsQuickPostOpen] = useState(false);
   
   const shipperTrucks = allTrucks.filter(t => ['TR-001', 'TR-004'].includes(t.id));
   const [selectedTruck, setSelectedTruck] = useState<TruckType | null>(shipperTrucks[0]);
@@ -129,33 +131,24 @@ export default function DashboardLayout({
     }
   };
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [user, firestore]);
-  
-  const shipperDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, 'shippers', user.uid);
-  }, [user, firestore]);
+  const userType = userProfile?.user_type as 'Shipper' | 'Carrier' | undefined;
 
-  const loadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'loads');
-  }, [firestore]);
-  
-  const carrierDocsCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, 'users', user.uid, 'verification_documents');
-  }, [firestore, user]);
+  // Authorization & Protection Guard
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
 
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
-  const { data: shipperData, isLoading: isShipperDataLoading } = useDoc(shipperDocRef);
-  const { data: loadsData, isLoading: areLoadsLoading } = useCollection<Load>(loadsCollectionRef);
-  const { data: carrierDocs, isLoading: areCarrierDocsLoading } = useCollection<Document>(carrierDocsCollectionRef);
-
-
-  const userType = userData?.userType as 'Shipper' | 'Carrier' | undefined;
+    if (userProfile?.user_type) {
+      if (userProfile.user_type === 'Shipper' && pathname.startsWith('/dashboard/carrier')) {
+        router.replace('/dashboard/shipper');
+      } else if (userProfile.user_type === 'Carrier' && pathname.startsWith('/dashboard/shipper')) {
+        router.replace('/dashboard/carrier');
+      }
+    }
+  }, [user, userProfile, isLoading, pathname, router]);
   
   const carrierNavItems = [
     { href: '/dashboard/carrier', icon: LayoutDashboard, label: 'Dashboard' },
@@ -186,36 +179,10 @@ const secondaryNavItems = [
     }
 ]
 
-  useEffect(() => {
-    if (isUserLoading || !user || areLoadsLoading || !userData || areCarrierDocsLoading) {
-      return;
-    }
-
-    const checkPendingActions = () => {
-      if (userType === 'Shipper') {
-        const hasPendingLoads = loadsData?.some(load => load.status === 'Pending' && load.shipperId === user.uid);
-        if (hasPendingLoads) {
-          setShowVerificationPrompt(true);
-        }
-      } else if (userType === 'Carrier') {
-        const hasPendingDocuments = carrierDocs?.some(doc => doc.status === 'Uploaded');
-        const hasNoDocuments = !carrierDocs || carrierDocs.length === 0;
-        if (hasPendingDocuments || hasNoDocuments) {
-            setShowVerificationPrompt(true);
-        }
-      }
-    };
-    
-    checkPendingActions();
-
-  }, [user, isUserLoading, userData, userType, loadsData, areLoadsLoading, carrierDocs, areCarrierDocsLoading]);
-  
-  const handleLogout = () => {
-    if(auth) {
-      signOut(auth);
-      router.push('/login');
-    }
-  }
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   const handleGoToVerification = () => {
     setShowVerificationPrompt(false);
@@ -224,24 +191,24 @@ const secondaryNavItems = [
     } else {
         router.push('/dashboard/documents');
     }
-  }
+  };
 
-  const isLoading = isUserLoading || isUserDataLoading || (userType === 'Shipper' && isShipperDataLoading);
-
-  const childrenWithProps = Children.map(children, child => {
-    if (React.isValidElement(child)) {
-      const props: any = {
-        userType,
-        isLoading: isUserDataLoading || isUserLoading,
-      };
-      if (userType === 'Shipper') {
-        props.companyName = shipperData?.companyName;
-      }
-      return cloneElement(child, props);
+  const handleQuickAction = () => {
+    if (userType === 'Shipper') {
+      setIsQuickPostOpen(true);
+    } else {
+      router.push('/dashboard/load-board');
     }
-    return child;
-  });
-  
+  };
+
+  const handlePostLoad = async (newLoadData: Omit<Load, 'id'>) => {
+    if (!user) return;
+    await supabase.from('loads').insert({
+      ...newLoadData,
+      shipper_id: user.id,
+    });
+  };
+
   const alertContent = useMemo(() => {
     if (userType === 'Shipper') {
       return {
@@ -268,11 +235,24 @@ const secondaryNavItems = [
   const isShipper = userType === 'Shipper';
   const navItems = isShipper ? shipperNavItems : carrierNavItems;
 
+  // Derive display name from Supabase user metadata or profile
+  const displayName =
+    user?.user_metadata?.full_name ||
+    (userProfile ? `${userProfile.first_name} ${userProfile.last_name}`.trim() : null) ||
+    user?.email;
+  const avatarUrl = user?.user_metadata?.avatar_url || 'https://i.imgur.com/a/pZtY2rJ.png';
+
+  const isDriverRoute = pathname.startsWith('/dashboard/driver');
+
+  if (isDriverRoute) {
+    return <div className="w-full min-h-screen bg-[#07080C]">{children}</div>;
+  }
+
   return (
     <SidebarProvider
         style={ isShipper ? { '--sidebar-width': '14rem' } as React.CSSProperties : undefined }
     >
-      <Sidebar variant={isShipper ? "sidebar" : "floating"} collapsible="none" className="group/sidebar bg-card">
+      <Sidebar variant={isShipper ? "sidebar" : "floating"} collapsible="none" className="hidden md:flex group/sidebar bg-card">
         <SidebarHeader className='p-4'>
            <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -305,7 +285,7 @@ const secondaryNavItems = [
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-             {!isShipper && secondaryNavItems.map((item) => (
+             {!isShipper && secondaryNavItems.map((item: any) => (
                 <SidebarMenuItem key={item.id} asChild>
                     <Collapsible>
                         <CollapsibleTrigger asChild>
@@ -323,12 +303,12 @@ const secondaryNavItems = [
                         {item.subItems.length > 0 && (
                              <CollapsibleContent>
                                 <SidebarMenuSub>
-                                {item.subItems.map(subItem => (
+                                {item.subItems.map((subItem: any) => (
                                      <SidebarMenuSubItem key={subItem.href}>
                                         <SidebarMenuSubButton asChild isActive={pathname === subItem.href}>
                                             <Link href={subItem.href}>{subItem.label}</Link>
                                         </SidebarMenuSubButton>
-                                    </SidebarMenuSubItem>
+                                     </SidebarMenuSubItem>
                                 ))}
                                 </SidebarMenuSub>
                              </CollapsibleContent>
@@ -355,11 +335,11 @@ const secondaryNavItems = [
                     <DropdownMenuTrigger asChild>
                        <Button variant="ghost" className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.photoURL || "https://i.imgur.com/a/pZtY2rJ.png"} alt="User avatar" data-ai-hint="man avatar" />
+                          <AvatarImage src={avatarUrl} alt="User avatar" data-ai-hint="man avatar" />
                           <AvatarFallback>U</AvatarFallback>
                         </Avatar>
                         <div className="text-left">
-                            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                            <p className="text-sm font-medium">{displayName}</p>
                             <p className="text-xs text-muted-foreground">{userType}</p>
                         </div>
                       </Button>
@@ -374,8 +354,20 @@ const secondaryNavItems = [
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className={cn('overflow-y-auto', isShipper ? '' : 'bg-background p-6')}>
-        <main className="flex-1">{childrenWithProps}</main>
+      <SidebarInset className={cn('overflow-y-auto w-full min-h-screen', isShipper ? '' : 'bg-background md:p-6')}>
+        <main className="flex-1 w-full pb-20 md:pb-0">{children}</main>
+        
+        {/* Floating Mobile Bottom Navigation */}
+        <MobileBottomNav userType={userType} onQuickAction={handleQuickAction} />
+
+        {/* Quick Post Load Modal for Mobile Plus Action */}
+        <PostLoadModal
+          isOpen={isQuickPostOpen}
+          onOpenChange={setIsQuickPostOpen}
+          onPostLoad={handlePostLoad}
+          companyName={userProfile?.user_type === 'Shipper' ? (userProfile as any)?.company_name : undefined}
+        />
+
         <AlertDialog open={showVerificationPrompt} onOpenChange={setShowVerificationPrompt}>
           <AlertDialogContent className="p-4">
             <AlertDialogHeader>

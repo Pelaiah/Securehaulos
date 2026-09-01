@@ -33,9 +33,7 @@ import {
 import Image from 'next/image';
 import { drivers } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, errorEmitter, FirestorePermissionError, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, doc, updateDoc, writeBatch } from 'firebase/firestore';
-
+import { supabase } from '@/lib/supabase/client';
 
 type SubmittedDocument = {
     id: string;
@@ -66,66 +64,65 @@ export function PendingLoadDetailsDialog({
 }: PendingLoadDetailsDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const firestore = useFirestore();
+  const [assignedTruck, setAssignedTruck] = useState<Truck | null>(null);
+  const [isLoadingTruck, setIsLoadingTruck] = useState(false);
+  const [carrierData, setCarrierData] = useState<any>(null);
+  const [carrierDocs, setCarrierDocs] = useState<CarrierDocument[]>([]);
+  const [areCarrierDocsLoading, setAreCarrierDocsLoading] = useState(false);
+  const submittedDocs: SubmittedDocument[] = [];
+  const isLoadingDocs = false;
 
-  const assignedTruckRef = useMemoFirebase(() => {
-    if (!firestore || !load?.assignedTruckId) return null;
-    return doc(firestore, 'trucks', load.assignedTruckId);
-  }, [firestore, load]);
+  useEffect(() => {
+    if (!load?.assignedTruckId) return;
+    setIsLoadingTruck(true);
+    supabase.from('trucks').select('*').eq('id', load.assignedTruckId).single()
+      .then(({ data }) => {
+        if (data) setAssignedTruck(data as unknown as Truck);
+        setIsLoadingTruck(false);
+      });
+  }, [load?.assignedTruckId]);
 
-  const { data: assignedTruck, isLoading: isLoadingTruck } = useDoc<Truck>(assignedTruckRef);
+  useEffect(() => {
+    if (!load?.carrierId) return;
+    supabase.from('carriers').select('*').eq('id', load.carrierId).single()
+      .then(({ data }) => {
+        if (data) setCarrierData(data);
+      });
+
+    setAreCarrierDocsLoading(true);
+    supabase.from('verification_documents').select('*').eq('user_id', load.carrierId)
+      .then(({ data }) => {
+        if (data) setCarrierDocs(data as unknown as CarrierDocument[]);
+        setAreCarrierDocsLoading(false);
+      });
+  }, [load?.carrierId]);
+
   const assignedDriver = getDriverForTruck(assignedTruck?.id);
-  
-  const documentsRef = useMemoFirebase(() => {
-    if (!firestore || !load) return null;
-    return collection(firestore, 'loads', load.id, 'submitted_documents');
-  }, [firestore, load]);
-  const { data: submittedDocs, isLoading: isLoadingDocs } = useCollection<SubmittedDocument>(documentsRef);
-
-  const carrierDocRef = useMemoFirebase(() => {
-    if (!firestore || !load?.carrierId) return null;
-    return doc(firestore, 'carriers', load.carrierId);
-  }, [firestore, load]);
-  const { data: carrierData } = useDoc(carrierDocRef);
-
-   const carrierDocsRef = useMemoFirebase(() => {
-    if (!firestore || !load?.carrierId) return null;
-    return collection(firestore, 'users', load.carrierId, 'verification_documents');
-  }, [firestore, load]);
-  const { data: carrierDocs, isLoading: areCarrierDocsLoading } = useCollection<CarrierDocument>(carrierDocsRef);
-
 
   const handleDecision = async (decision: 'Approved' | 'Rejected') => {
-    if (!load || !firestore || !load.assignedTruckId) return;
+    if (!load) return;
     
     setIsSubmitting(true);
     
     try {
-        const batch = writeBatch(firestore);
-        const loadRef = doc(firestore, 'loads', load.id);
-        const truckRef = doc(firestore, 'trucks', load.assignedTruckId);
-        
         if (decision === 'Approved') {
-            batch.update(loadRef, { status: 'In Transit' });
-            batch.update(truckRef, { status: 'On-time' });
-
-            if (carrierDocRef) {
-              batch.update(carrierDocRef, { verified: true });
+            await supabase.from('loads').update({ status: 'In Transit' }).eq('id', load.id);
+            if (load.assignedTruckId) {
+              await supabase.from('trucks').update({ status: 'On-time' }).eq('id', load.assignedTruckId);
             }
-        } else {
-            batch.update(loadRef, { status: 'Posted', carrierId: null, assignedTruckId: null });
-            batch.update(truckRef, { status: 'Idle' });
-        }
-        
-        await batch.commit();
-
-        if (decision === 'Approved') {
+            if (load.carrierId) {
+              await supabase.from('carriers').update({ verified: true }).eq('id', load.carrierId);
+            }
             toast({
                 title: 'Load Approved!',
                 description: `Carrier has been assigned and load #${load.id} is now In Transit.`,
             });
         } else {
-             toast({
+            await supabase.from('loads').update({ status: 'Posted', carrier_id: null, assigned_truck_id: null }).eq('id', load.id);
+            if (load.assignedTruckId) {
+              await supabase.from('trucks').update({ status: 'Idle' }).eq('id', load.assignedTruckId);
+            }
+            toast({
                 title: 'Application Rejected',
                 description: `Load #${load.id} has been returned to the load board.`,
                 variant: 'destructive'
@@ -135,30 +132,27 @@ export function PendingLoadDetailsDialog({
     } catch (error: any) {
         toast({
             title: 'Update Failed',
-            description: error.message || 'An unexpected error occurred. Please check security rules.',
+            description: error.message || 'An unexpected error occurred. Please try again.',
             variant: 'destructive',
         });
-        const permissionError = new FirestorePermissionError({
-            path: `batch write for load ${load.id}`,
-            operation: 'write',
-            requestResourceData: { 
-                decision,
-                loadId: load.id,
-                truckId: load.assignedTruckId,
-            },
-        });
-        errorEmitter.emit('permission-error', permissionError);
     } finally {
         setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDocumentVerification = async (docId: string, status: 'Approved' | 'Rejected') => {
-    if (!load?.carrierId || !firestore) return;
+    if (!load?.carrierId) return;
 
     try {
-        const docRef = doc(firestore, 'users', load.carrierId, 'verification_documents', docId);
-        await updateDoc(docRef, { status: status });
+        const { error } = await supabase
+          .from('verification_documents')
+          .update({ status })
+          .eq('id', docId)
+          .eq('user_id', load.carrierId);
+
+        if (error) throw error;
+
+        setCarrierDocs(prev => prev.map(d => d.id === docId ? { ...d, status } : d));
 
         toast({
             title: `Document ${status}`,
@@ -170,14 +164,8 @@ export function PendingLoadDetailsDialog({
             description: 'Could not update the document status. Please check permissions.',
             variant: 'destructive'
         });
-        const permissionError = new FirestorePermissionError({
-            path: `users/${load.carrierId}/verification_documents/${docId}`,
-            operation: 'update',
-            requestResourceData: { status },
-        });
-        errorEmitter.emit('permission-error', permissionError);
     }
-  }
+  };
 
   if (!load) return null;
 

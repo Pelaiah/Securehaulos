@@ -18,12 +18,14 @@ interface TrackingDetailsProps {
     truck: Truck;
 }
 
-const statusColors = {
+const statusColors: Record<string, string> = {
     'On-time': 'text-green-400 border-green-400/50 bg-green-500/10',
     'On Route': 'text-green-400 border-green-400/50 bg-green-500/10',
     Delayed: 'text-yellow-400 border-yellow-400/50 bg-yellow-500/10',
     Idle: 'text-gray-400 border-gray-400/50 bg-gray-500/10',
     Alert: 'text-red-400 border-red-400/50 bg-red-500/10',
+    Pending: 'text-orange-400 border-orange-400/50 bg-orange-500/10',
+    Incomplete: 'text-amber-400 border-amber-400/50 bg-amber-500/10',
 };
 
 const docStatusColors = {

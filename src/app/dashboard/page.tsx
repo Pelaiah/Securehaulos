@@ -2,47 +2,37 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, userProfile, isLoading } = useSupabaseAuth();
   const router = useRouter();
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, 'users', user.uid);
-  }, [user, firestore]);
-
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
-
   useEffect(() => {
-    if (isUserLoading || isUserDataLoading) {
-      // Still loading, do nothing
+    if (isLoading) {
+      // Still determining auth state, do nothing
       return;
     }
 
     if (!user) {
-      // If no user, send to login
+      // Not authenticated — send to login
       router.replace('/login');
       return;
     }
 
-    if (userData) {
-      if (userData.userType === 'Shipper') {
+    if (userProfile) {
+      // Redirect based on user_type stored in the users table
+      if (userProfile.user_type === 'Shipper') {
         router.replace('/dashboard/shipper');
       } else {
         router.replace('/dashboard/carrier');
       }
     } else {
-      // User is authenticated but has no data in Firestore yet.
-      // This can happen briefly during signup. We wait, and the hook will re-run.
-      // If this persists, it's an issue. For now, we don't redirect.
-      console.log("User authenticated, but user data not yet available. Waiting...");
+      // User is authenticated but profile isn't loaded yet — wait for re-render
+      console.log('User authenticated, waiting for profile...');
     }
-  }, [user, userData, isUserLoading, isUserDataLoading, router]);
+  }, [user, userProfile, isLoading, router]);
 
   // Show a loading skeleton while we determine the user's role and redirect
   return (

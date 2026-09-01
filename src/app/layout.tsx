@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { FirebaseClientProvider } from '@/firebase';
+import { SupabaseAuthProvider } from '@/components/providers/SupabaseAuthProvider';
 
 export const metadata: Metadata = {
   title: 'Suboor loadboard',
@@ -26,10 +26,10 @@ export default function RootLayout({
         />
       </head>
       <body className={cn('font-body antialiased')}>
-        <FirebaseClientProvider>
+        <SupabaseAuthProvider>
           {children}
           <Toaster />
-        </FirebaseClientProvider>
+        </SupabaseAuthProvider>
       </body>
     </html>
   );

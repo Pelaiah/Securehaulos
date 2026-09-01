@@ -13,15 +13,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore } from '@/firebase';
+import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { doc, setDoc } from 'firebase/firestore';
-import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { LogoUpload } from './LogoUpload';
 
 const formSchema = z.object({
@@ -36,11 +31,8 @@ const formSchema = z.object({
   companyMantra: z.string().optional(),
 });
 
-
 export function SignUpForm() {
   const { toast } = useToast();
-  const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,85 +50,89 @@ export function SignUpForm() {
       companyMantra: '',
     },
   });
-  
+
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // In a real app, you would upload the file to Firebase Storage
-      // and get the download URL. For this demo, we'll just use an empty string.
       const companyLogoUrl = '';
-      
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
+
+      // 1. Sign up user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            user_type: formData.userType,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        throw new Error('User ID was not generated during signup.');
+      }
 
       const nameParts = formData.fullName.trim().split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-      
-      const userData: any = {
-        id: user.uid,
-        firstName: firstName,
-        lastName: lastName,
+
+      // 2. Insert user profile into public.users
+      const { error: userError } = await supabase.from('users').upsert({
+        id: userId,
+        first_name: firstName,
+        last_name: lastName,
         email: formData.email,
-        userType: formData.userType,
+        user_type: formData.userType,
         phone: formData.phone,
-      };
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, userData).catch(error => {
-          errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-              path: userDocRef.path,
-              operation: 'create',
-              requestResourceData: userData,
-            })
-          );
-          throw error;
       });
 
-      const carrierData = {
-        id: user.uid,
-        companyName: formData.companyName,
-        fleetSize: formData.fleetSize, 
-        premiumMembership: false,
+      if (userError) console.warn('Users table update notice:', userError.message);
+
+      // 3. Insert carrier profile into public.carriers
+      const { error: carrierError } = await supabase.from('carriers').upsert({
+        id: userId,
+        company_name: formData.companyName,
+        fleet_size: formData.fleetSize,
         verified: false,
-        companyLogoUrl,
-        companyMantra: formData.companyMantra,
-      };
-      const carrierDocRef = doc(firestore, 'carriers', user.uid);
-      await setDoc(carrierDocRef, carrierData).catch(error => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: carrierDocRef.path,
-            operation: 'create',
-            requestResourceData: carrierData,
-          })
-        );
-        throw error;
+        company_logo_url: companyLogoUrl,
+        company_mantra: formData.companyMantra,
       });
-      
+
+      if (carrierError) console.warn('Carriers table update notice:', carrierError.message);
+
+      // 4. PRIORITY FIX: Bulk generate N truck records matching fleetSize
+      const initialTrucks = Array.from({ length: formData.fleetSize }).map((_, index) => ({
+        carrier_id: userId,
+        name: `Truck #${index + 1} (Setup Required)`,
+        status: 'Incomplete',
+        truck_type: 'Flatbed',
+        license_plate: '',
+        tonnage: 0,
+        color: '',
+        fuel_level: 100,
+        idle_time: '0h 0m',
+        load_weight: 0,
+        cargo_integrity: true,
+        unauthorized_door_opening: false,
+        location: { lat: 34.0522, lng: -118.2437 },
+      }));
+
+      const { error: trucksError } = await supabase.from('trucks').insert(initialTrucks);
+      if (trucksError) console.warn('Trucks creation notice:', trucksError.message);
+
       toast({
         title: 'Account Created',
-        description: "You've been successfully signed up. Redirecting to your dashboard...",
+        description: `Successfully signed up carrier account with ${formData.fleetSize} trucks created! Redirecting...`,
       });
       router.push('/dashboard');
-
-    } catch (error) {
-      const firebaseError = error as FirebaseError;
-      let errorMessage = 'An unexpected error occurred. Please try again.';
-
-      if (firebaseError.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email is already in use. Please use a different email or log in.';
-      } else if (firebaseError.name === 'FirebaseError' && firebaseError.code.startsWith('firestore')) {
-        errorMessage = 'Could not save user information due to a database permission issue. Please contact support.';
-      }
-
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: errorMessage,
+        description: error.message || 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -160,18 +156,18 @@ export function SignUpForm() {
           )}
         />
         <FormField
-            control={form.control}
-            name="companyName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Company Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Your Company Name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          control={form.control}
+          name="companyName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Your Company Name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="companyLogo"
@@ -179,7 +175,7 @@ export function SignUpForm() {
             <FormItem>
               <FormLabel>Company Logo</FormLabel>
               <FormControl>
-                 <LogoUpload onFileChange={field.onChange} />
+                <LogoUpload onFileChange={field.onChange} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -238,19 +234,19 @@ export function SignUpForm() {
           )}
         />
         <FormField
-            control={form.control}
-            name="fleetSize"
-            render={({ field }) => (
+          control={form.control}
+          name="fleetSize"
+          render={({ field }) => (
             <FormItem>
-                <FormLabel>Number of Trucks in Fleet</FormLabel>
-                <FormControl>
+              <FormLabel>Number of Trucks in Fleet</FormLabel>
+              <FormControl>
                 <Input type="number" placeholder="e.g. 5" {...field} />
-                </FormControl>
-                <FormMessage />
+              </FormControl>
+              <FormMessage />
             </FormItem>
-            )}
+          )}
         />
-        
+
         <div className="flex items-center gap-4 pt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

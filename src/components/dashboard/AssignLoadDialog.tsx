@@ -14,8 +14,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Load, Truck } from '@/lib/data';
 import { Loader2, Truck as TruckIcon } from 'lucide-react';
-import { useFirestore, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
-import { doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 
 type AssignLoadDialogProps = {
   isOpen: boolean;
@@ -32,13 +32,12 @@ export function AssignLoadDialog({
 }: AssignLoadDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const firestore = useFirestore();
-  const { user } = useUser();
+  const { user } = useSupabaseAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTruckId, setSelectedTruckId] = useState<string | undefined>();
 
   const handleAssignLoad = async () => {
-    if (!load || !firestore || !selectedTruckId || !user) return;
+    if (!load || !selectedTruckId || !user) return;
 
     if (!selectedTruckId) {
       toast({
@@ -50,62 +49,40 @@ export function AssignLoadDialog({
     }
 
     setIsSubmitting(true);
-    
-    const batch = writeBatch(firestore);
-    
-    const loadRef = doc(firestore, 'loads', load.id);
-    const truckRef = doc(firestore, 'trucks', selectedTruckId);
 
-    // Update load to 'Pending' and assign carrier & truck
-    batch.update(loadRef, { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId });
+    try {
+      // Update load status and assign carrier & truck
+      const { error: loadError } = await supabase
+        .from('loads')
+        .update({ status: 'Pending', carrier_id: user.id, assigned_truck_id: selectedTruckId })
+        .eq('id', load.id);
 
-    // Use set with merge to create the truck doc if it doesn't exist, or update it if it does.
-    const selectedTruck = availableTrucks.find(t => t.id === selectedTruckId);
-    if (selectedTruck) {
-        const truckData = {
-            id: selectedTruck.id,
-            name: selectedTruck.name,
-            equipmentType: selectedTruck.equipmentType,
-            location: selectedTruck.location,
-            status: 'Pending',
-            fuelLevel: selectedTruck.fuelLevel,
-            idleTime: selectedTruck.idleTime,
-            loadWeight: selectedTruck.loadWeight,
-            cargoIntegrity: selectedTruck.cargoIntegrity,
-            unauthorizedDoorOpening: selectedTruck.unauthorizedDoorOpening,
-            driverId: user.uid,
-            imageUrl: selectedTruck.imageUrl || "https://i.imgur.com/gJt3wGk.png",
-            sensors: selectedTruck.sensors || { door: true, temperature: true, gps: true } // Ensure sensors object exists
-        };
-        batch.set(truckRef, truckData, { merge: true });
+      if (loadError) throw loadError;
+
+      // Update truck status
+      const selectedTruck = availableTrucks.find(t => t.id === selectedTruckId);
+      if (selectedTruck) {
+        await supabase
+          .from('trucks')
+          .update({ status: 'Pending' })
+          .eq('id', selectedTruckId);
+      }
+
+      toast({
+        title: 'Load Assigned for Review',
+        description: `The shipper will now review your application for load #${load.id}.`,
+      });
+      onOpenChange(false);
+      router.push('/dashboard/my-trucks');
+    } catch (error: any) {
+      toast({
+        title: 'Assignment Failed',
+        description: error.message || 'Could not assign the load. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    batch.commit().catch((error) => {
-        setIsSubmitting(false);
-        toast({
-            title: 'Assignment Failed',
-            description: 'Could not assign the load. Please check permissions and try again.',
-            variant: 'destructive',
-        });
-        const permissionError = new FirestorePermissionError({
-            path: `Batch write failed. Load: ${load.id}, Truck: ${selectedTruckId}`,
-            operation: 'write',
-            requestResourceData: { 
-                loadUpdate: { status: 'Pending', carrierId: user.uid, assignedTruckId: selectedTruckId },
-                truckUpdate: { status: 'Pending' }
-            },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    }).then(() => {
-        if (!isSubmitting) return; // In case of error, don't proceed
-        toast({
-            title: 'Load Assigned for Review',
-            description: `The shipper will now review your application for load #${load.id}.`,
-        });
-        onOpenChange(false);
-        router.push('/dashboard/my-trucks');
-        setIsSubmitting(false);
-    });
   };
 
   if (!load) return null;

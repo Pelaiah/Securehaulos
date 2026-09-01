@@ -31,7 +31,7 @@ export function EmergencyAlert({
             <MapPin className="h-5 w-5 text-blue-500" />
             <span className="font-semibold">Nearest Police Station</span>
           </div>
-        ),
+        ) as any,
         description: result.suggestion,
         duration: 9000,
       });

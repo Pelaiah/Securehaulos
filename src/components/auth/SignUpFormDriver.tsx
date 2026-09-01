@@ -13,15 +13,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore } from '@/firebase';
+import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { doc, setDoc } from 'firebase/firestore';
-import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
@@ -43,18 +38,14 @@ const formSchema = z.object({
     path: ["companyName"],
 });
 
-// Mock list of existing companies. In a real app, this would come from an API.
 const existingCompanies = [
     { id: 'swift-transport', name: 'Swift Transport' },
     { id: 'bolt-logistics', name: 'Bolt Logistics' },
     { id: 'apex-freight', name: 'Apex Freight' },
 ];
 
-
 export function SignUpFormDriver() {
   const { toast } = useToast();
-  const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,78 +64,56 @@ export function SignUpFormDriver() {
   });
 
   const companySelection = form.watch("companySelection");
-  
+
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            user_type: 'Driver',
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        throw new Error('User ID was not generated during signup.');
+      }
 
       const nameParts = formData.fullName.trim().split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-      
-      const userData: any = {
-        id: user.uid,
-        firstName: firstName,
-        lastName: lastName,
+
+      await supabase.from('users').upsert({
+        id: userId,
+        first_name: firstName,
+        last_name: lastName,
         email: formData.email,
-        userType: formData.userType,
+        user_type: 'Driver',
         phone: formData.phone,
-      };
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, userData).catch(error => {
-          errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-              path: userDocRef.path,
-              operation: 'create',
-              requestResourceData: userData,
-            })
-          );
-          throw error;
       });
 
-      // Note: Here you might want logic to associate the driver with the selected company.
-      // For this prototype, we'll just create the driver record.
-      const driverData = {
-        id: user.uid,
-        licenseNumber: formData.licenseNumber,
-      };
-      const driverDocRef = doc(firestore, 'drivers', user.uid);
-      await setDoc(driverDocRef, driverData).catch(error => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: driverDocRef.path,
-            operation: 'create',
-            requestResourceData: driverData,
-          })
-        );
-        throw error;
+      await supabase.from('drivers').upsert({
+        id: userId,
+        license_number: formData.licenseNumber,
       });
-      
+
       toast({
         title: 'Account Created',
-        description: "You've been successfully signed up as a driver. Redirecting to your dashboard...",
+        description: "You've been successfully signed up as a driver. Redirecting...",
       });
       router.push('/dashboard');
-
-    } catch (error) {
-      const firebaseError = error as FirebaseError;
-      let errorMessage = 'An unexpected error occurred. Please try again.';
-
-      if (firebaseError.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email is already in use. Please use a different email or log in.';
-      } else if (firebaseError.name === 'FirebaseError' && firebaseError.code.startsWith('firestore')) {
-        errorMessage = 'Could not save user information due to a database permission issue. Please contact support.';
-      }
-
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: errorMessage,
+        description: error.message || 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -260,7 +229,7 @@ export function SignUpFormDriver() {
             </FormItem>
           )}
         />
-        
+
         <div className="flex items-center gap-4 pt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

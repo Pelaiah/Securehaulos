@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 type AnimatedTextProps = {
   text: string | { text: string; className?: string }[];
-  el?: keyof React.JSX.IntrinsicElements;
+  el?: any;
   className?: string;
   stagger?: number;
   delay?: number;

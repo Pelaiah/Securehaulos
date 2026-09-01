@@ -22,11 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useAuth } from '@/firebase';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { FirebaseError } from 'firebase/app';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -39,7 +37,6 @@ type ForgotPasswordDialogProps = {
 
 export function ForgotPasswordDialog({ isOpen, onOpenChange }: ForgotPasswordDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const auth = useAuth();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -52,23 +49,20 @@ export function ForgotPasswordDialog({ isOpen, onOpenChange }: ForgotPasswordDia
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await sendPasswordResetEmail(auth, values.email);
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email);
+      if (error) throw error;
+
       toast({
         title: 'Check Your Email',
         description: `A password reset link has been sent to ${values.email}.`,
       });
-      onOpenChange(false); // Close the dialog on success
+      onOpenChange(false);
       form.reset();
-    } catch (error) {
-       const firebaseError = error as FirebaseError;
-       let errorMessage = 'An unexpected error occurred. Please try again.';
-        if (firebaseError.code === 'auth/user-not-found') {
-            errorMessage = 'No account found with that email address.';
-        }
-       toast({
+    } catch (error: any) {
+      toast({
         variant: 'destructive',
         title: 'Error',
-        description: errorMessage,
+        description: error.message || 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsLoading(false);

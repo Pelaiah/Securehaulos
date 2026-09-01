@@ -13,15 +13,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore } from '@/firebase';
+import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { doc, setDoc } from 'firebase/firestore';
-import { FirebaseError } from 'firebase/app';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { LogoUpload } from './LogoUpload';
 
 const formSchema = z.object({
@@ -38,8 +33,6 @@ const formSchema = z.object({
 
 export function SignUpFormShipper() {
   const { toast } = useToast();
-  const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,83 +50,59 @@ export function SignUpFormShipper() {
       companyField: '',
     },
   });
-  
+
   async function onFormSubmit(formData: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // In a real app, you would upload the file to Firebase Storage
-      // and get the download URL. For this demo, we'll just use an empty string.
       const companyLogoUrl = '';
 
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            user_type: 'Shipper',
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        throw new Error('User ID was not generated during signup.');
+      }
 
       const nameParts = formData.fullName.trim().split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-      const userData: any = {
-        id: user.uid,
-        firstName: firstName,
-        lastName: lastName,
+      await supabase.from('users').upsert({
+        id: userId,
+        first_name: firstName,
+        last_name: lastName,
         email: formData.email,
-        userType: 'Shipper',
+        user_type: 'Shipper',
         phone: formData.phone,
-      };
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, userData).catch(error => {
-          errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-              path: userDocRef.path,
-              operation: 'create',
-              requestResourceData: userData,
-            })
-          );
-          throw error;
       });
-      
-      const shipperData = {
-          id: user.uid,
-          companyName: formData.companyName,
-          companyLogoUrl: companyLogoUrl,
-          companyMantra: formData.companyMantra,
-          companyField: formData.companyField,
-          address: formData.address,
-      };
-      const shipperDocRef = doc(firestore, 'shippers', user.uid);
-      await setDoc(shipperDocRef, shipperData).catch(error => {
-          errorEmitter.emit(
-              'permission-error',
-              new FirestorePermissionError({
-                  path: shipperDocRef.path,
-                  operation: 'create',
-                  requestResourceData: shipperData,
-              })
-          )
-      })
+
+      await supabase.from('shippers').upsert({
+        id: userId,
+        company_name: formData.companyName,
+        address: formData.address,
+      });
 
       toast({
         title: 'Account Created',
-        description: "You've been successfully signed up. Redirecting to your dashboard...",
+        description: "You've been successfully signed up as a Shipper. Redirecting...",
       });
       router.push('/dashboard');
-
-    } catch (error) {
-      const firebaseError = error as FirebaseError;
-      let errorMessage = 'An unexpected error occurred. Please try again.';
-
-      if (firebaseError.code === 'auth/email-already-in-use') {
-        errorMessage = 'This email is already in use. Please use a different email or log in.';
-      } else if (firebaseError.name === 'FirebaseError' && firebaseError.code.startsWith('firestore')) {
-        errorMessage = 'Could not save user information due to a database permission issue. Please contact support.';
-      }
-
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: errorMessage,
+        description: error.message || 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -182,14 +151,14 @@ export function SignUpFormShipper() {
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
           control={form.control}
           name="companyLogo"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Company Logo</FormLabel>
               <FormControl>
-                 <LogoUpload onFileChange={field.onChange} />
+                <LogoUpload onFileChange={field.onChange} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -260,7 +229,7 @@ export function SignUpFormShipper() {
             </FormItem>
           )}
         />
-        
+
         <div className="flex items-center gap-4 pt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

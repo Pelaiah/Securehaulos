@@ -20,35 +20,33 @@ import {
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import {
-  useCollection,
-  useFirestore,
-  useUser,
-  useMemoFirebase,
-  errorEmitter,
-  FirestorePermissionError,
-} from '@/firebase';
-import { collection, doc, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DocumentViewerDialog } from './DocumentViewerDialog';
 
 export function CarrierDocuments({ carrierId }: { carrierId: string }) {
-  const firestore = useFirestore();
   const { toast } = useToast();
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
-    null
-  );
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const documentsCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !carrierId) return null;
-    return collection(firestore, 'users', carrierId, 'verification_documents');
-  }, [firestore, carrierId]);
-
-  const { data: documents, isLoading } =
-    useCollection<Document>(documentsCollectionRef);
+  useEffect(() => {
+    async function fetchDocs() {
+      if (!carrierId) return;
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('verification_documents')
+        .select('*')
+        .eq('user_id', carrierId);
+      if (!error && data) setDocuments(data as unknown as Document[]);
+      setIsLoading(false);
+    }
+    fetchDocs();
+  }, [carrierId]);
 
   const statusColors = {
     Approved: 'text-green-400 bg-green-500/10',
@@ -61,36 +59,26 @@ export function CarrierDocuments({ carrierId }: { carrierId: string }) {
     docId: string,
     status: 'Approved' | 'Rejected'
   ) => {
-    if (!carrierId || !firestore) return;
-
+    if (!carrierId) return;
     try {
-      const docRef = doc(
-        firestore,
-        'users',
-        carrierId,
-        'verification_documents',
-        docId
-      );
-      await updateDoc(docRef, { status: status });
-
+      const { error } = await supabase
+        .from('verification_documents')
+        .update({ status })
+        .eq('id', docId)
+        .eq('user_id', carrierId);
+      if (error) throw error;
+      setDocuments(prev => prev.map(d => d.id === docId ? { ...d, status } : d));
       toast({
         title: `Document ${status}`,
         description: `The document has been marked as ${status.toLowerCase()}.`,
       });
-      setIsViewerOpen(false); // Close viewer on action
+      setIsViewerOpen(false);
     } catch (error: any) {
       toast({
         title: 'Verification Failed',
-        description:
-          'Could not update the document status. Please check permissions.',
+        description: 'Could not update the document status. Please check permissions.',
         variant: 'destructive',
       });
-      const permissionError = new FirestorePermissionError({
-        path: `users/${carrierId}/verification_documents/${docId}`,
-        operation: 'update',
-        requestResourceData: { status },
-      });
-      errorEmitter.emit('permission-error', permissionError);
     }
   };
 

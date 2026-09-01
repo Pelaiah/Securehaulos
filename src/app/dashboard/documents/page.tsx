@@ -3,15 +3,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CarrierMyDocuments } from '@/components/dashboard/documents/CarrierMyDocuments';
 import { ShipperDocumentsPage } from '@/components/dashboard/documents/ShipperDocumentsPage';
 
-interface DocumentsPageProps {
-  userType?: 'Shipper' | 'Carrier';
-  isLoading: boolean;
-}
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
 
-export default function DocumentsPage({
-  userType,
-  isLoading,
-}: DocumentsPageProps) {
+export default function DocumentsPage() {
+  const { userProfile, isLoading } = useSupabaseAuth();
+  const userType = userProfile?.user_type;
   if (isLoading) {
     return (
       <div className="space-y-6">

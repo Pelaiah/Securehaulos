@@ -19,6 +19,8 @@ import { useLayoutEffect, useRef } from 'react';
 import { gsap, CustomEase, CustomWiggle, ScrollTrigger } from '@/lib/gsap';
 import ParallaxWrapper from '@/components/ParallaxWrapper';
 
+import { MobileHeroOnboarding } from '@/components/MobileHeroOnboarding';
+
 export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
   const featureCardsRef = useRef<HTMLDivElement>(null);
@@ -73,7 +75,7 @@ export default function Home() {
         const wiggle = types[i];
         if (wiggle) {
           tl.to(
-            flair,
+            flair as any,
             {
               [wiggle.property]: wiggle.value,
               duration: wiggle.duration,
@@ -104,7 +106,12 @@ export default function Home() {
   }, []);
   
   return (
-    <div className="relative text-foreground">
+    <>
+      {/* Mobile Screen: 100% influence from Screen 1 */}
+      <MobileHeroOnboarding />
+
+      {/* Desktop / Tablet View */}
+      <div className="hidden md:block relative text-foreground">
        {heroImage && (
         <div className="fixed h-screen w-screen top-0 left-0 z-0">
           <ParallaxWrapper>
@@ -262,5 +269,6 @@ export default function Home() {
       </section>
 
     </div>
+    </>
   );
 }

@@ -30,7 +30,25 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const initialConversations = [
+interface Message {
+  id: number;
+  text: string;
+  sender: string;
+  time: string;
+  status: 'read' | 'sent' | 'delivered';
+}
+
+interface Conversation {
+  id: number;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unread: number;
+  messages: Message[];
+}
+
+const initialConversations: Conversation[] = [
   {
     id: 1,
     name: 'Alex Williams',
@@ -71,9 +89,6 @@ const initialConversations = [
     ],
   },
 ];
-
-type Message = (typeof initialConversations)[0]['messages'][0];
-type Conversation = (typeof initialConversations)[0];
 
 const ReadReceipt = ({ status }: { status: Message['status'] }) => {
     if (status === 'read') {

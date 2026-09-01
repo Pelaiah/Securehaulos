@@ -21,50 +21,43 @@ import {
   ArrowRight,
   Package,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PostLoadModal } from '@/components/dashboard/shipper/PostLoadModal';
-import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
-import { addDoc, collection, doc, updateDoc } from 'firebase/firestore';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { supabase } from '@/lib/supabase/client';
 import { PendingLoadDetailsDialog } from '@/components/dashboard/shipper/PendingLoadDetailsDialog';
 import { trucks } from '@/lib/data';
 
-interface MyLoadsPageProps {
-  companyName?: string;
-}
-
-export default function MyLoadsPage({ companyName = "Your Company" }: MyLoadsPageProps) {
+export default function MyLoadsPage() {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedLoad, setSelectedLoad] = useState<Load | null>(null);
 
-  const firestore = useFirestore();
-  const { user } = useUser();
+  const { user, userProfile } = useSupabaseAuth();
+  const companyName = (userProfile as any)?.company_name || 'Your Company';
+  const [loads, setLoads] = useState<Load[]>([]);
 
-  const loadsCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, 'loads');
-  }, [firestore, user]);
+  useEffect(() => {
+    async function fetchLoads() {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('loads')
+        .select('*')
+        .eq('shipper_id', user.id);
+      if (!error && data) setLoads(data as unknown as Load[]);
+    }
+    fetchLoads();
+  }, [user]);
 
-  const { data: loads } = useCollection<Load>(loadsCollectionRef);
-
-  const handlePostLoad = (newLoadData: Omit<Load, 'id'>) => {
-    if (!loadsCollectionRef || !user) return;
-    
-    const loadWithShipperId = {
+  const handlePostLoad = async (newLoadData: Omit<Load, 'id'>) => {
+    if (!user) return;
+    const { data, error } = await supabase.from('loads').insert({
       ...newLoadData,
-      shipperId: user.uid,
-    };
-
-    addDoc(loadsCollectionRef, loadWithShipperId)
-      .catch((error) => {
-        const permissionError = new FirestorePermissionError({
-          path: loadsCollectionRef.path,
-          operation: 'create',
-          requestResourceData: loadWithShipperId,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw error;
-      });
+      shipper_id: user.id,
+    }).select().single();
+    if (!error && data) {
+      setLoads(prev => [...prev, data as unknown as Load]);
+    }
   };
 
   const handleLoadClick = (load: Load) => {
