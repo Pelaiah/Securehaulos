@@ -1,3 +1,5 @@
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,81 +11,76 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
-    --card-alt: 220 14% 96%;
+    --background: 80 8% 97%; /* #F7F8F6 warm alabaster canvas */
+    --foreground: 220 9% 12%; /* #1C1E21 crisp charcoal */
+    --card: 0 0% 100%; /* #FFFFFF crisp white */
+    --card-foreground: 220 9% 12%; /* #1C1E21 */
+    --card-alt: 140 25% 96%; /* #E8F4EE light sage tint */
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 24 95% 53%; /* Vibrant Logistics Orange #FF6B00 */
+    --popover-foreground: 220 9% 12%;
+    --primary: 156 40% 34%; /* #34785D muted sage green / emerald */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 9% 46%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 96%;
-    --accent-foreground: 224 71% 4%;
-    --destructive: 0 84% 60%;
+    --secondary: 140 25% 96%; /* #E8F4EE */
+    --secondary-foreground: 156 40% 34%; /* #34785D */
+    --muted: 80 8% 95%; /* #F2F4F1 */
+    --muted-foreground: 215 6% 45%; /* #6E737B soft medium gray */
+    --accent: 140 25% 96%; /* #E8F4EE */
+    --accent-foreground: 156 40% 34%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 24 95% 53%;
-    --radius: 1rem;
+    --border: 132 10% 89%; /* #E1E6E2 hairline border */
+    --input: 132 10% 89%; /* #E1E6E2 */
+    --ring: 156 40% 34%;
+    --radius: 0.875rem; /* 14px */
 
-    --sidebar-background: 220 13% 95%;
-    --sidebar-foreground: 220 9% 46%;
-    --sidebar-primary: 24 95% 53%;
+    --sidebar-background: 80 8% 97%; /* #F7F8F6 */
+    --sidebar-foreground: 215 6% 45%; /* #6E737B */
+    --sidebar-primary: 156 40% 34%; /* #34785D */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 90%;
-    --sidebar-accent-foreground: 220 14% 11%;
-    --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 24 95% 53%;
+    --sidebar-accent: 140 25% 96%; /* #E8F4EE */
+    --sidebar-accent-foreground: 156 40% 34%;
+    --sidebar-border: 132 10% 89%; /* #E1E6E2 */
+    --sidebar-ring: 156 40% 34%;
 
-    --chart-1: 24 95% 53%;
-    --chart-2: 180 80% 40%;
-    --chart-3: 350 85% 60%;
+    --chart-1: 156 40% 34%;
+    --chart-2: 150 24% 87%;
+    --chart-3: 156 35% 45%;
     --chart-4: 40 90% 60%;
-    --chart-5: 280 85% 65%;
+    --chart-5: 220 9% 12%;
   }
 
+  /* Guarantee light mode consistency across all roles */
   .dark {
-    --background: 224 20% 7%; /* Deep sleek dark #0E1015 */
-    --foreground: 210 20% 98%;
-    --card: 224 16% 12%; /* #151821 */
-    --card-foreground: 210 20% 98%;
-    --card-alt: 224 18% 10%;
-    --popover: 224 16% 12%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 24 95% 53%; /* Vibrant Logistics Orange #FF6B00 */
+    --background: 80 8% 97%;
+    --foreground: 220 9% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 12%;
+    --card-alt: 140 25% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 12%;
+    --primary: 156 40% 34%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 224 14% 18%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 224 14% 18%;
-    --muted-foreground: 217 10% 60%;
-    --accent: 224 14% 20%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 63% 45%;
+    --secondary: 140 25% 96%;
+    --secondary-foreground: 156 40% 34%;
+    --muted: 80 8% 95%;
+    --muted-foreground: 215 6% 45%;
+    --accent: 140 25% 96%;
+    --accent-foreground: 156 40% 34%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 224 14% 18%;
-    --input: 224 14% 18%;
-    --ring: 24 95% 53%;
-    --radius: 1rem;
+    --border: 132 10% 89%;
+    --input: 132 10% 89%;
+    --ring: 156 40% 34%;
+    --radius: 0.875rem;
     
-    --sidebar-background: 224 20% 8%;
-    --sidebar-foreground: 217 10% 60%;
-    --sidebar-primary: 24 95% 53%;
+    --sidebar-background: 80 8% 97%;
+    --sidebar-foreground: 215 6% 45%;
+    --sidebar-primary: 156 40% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 14% 18%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 224 14% 18%;
-    --sidebar-ring: 24 95% 53%;
-
-    --chart-1: 24 95% 53%;
-    --chart-2: 180 80% 40%;
-    --chart-3: 350 85% 60%;
-    --chart-4: 40 90% 60%;
-    --chart-5: 280 85% 65%;
+    --sidebar-accent: 140 25% 96%;
+    --sidebar-accent-foreground: 156 40% 34%;
+    --sidebar-border: 132 10% 89%;
+    --sidebar-ring: 156 40% 34%;
   }
 }
 
@@ -96,19 +93,28 @@ body {
   }
 }
 
-/* Custom UI utilities for mobile design */
+/* Futuristic Light-Mode Design Utilities */
 .mobile-glass {
-  background: rgba(22, 24, 32, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #E1E6E2;
 }
 
-.orange-glow {
-  box-shadow: 0 8px 25px -4px rgba(255, 107, 0, 0.45);
+.card-elevated {
+  background-color: #FFFFFF;
+  border: 1px solid #E1E6E2;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.orange-glow-sm {
-  box-shadow: 0 4px 15px -2px rgba(255, 107, 0, 0.35);
+.badge-sage {
+  background-color: #E8F4EE;
+  color: #34785D;
+  border: 1px solid rgba(52, 120, 93, 0.2);
+}
+
+.map-mint-canvas {
+  background-color: #DDECE4;
 }
 
 .scrollbar-none::-webkit-scrollbar {

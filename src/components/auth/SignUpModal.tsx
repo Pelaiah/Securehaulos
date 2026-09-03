@@ -15,7 +15,7 @@ export function SignUpModal({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-headline text-2xl">Create Your Suboor loadboard Account</DialogTitle>
+          <DialogTitle className="font-headline text-2xl">Create Your SecureHaul Account</DialogTitle>
           <DialogDescription>
             Join the future of secure logistics. It only takes a minute.
           </DialogDescription>

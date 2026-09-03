@@ -1,29 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { InformationCard } from '@/components/dashboard/InformationCard';
-import { ShipmentList } from '@/components/dashboard/ShipmentList';
-import { VehicleInfoCard } from '@/components/dashboard/VehicleInfoCard';
 import { tripData, trucks as fallbackTrucks, type Truck } from '@/lib/data';
-import { Header } from '@/components/dashboard/Header';
-import {
-  BarChart,
-  DollarSign,
-  Map,
-  Package,
-  Ruler,
-  Users,
-  Weight,
-} from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { OrderInfoCard } from '@/components/dashboard/OrderInfoCard';
-import { Map as MapComponent } from '@/components/dashboard/Map';
 import { MobileRecentShipping } from '@/components/dashboard/MobileRecentShipping';
+import { ShipperTactileDashboard } from '@/components/dashboard/shipper/ShipperTactileDashboard';
 import { useRouter } from 'next/navigation';
 import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
 import { supabase } from '@/lib/supabase/client';
@@ -33,7 +13,7 @@ type Trip = (typeof tripData)[0];
 
 export default function ShipperDashboardPage() {
   const router = useRouter();
-  const { user, isLoading: authLoading, signOut } = useSupabaseAuth();
+  const { user, isLoading: authLoading } = useSupabaseAuth();
   const [loads, setLoads] = useState<any[]>([]);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
@@ -101,46 +81,22 @@ export default function ShipperDashboardPage() {
     };
   }, [user, authLoading, router, fetchLoads]);
 
-  // Derived metrics from real loads
-  const metrics = useMemo(() => {
-    const totalOrders = loads.length || 132;
-    const totalWeight = loads.reduce((sum, l) => sum + (Number(l.weight) || 0), 0);
-    const avgWeight = loads.length > 0 && totalWeight > 0 ? Math.round(totalWeight / loads.length).toLocaleString() + ' lbs' : '19,500 lbs';
-    return {
-      orders: totalOrders,
-      avgWeight,
-      avgDistance: '872 mi',
-    };
-  }, [loads]);
-
-  const selectedTruck = useMemo(() => {
-    if (!selectedTrip) return null;
-    return fallbackTrucks.find((truck) => truck.id === selectedTrip.truckId) || fallbackTrucks[0];
-  }, [selectedTrip]);
-
-  const handleTripSelect = (trip: Trip) => {
-    setSelectedTrip(trip);
-  };
-
   const handleMobileTripSelect = (tripId: string) => {
     router.push(`/dashboard/shipper/tracking/${tripId}`);
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    router.replace('/login');
-  };
-
   if (authLoading || isDataLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <Skeleton className="h-16 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+      <div className="p-6 space-y-6 bg-[#c8ccc6] min-h-screen flex flex-col justify-center items-center">
+        <div className="w-full max-w-5xl bg-[#f2f3ef] p-6 rounded-2xl space-y-4 shadow-xl">
+          <Skeleton className="h-12 w-full bg-[#e2e4dd]" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-40 w-full bg-[#e2e4dd]" />
+            <Skeleton className="h-40 w-full bg-[#e2e4dd]" />
+            <Skeleton className="h-40 w-full bg-[#e2e4dd]" />
+          </div>
+          <Skeleton className="h-80 w-full bg-[#e2e4dd]" />
         </div>
-        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -155,83 +111,9 @@ export default function ShipperDashboardPage() {
         />
       </div>
 
-      {/* Desktop / Tablet View */}
-      <div className="hidden md:flex flex-col h-full bg-muted/30">
-        <Header title="Dashboard" onLogout={handleLogout} />
-        <div className="flex-grow grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6 p-6">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    This Month Orders
-                  </CardTitle>
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metrics.orders}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Live from database
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Average Weight
-                  </CardTitle>
-                  <Weight className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metrics.avgWeight}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Calculated from active loads
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Average Distance
-                  </CardTitle>
-                  <Ruler className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metrics.avgDistance}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Route optimization active
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1 space-y-6">
-                <InformationCard driver={selectedTrip || undefined} />
-                <VehicleInfoCard truck={selectedTruck} />
-              </div>
-              <div className="lg:col-span-2 space-y-6">
-                <OrderInfoCard trip={selectedTrip} />
-                <Card className="h-[300px]">
-                  <CardHeader>
-                    <CardTitle>Map Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <MapComponent trucks={fallbackTrucks} selectedTruckId={selectedTruck?.id} />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-
-          <div className="xl:col-span-1 flex flex-col">
-            <ShipmentList
-              title="Orders"
-              onTripSelect={handleTripSelect}
-              selectedTripId={selectedTrip?.id}
-            />
-          </div>
-        </div>
+      {/* Desktop / Tablet View: Exact Loadrive / SecureHaul Tactile Dashboard */}
+      <div className="hidden md:block w-full min-h-screen">
+        <ShipperTactileDashboard realLoads={loads} />
       </div>
     </>
   );

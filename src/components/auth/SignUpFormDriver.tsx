@@ -97,6 +97,7 @@ export function SignUpFormDriver() {
         email: formData.email,
         user_type: 'Driver',
         phone: formData.phone,
+        status: 'Pending',
       });
 
       await supabase.from('drivers').upsert({

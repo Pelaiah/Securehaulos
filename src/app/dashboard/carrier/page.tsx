@@ -5,9 +5,8 @@ import { trucks as fallbackTrucks, type Truck } from '@/lib/data';
 import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
 import { supabase } from '@/lib/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrackingList } from '@/components/dashboard/TrackingList';
-import { TrackingDetails } from '@/components/dashboard/TrackingDetails';
 import { MobileRecentShipping } from '@/components/dashboard/MobileRecentShipping';
+import { CarrierOptimizationDashboard } from '@/components/dashboard/carrier/CarrierOptimizationDashboard';
 import { useRouter } from 'next/navigation';
 
 export default function CarrierDashboardPage() {
@@ -47,7 +46,6 @@ export default function CarrierDashboardPage() {
         setTrucks(mapped);
         setSelectedTruck((prev) => (prev ? mapped.find((t) => t.id === prev.id) || mapped[0] : mapped[0]));
       } else {
-        // If carrier has no trucks in database yet, fallback gracefully
         setTrucks(fallbackTrucks);
         setSelectedTruck((prev) => prev || fallbackTrucks[0]);
       }
@@ -95,44 +93,31 @@ export default function CarrierDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] xl:grid-cols-[1fr_2fr] h-screen">
-        <div className="p-4 border-r">
-          <Skeleton className="h-12 w-full mb-4" />
-          <div className="space-y-2">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
-            ))}
-          </div>
+      <div className="p-6 space-y-6 bg-[#F7F8F6] min-h-screen">
+        <Skeleton className="h-16 w-full bg-[#E1E6E2]/60" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-32 w-full bg-[#E1E6E2]/60" />
+          <Skeleton className="h-32 w-full bg-[#E1E6E2]/60" />
+          <Skeleton className="h-32 w-full bg-[#E1E6E2]/60" />
         </div>
-        <div className="p-4">
-          <Skeleton className="h-full w-full" />
-        </div>
+        <Skeleton className="h-96 w-full bg-[#E1E6E2]/60" />
       </div>
     );
   }
 
   return (
     <>
-      {/* Mobile View: 100% influence from design Screen 2 */}
+      {/* Mobile View: High-fidelity mobile layout */}
       <div className="block md:hidden">
         <MobileRecentShipping
           userType="Carrier"
-          onTripSelect={(tripId) => router.push(`/dashboard/shipper/tracking/${tripId}`)}
+          onTripSelect={(tripId) => router.push(`/dashboard/my-trucks`)}
         />
       </div>
 
-      {/* Desktop / Tablet View */}
-      <div className="hidden md:grid grid-cols-1 lg:grid-cols-[2fr_3fr] xl:grid-cols-[1fr_2fr] h-screen">
-        <div className="p-4 border-r overflow-y-auto">
-          <TrackingList
-            trucks={trucks}
-            selectedTruckId={selectedTruck?.id}
-            onTruckSelect={setSelectedTruck}
-          />
-        </div>
-        <div className="p-4 overflow-y-auto">
-          {selectedTruck && <TrackingDetails truck={selectedTruck} />}
-        </div>
+      {/* Desktop / Tablet View: Bespoke XPO Logistics Fleet OS */}
+      <div className="hidden md:block w-full h-screen">
+        <CarrierOptimizationDashboard initialTrucks={trucks} />
       </div>
     </>
   );

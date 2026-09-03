@@ -63,6 +63,16 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        alabaster: '#F7F8F6',
+        charcoal: '#1C1E21',
+        hairline: '#E1E6E2',
+        sage: {
+          DEFAULT: '#34785D',
+          hover: '#2C644E',
+          light: '#E8F4EE',
+          mint: '#DDECE4',
+        },
+        mutedgray: '#6E737B',
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',

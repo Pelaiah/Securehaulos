@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ArrowRight, Ship, Truck, ShieldCheck, UserPlus, Search, ThumbsUp,Zap, User } from 'lucide-react';
 import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog';
+import { SecureHaulLogo } from '@/components/ui/SecureHaulLogo';
 import { cn } from '@/lib/utils';
 import {
   Card,
@@ -20,11 +21,24 @@ import { gsap, CustomEase, CustomWiggle, ScrollTrigger } from '@/lib/gsap';
 import ParallaxWrapper from '@/components/ParallaxWrapper';
 
 import { MobileHeroOnboarding } from '@/components/MobileHeroOnboarding';
+import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const { user, userProfile, isLoading } = useSupabaseAuth();
+  const router = useRouter();
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-truck-ghost');
   const featureCardsRef = useRef<HTMLDivElement>(null);
   const getStartedRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    // Only redirect if the user has completed onboarding (has a user_type set).
+    // Users without a user_type are new and should stay on the landing page.
+    if (!isLoading && user && userProfile?.user_type) {
+      router.replace('/dashboard');
+    }
+  }, [user, userProfile, isLoading, router]);
 
 
   useLayoutEffect(() => {
@@ -131,10 +145,7 @@ export default function Home() {
       
       <header className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center fixed top-0 left-0 right-0 z-20 bg-transparent">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="https://i.imgur.com/97msenJ.png" alt="Suboor Loads Logo" width={28} height={28} data-ai-hint="logo" />
-          <h1 className="text-2xl font-bold font-headline">
-            Suboor Loads
-          </h1>
+          <SecureHaulLogo size="md" />
         </Link>
         <div className="flex items-center gap-4">
           <Button variant="ghost" asChild>
@@ -258,7 +269,7 @@ export default function Home() {
         <div className="text-center max-w-2xl">
           <h2 className="text-5xl font-bold font-headline mb-4">Ready to Secure Your Shipments?</h2>
           <p className="text-muted-foreground text-xl mb-8">
-            Join Suboor Loads today and experience the future of logistics. Fast, secure, and reliable.
+            Join SecureHaul today and experience the future of logistics. Fast, secure, and reliable.
           </p>
           <RoleSelectionDialog>
             <Button size="lg" className="w-full sm:w-auto">

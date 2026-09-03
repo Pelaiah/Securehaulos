@@ -7,7 +7,8 @@ import { useSupabaseAuth } from '@/components/providers/SupabaseAuthProvider';
 
 export default function DocumentsPage() {
   const { userProfile, isLoading } = useSupabaseAuth();
-  const userType = userProfile?.user_type;
+  const userType = userProfile?.user_type?.toLowerCase();
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -23,19 +24,10 @@ export default function DocumentsPage() {
     );
   }
 
-  if (userType === 'Shipper') {
-    return <ShipperDocumentsPage />;
-  }
-
-  if (userType === 'Carrier') {
+  if (userType === 'carrier') {
     return <CarrierMyDocuments />;
   }
 
-  return (
-    <div className="text-center p-8 text-muted-foreground">
-      Could not determine user role.
-    </div>
-  );
-}
-
-    
+  // Default to Shipper view (covers Shipper role and any edge-case undetermined role in shipper portal)
+  return <ShipperDocumentsPage />;
+}

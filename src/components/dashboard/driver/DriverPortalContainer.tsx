@@ -7,7 +7,7 @@ import { DriverHomeCockpit } from './DriverHomeCockpit';
 import { DriverActiveTripMode } from './DriverActiveTripMode';
 import { DriverPickupWorkflow } from './DriverPickupWorkflow';
 import { DriverDeliveryWorkflow } from './DriverDeliveryWorkflow';
-import { DriverMyLoads } from './DriverMyLoads';
+import { DriverMapLoadBoard } from './DriverMapLoadBoard';
 import { DriverEarningsDashboard } from './DriverEarningsDashboard';
 import { DriverVehicleStatus } from './DriverVehicleStatus';
 import { DriverProfileDocuments } from './DriverProfileDocuments';
@@ -120,9 +120,9 @@ export function DriverPortalContainer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0C11] text-slate-100 flex flex-col items-center justify-start antialiased selection:bg-[#FF6B00] selection:text-white">
+    <div className="min-h-screen bg-[#F7F8F6] text-[#1C1E21] flex flex-col items-center justify-start antialiased selection:bg-[#34785D] selection:text-white">
       {/* Mobile Device Viewport Shell Container */}
-      <div className="w-full max-w-lg min-h-screen flex flex-col relative bg-[#0A0C11] overflow-x-hidden">
+      <div className="w-full max-w-lg min-h-screen flex flex-col relative bg-[#F7F8F6] overflow-x-hidden">
         {/* Active View Routing */}
         {activeSubView === 'pickup_flow' ? (
           <DriverPickupWorkflow
@@ -149,6 +149,7 @@ export function DriverPortalContainer() {
             messages={messages}
             onSendMessage={handleSendMessage}
             onBack={() => setActiveSubView(null)}
+            activeTrip={currentTrip}
           />
         ) : activeSubView === 'vehicle_health' ? (
           <div className="flex flex-col">
@@ -156,7 +157,7 @@ export function DriverPortalContainer() {
               <button
                 type="button"
                 onClick={() => setActiveSubView(null)}
-                className="px-3 py-1.5 rounded-xl bg-[#141722] hover:bg-[#1B2030] text-xs font-bold text-slate-300 mb-2 border border-white/10"
+                className="px-3 py-1.5 rounded-xl bg-[#FFFFFF] hover:bg-[#E8F4EE] hover:text-[#34785D] text-xs font-bold text-[#1C1E21] mb-2 border border-[#E1E6E2] shadow-sm transition-colors"
               >
                 ← Back to Cockpit
               </button>
@@ -199,11 +200,8 @@ export function DriverPortalContainer() {
             )}
 
             {activeTab === 'loads' && (
-              <DriverMyLoads
-                activeTrip={currentTrip}
-                upcomingLoads={mockUpcomingLoads}
-                completedLoads={mockCompletedLoads}
-                onSelectActiveTrip={() => setActiveTab('navigate')}
+              <DriverMapLoadBoard
+                onOpenControls={() => setActiveTab('navigate')}
               />
             )}
 

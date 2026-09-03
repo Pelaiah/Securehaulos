@@ -80,23 +80,23 @@ export function DriverNotificationsModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-[#12151F] border border-white/10 p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-200">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-[#FFFFFF] border border-[#E1E6E2] p-5 shadow-2xl space-y-4 max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E1E6E2]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/15 text-[#FF6B00] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#E8F4EE] text-[#34785D] flex items-center justify-center">
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">Operational Alerts</h2>
-              <p className="text-[11px] text-slate-400">Driver & Fleet Dispatch Center</p>
+              <h2 className="text-base font-bold text-[#1C1E21]">Operational Alerts</h2>
+              <p className="text-[11px] text-[#6E737B]">Driver & Fleet Dispatch Center</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-[#181B26] hover:bg-[#202534] text-slate-300 active:scale-95"
+            className="p-1.5 rounded-xl bg-[#F7F8F6] hover:bg-[#E8F4EE] text-[#1C1E21] active:scale-95 border border-[#E1E6E2] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -112,20 +112,20 @@ export function DriverNotificationsModal({
                 className={cn(
                   'p-3.5 rounded-2xl border transition-all cursor-pointer space-y-1.5',
                   !n.isRead
-                    ? 'bg-[#181D2C] border-[#FF6B00]/30 shadow-md'
-                    : 'bg-[#141722] border-white/[0.06] opacity-80'
+                    ? 'bg-[#E8F4EE] border-[#34785D]/30 shadow-sm'
+                    : 'bg-[#F7F8F6] border-[#E1E6E2]'
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {!n.isRead && (
-                      <span className="w-2 h-2 rounded-full bg-[#FF6B00] animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-[#34785D] animate-pulse" />
                     )}
-                    <span className="text-xs font-bold text-white">{n.title}</span>
+                    <span className="text-xs font-bold text-[#1C1E21]">{n.title}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400">{n.time}</span>
+                  <span className="text-[10px] font-mono text-[#6E737B]">{n.time}</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">{n.description}</p>
+                <p className="text-xs text-[#1C1E21] leading-relaxed">{n.description}</p>
               </div>
             );
           })}
@@ -134,7 +134,7 @@ export function DriverNotificationsModal({
         <Button
           type="button"
           onClick={onClose}
-          className="w-full h-11 rounded-2xl bg-[#1F2435] hover:bg-[#2A3147] text-slate-200 text-xs font-bold"
+          className="w-full h-11 rounded-2xl bg-[#F7F8F6] hover:bg-[#E8F4EE] hover:text-[#34785D] text-[#1C1E21] border border-[#E1E6E2] text-xs font-bold transition-colors"
         >
           Dismiss & Back to Cockpit
         </Button>

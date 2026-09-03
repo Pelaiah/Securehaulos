@@ -5,9 +5,9 @@ import { cn } from '@/lib/utils';
 import { SupabaseAuthProvider } from '@/components/providers/SupabaseAuthProvider';
 
 export const metadata: Metadata = {
-  title: 'Suboor loadboard',
+  title: 'SecureHaul - Smart Loads & Logistics OS',
   description:
-    'A comprehensive logistics platform for real-time tracking, load management, and enhanced security for carriers and shippers.',
+    'Smart Loads. Secure Connections. Limitless Possibilities. A comprehensive freight logistics platform for real-time tracking, load management, and enhanced security for shippers and carriers.',
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={cn('font-body antialiased')}>
+      <body className={cn('font-body antialiased')} suppressHydrationWarning>
         <SupabaseAuthProvider>
           {children}
           <Toaster />

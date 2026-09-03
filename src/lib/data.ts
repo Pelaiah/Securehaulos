@@ -114,11 +114,36 @@ export const trucks: Truck[] = [
   },
 ];
 
+export type NegotiationOffer = {
+  id: string;
+  from: 'shipper' | 'carrier';
+  amount: number;
+  note?: string;
+  timestamp: string;
+  status: 'pending' | 'accepted' | 'declined';
+};
+
+export type ChatMessage = {
+  id: string;
+  from: 'carrier' | 'driver';
+  text: string;
+  timestamp: string;
+};
+
+export type AccessGrant = {
+  type: 'tracking' | 'documents';
+  grantedTo: 'shipper';
+  grantedAt: string;
+  revokedAt?: string;
+  active: boolean;
+};
+
 export type Load = {
   id: string;
   shipperId: string;
   carrierId?: string | null;
   assignedTruckId?: string | null;
+  assignedDriverId?: string | null;
   origin: string;
   destination: string;
   cargo: string;
@@ -127,6 +152,12 @@ export type Load = {
   shipper: string;
   payout: number;
   status: 'Posted' | 'In Transit' | 'Completed' | 'Pending';
+  // Carrier fetcher workflow extensions
+  requiredDocuments?: string[];            // e.g. ['Proof of Insurance', 'Carrier Authority']
+  negotiationHistory?: NegotiationOffer[];
+  agreedPrice?: number;
+  chatMessages?: ChatMessage[];
+  accessGrants?: AccessGrant[];
 };
 
 
@@ -145,6 +176,9 @@ export type Document = {
   expiryDate?: string;
   uploadDate?: string;
   fileUrl: string;
+  allowDownload?: boolean;
+  downloadRequestStatus?: 'none' | 'requested' | 'approved' | 'denied';
+  fileSize?: string;
 };
 
 export const documents: Document[] = [

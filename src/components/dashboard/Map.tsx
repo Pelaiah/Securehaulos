@@ -55,9 +55,8 @@ export function Map({ trucks = [], selectedTruckId }: MapProps) {
       <Image
         src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxNnx8bWFwfGVufDB8fHx8MTc2MTU1MjIxMXww&ixlib=rb-4.1.0&q=80&w=1080"
         alt="City map background"
-        layout="fill"
-        objectFit="cover"
-        className="opacity-20"
+        fill
+        className="opacity-20 object-cover"
         data-ai-hint="dark city map"
       />
       {/* Lines between points */}

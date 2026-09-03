@@ -71,35 +71,35 @@ export function DriverPickupWorkflow({
   };
 
   return (
-    <div className="flex flex-col gap-4 pb-28 pt-2 px-3 sm:px-4 max-w-lg mx-auto w-full text-slate-100 font-sans select-none">
+    <div className="flex flex-col gap-4 pb-28 pt-2 px-3 sm:px-4 max-w-lg mx-auto w-full text-[#1C1E21] font-sans select-none">
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onBack}
-            className="p-2 rounded-2xl bg-[#181B26] hover:bg-[#202534] border border-white/10 text-slate-300 active:scale-95 transition-colors"
+            className="p-2 rounded-2xl bg-[#FFFFFF] hover:bg-[#E8F4EE] hover:text-[#34785D] border border-[#E1E6E2] text-[#1C1E21] active:scale-95 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#FF6B00]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#34785D]">
               Pickup Workflow
             </span>
-            <h1 className="text-base font-extrabold text-white">
+            <h1 className="text-base font-extrabold text-[#1C1E21]">
               {trip.origin.facility}
             </h1>
           </div>
         </div>
-        <Badge variant="outline" className="bg-[#181B26] border-[#FF6B00]/40 text-[#FF6B00] font-mono">
+        <Badge variant="outline" className="bg-[#E8F4EE] border-[#34785D]/20 text-[#34785D] font-mono">
           {trip.loadNumber}
         </Badge>
       </div>
 
       {/* ── STEP PROGRESS BAR ── */}
-      <div className="p-3.5 rounded-2xl bg-[#141722] border border-white/[0.08] shadow-md">
+      <div className="p-3.5 rounded-2xl bg-[#FFFFFF] border border-[#E1E6E2] shadow-sm">
         <div className="flex items-center justify-between relative mb-2">
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-800 -translate-y-1/2 z-0" />
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-[#E1E6E2] -translate-y-1/2 z-0" />
           {stepsList.map((step, idx) => {
             const stepOrder = ['ARRIVED', 'CHECK_IN', 'LOADING', 'LOADED', 'CONFIRM'];
             const currentIndex = stepOrder.indexOf(currentStep);
@@ -112,10 +112,10 @@ export function DriverPickupWorkflow({
                   className={cn(
                     'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300',
                     isPassed
-                      ? 'bg-emerald-500 text-white shadow-[0_0_10px_#10B981]'
+                      ? 'bg-[#34785D] text-white shadow-sm'
                       : isCurrent
-                      ? 'bg-[#FF6B00] text-white shadow-[0_0_12px_#FF6B00] ring-4 ring-[#FF6B00]/20'
-                      : 'bg-[#1C202F] text-slate-500 border border-white/10'
+                      ? 'bg-[#34785D] text-white shadow-sm ring-4 ring-[#E8F4EE]'
+                      : 'bg-[#F7F8F6] text-[#6E737B] border border-[#E1E6E2]'
                   )}
                 >
                   {isPassed ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
@@ -123,7 +123,7 @@ export function DriverPickupWorkflow({
                 <span
                   className={cn(
                     'text-[9px] font-semibold mt-1 uppercase tracking-tight',
-                    isCurrent ? 'text-[#FF6B00]' : isPassed ? 'text-emerald-400' : 'text-slate-500'
+                    isCurrent ? 'text-[#34785D]' : isPassed ? 'text-[#34785D]' : 'text-[#6E737B]'
                   )}
                 >
                   {step.label}
@@ -135,70 +135,70 @@ export function DriverPickupWorkflow({
       </div>
 
       {/* ── FACILITY DOCK CARD ── */}
-      <div className="rounded-3xl bg-[#181B28] border border-white/[0.1] p-4 sm:p-5 shadow-xl space-y-4">
+      <div className="rounded-3xl bg-[#FFFFFF] border border-[#E1E6E2] p-4 sm:p-5 shadow-sm space-y-4">
         {/* Status Callout */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#0E1015] border border-white/10">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F7F8F6] border border-[#E1E6E2]">
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-[#6E737B] uppercase tracking-wider">
               Assigned Dock
             </span>
-            <p className="text-base font-black text-[#FF6B00] font-mono">{trip.origin.dock}</p>
+            <p className="text-base font-black text-[#34785D] font-mono">{trip.origin.dock}</p>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-[#6E737B] uppercase tracking-wider">
               Appointment
             </span>
-            <p className="text-xs font-bold text-white font-mono">{trip.origin.appointmentTime}</p>
+            <p className="text-xs font-bold text-[#1C1E21] font-mono">{trip.origin.appointmentTime}</p>
           </div>
         </div>
 
         {/* Contact info & Direct Call */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#141722] border border-white/[0.06]">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F7F8F6] border border-[#E1E6E2]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-slate-300">
-              <Phone className="w-4 h-4 text-[#FF6B00]" />
+            <div className="w-9 h-9 rounded-xl bg-[#E8F4EE] border border-[#34785D]/20 flex items-center justify-center text-[#34785D]">
+              <Phone className="w-4 h-4 text-[#34785D]" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white">{trip.origin.contact}</p>
-              <p className="text-[11px] text-slate-400 font-mono">{trip.origin.phone}</p>
+              <p className="text-xs font-bold text-[#1C1E21]">{trip.origin.contact}</p>
+              <p className="text-[11px] text-[#6E737B] font-mono">{trip.origin.phone}</p>
             </div>
           </div>
           <a
             href={`tel:${trip.origin.phone}`}
-            className="px-3 py-1.5 rounded-xl bg-[#1C2132] hover:bg-[#252C42] border border-white/10 text-xs font-bold text-emerald-400"
+            className="px-3 py-1.5 rounded-xl bg-[#E8F4EE] hover:bg-[#34785D] hover:text-white border border-[#34785D]/20 text-xs font-bold text-[#34785D] transition-colors"
           >
             Call Dock
           </a>
         </div>
 
         {/* Loading Instructions Alert */}
-        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1">
-          <div className="flex items-center gap-1.5 font-bold text-amber-400">
+        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-amber-800">
             <AlertTriangle className="w-4 h-4" />
             <span>Special Facility Loading Protocol</span>
           </div>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
+          <p className="text-amber-700 text-[11px] leading-relaxed">
             {trip.origin.instructions}
           </p>
         </div>
 
         {/* Interactive Verification Checks (Step 4 & 5) */}
         {(currentStep === 'LOADED' || currentStep === 'CONFIRM') && (
-          <div className="space-y-3 pt-2 border-t border-white/10">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[#FF6B00]" />
+          <div className="space-y-3 pt-2 border-t border-[#E1E6E2]">
+            <h3 className="text-xs font-bold text-[#1C1E21] uppercase tracking-wider flex items-center gap-2">
+              <Lock className="w-4 h-4 text-[#34785D]" />
               Cargo Seal & Verification
             </h3>
 
             {/* Seal Number Input */}
             <div>
-              <label className="text-[11px] text-slate-400 font-semibold mb-1 block">
+              <label className="text-[11px] text-[#6E737B] font-semibold mb-1 block">
                 High-Security Bolt Seal Number
               </label>
               <Input
                 value={sealNumber}
                 onChange={(e) => setSealNumber(e.target.value)}
-                className="bg-[#0E1015] border-white/10 text-white font-mono text-xs rounded-xl focus:border-[#FF6B00]"
+                className="bg-[#F7F8F6] border-[#E1E6E2] text-[#1C1E21] font-mono text-xs rounded-xl focus:border-[#34785D]"
                 placeholder="e.g. SEAL-994821"
               />
             </div>
@@ -211,11 +211,11 @@ export function DriverPickupWorkflow({
                 className={cn(
                   'p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition-all text-xs font-bold active:scale-95',
                   sealPhotoTaken
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                    : 'bg-[#141722] border-white/10 text-slate-300 hover:border-[#FF6B00]'
+                    ? 'bg-[#E8F4EE] border-[#34785D] text-[#34785D]'
+                    : 'bg-[#F7F8F6] border-[#E1E6E2] text-[#1C1E21] hover:border-[#34785D]'
                 )}
               >
-                <Camera className="w-5 h-5 text-[#FF6B00]" />
+                <Camera className="w-5 h-5 text-[#34785D]" />
                 <span>{sealPhotoTaken ? '✓ Seal Photo Captured' : 'Take Seal Photo'}</span>
               </button>
 
@@ -225,11 +225,11 @@ export function DriverPickupWorkflow({
                 className={cn(
                   'p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition-all text-xs font-bold active:scale-95',
                   bolUploaded
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                    : 'bg-[#141722] border-white/10 text-slate-300 hover:border-[#FF6B00]'
+                    ? 'bg-[#E8F4EE] border-[#34785D] text-[#34785D]'
+                    : 'bg-[#F7F8F6] border-[#E1E6E2] text-[#1C1E21] hover:border-[#34785D]'
                 )}
               >
-                <FileText className="w-5 h-5 text-emerald-400" />
+                <FileText className="w-5 h-5 text-[#34785D]" />
                 <span>{bolUploaded ? '✓ Signed BOL Scanned' : 'Scan BOL Document'}</span>
               </button>
             </div>
@@ -242,7 +242,7 @@ export function DriverPickupWorkflow({
         <Button
           type="button"
           onClick={handleNextStep}
-          className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#FF5500] to-[#FF7700] hover:from-[#FF6600] hover:to-[#FF8800] text-white font-extrabold text-sm tracking-wider shadow-[0_8px_25px_rgba(255,107,0,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          className="w-full h-12 rounded-2xl bg-[#34785D] hover:bg-[#2C644E] text-white font-extrabold text-sm tracking-wider shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           {currentStep === 'ARRIVED' && '1. CONFIRM ARRIVAL AT GUARDHOUSE'}
           {currentStep === 'CHECK_IN' && '2. CHECK IN AT DOCK #14 MASTER'}
@@ -256,7 +256,7 @@ export function DriverPickupWorkflow({
           <button
             type="button"
             onClick={() => setIsDamagedReported(true)}
-            className="w-full py-2 text-center text-xs font-semibold text-slate-400 hover:text-red-400 transition-colors"
+            className="w-full py-2 text-center text-xs font-semibold text-[#6E737B] hover:text-red-600 transition-colors"
           >
             Report Damaged Packaging or Discrepancy
           </button>

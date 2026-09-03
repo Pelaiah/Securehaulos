@@ -29,7 +29,7 @@ export function DriverBottomNavigation({
     <div className="fixed bottom-3 inset-x-0 z-50 flex justify-center px-3 pointer-events-none">
       <nav
         aria-label="Driver Operational Navigation"
-        className="pointer-events-auto w-full max-w-[420px] bg-[#0E1015]/95 backdrop-blur-2xl border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.85)] rounded-full px-3 py-2 flex items-center justify-between"
+        className="pointer-events-auto w-full max-w-[420px] bg-white/95 backdrop-blur-2xl border border-[#E1E6E2] shadow-[0_12px_36px_rgba(28,30,33,0.08)] rounded-full px-3 py-2 flex items-center justify-between"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -44,14 +44,14 @@ export function DriverBottomNavigation({
                 className={cn(
                   'relative -top-3 flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all duration-300 active:scale-95 group',
                   isActive
-                    ? 'bg-gradient-to-tr from-[#FF5500] to-[#FF8000] text-white shadow-[0_8px_25px_rgba(255,107,0,0.65)] ring-4 ring-[#0E1015]'
-                    : 'bg-[#1C1F2B] text-[#FF6B00] border border-[#FF6B00]/30 shadow-[0_4px_16px_rgba(0,0,0,0.6)]'
+                    ? 'bg-[#34785D] text-white shadow-[0_8px_25px_rgba(52,120,93,0.35)] ring-4 ring-[#F7F8F6]'
+                    : 'bg-[#E8F4EE] text-[#34785D] border border-[#34785D]/20 shadow-sm hover:bg-[#34785D] hover:text-white'
                 )}
                 aria-label="Active Navigation Mode"
               >
                 {/* Glow ring pulse when trip is active */}
                 {isTripActive && (
-                  <span className="absolute -inset-1 rounded-full bg-[#FF6B00]/25 animate-ping opacity-60 pointer-events-none" />
+                  <span className="absolute -inset-1 rounded-full bg-[#34785D]/25 animate-ping opacity-60 pointer-events-none" />
                 )}
                 <Icon
                   className={cn(
@@ -72,12 +72,12 @@ export function DriverBottomNavigation({
               className={cn(
                 'relative flex flex-col items-center justify-center w-12 h-11 rounded-2xl transition-all duration-200 active:scale-90',
                 isActive
-                  ? 'text-[#FF6B00] font-semibold'
-                  : 'text-[#8E95A5] hover:text-white/90'
+                  ? 'text-[#34785D] font-semibold'
+                  : 'text-[#6E737B] hover:text-[#1C1E21]'
               )}
             >
               {isActive && (
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]" />
+                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#34785D]" />
               )}
               <Icon
                 className={cn(

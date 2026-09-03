@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Package, ArrowRight } from 'lucide-react';
 import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog';
 import { Button } from '@/components/ui/button';
+import { SecureHaulLogo } from '@/components/ui/SecureHaulLogo';
 
 export function MobileHeroOnboarding() {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -43,14 +44,7 @@ export function MobileHeroOnboarding() {
 
       {/* Top Header / App Brand */}
       <div className="relative z-20 px-6 pt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#FF6B00] flex items-center justify-center shadow-md">
-            <Package className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-lg tracking-wide text-white font-headline">
-            Suboor Loads
-          </span>
-        </div>
+        <SecureHaulLogo size="sm" />
         <Link
           href="/login"
           className="text-xs font-semibold text-white/80 hover:text-white px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10"

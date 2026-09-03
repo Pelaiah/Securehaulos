@@ -25,12 +25,21 @@ export default function DashboardPage() {
       // Redirect based on user_type stored in the users table
       if (userProfile.user_type === 'Shipper') {
         router.replace('/dashboard/shipper');
+      } else if (userProfile.user_type === 'Driver') {
+        router.replace('/dashboard/driver');
       } else {
         router.replace('/dashboard/carrier');
       }
     } else {
-      // User is authenticated but profile isn't loaded yet — wait for re-render
-      console.log('User authenticated, waiting for profile...');
+      // Fallback if profile takes longer than 1.5s or role is default
+      const userTypeMeta = user?.user_metadata?.user_type;
+      if (userTypeMeta === 'Driver') {
+        router.replace('/dashboard/driver');
+      } else if (userTypeMeta === 'Carrier') {
+        router.replace('/dashboard/carrier');
+      } else {
+        router.replace('/dashboard/shipper');
+      }
     }
   }, [user, userProfile, isLoading, router]);
 
