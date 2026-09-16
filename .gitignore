@@ -43,3 +43,7 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Ensure these are ignored recursively
+node_modules
+.next
